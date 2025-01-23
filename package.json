@@ -1,11 +1,14 @@
 {
   "name": "sky-tiptap",
   "version": "1.0.0",
-  "main": "main.js",
+  "main": "./dist/sky-tiptap.umd.js",
+  "module": "./dist/sky-tiptap.es.js",
+  "files": ["dist", "README.md"],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "vite build"
   },
-  "author":  {
+  "author": {
     "name": "Chelsea",
     "email": "",
     "url": ""
@@ -17,5 +20,19 @@
     "template"
   ],
   "license": "MIT",
-  "description": "A tiptap template 一个适用于tiptap的模板"
+  "description": "A tiptap template 一个适用于tiptap的模板",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Chelase/sky-tiptap.git"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "vite": "^6.0.11"
+  }
 }
