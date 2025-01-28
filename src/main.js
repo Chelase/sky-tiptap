@@ -1,3 +1,4 @@
-import skyTiptap from './sky-tiptap.vue';
+import Index from './index.vue';
+import 'style/index.css'
 
-export default skyTiptap;
+export default Index;
