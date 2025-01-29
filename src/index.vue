@@ -1,12 +1,52 @@
 <script setup>
-import {ref, onBeforeMount, onBeforeUnmount} from 'vue'
+import {ref, onBeforeMount, onBeforeUnmount, watch} from 'vue'
 import { TipTapPlugin } from '/utils/index.js'
 import {useEditor, EditorContent, BubbleMenu, FloatingMenu} from '@tiptap/vue-3'
 
+const props = defineProps({
+  modelValue: '',
+  fileName: {
+    type: String,
+    default: 'file'
+  }
+})
+
+const emit = defineEmits(['update:modelValue', 'uploadPhoto'])
 
 const editor = useEditor(TipTapPlugin)
 const width = ref(640)
 const height = ref(480)
+
+// 监听 props 的变化，更新 internalValue
+watch(editor, () => {
+  if (editor.value) {
+    updateValue(); // 更新父组件的值
+  }
+});
+
+const updateValue = () => {
+  // 当 input 值变化时，通知父组件更新
+  emit('update:modelValue', editor.value.getHTML());
+};
+
+
+// 在子组件中
+const addImage = () => {
+  const fileInput = document.getElementById('fileInput');
+  fileInput.click();
+
+  // 监听文件选择事件
+  fileInput.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    // 触发自定义事件，将文件传递给父组件
+    emit('uploadPhoto', file);
+  }, { once: true }); // 使用 { once: true } 确保事件监听器只触发一次
+}
+
+// 新增一个方法来插入图片
+const insertImage = (imageUrl) => {
+  editor.value.chain().focus().setImage({ src: imageUrl }).run();
+};
 
 function insertVideo() {
   let url = prompt('请输入视频链接', '')
@@ -21,37 +61,6 @@ function extractVideoId(url) {
   const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^&\n]{11})/;
   const match = url.match(regex);
   return match ? match[1] : null;
-}
-
-
-function addImage() {
-  const fileInput = document.getElementById('fileInput');
-  fileInput.click();
-
-  // 监听文件选择事件
-  fileInput.addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    const formData = new FormData()
-    formData.append('file', file)
-    publicApi.uploadPhoto(formData).then(res => {
-      if (res.data) {
-        editor.value.chain().focus().setImage({ src: res.data[0] }).run()
-      }
-    }).catch(error => {
-      console.log(error);
-    })
-    // 转成base64
-    // if (file) {
-    //   const reader = new FileReader();
-    //
-    //   reader.onload = function(e) {
-    //     const base64String = e.target.result;
-    //     console.log(base64String);
-    //   }
-    //
-    //   reader.readAsDataURL(file);
-    // }
-  }, { once: true }); // 使用 { once: true } 确保事件监听器只触发一次
 }
 
 const addYoutube = () => {
@@ -93,7 +102,7 @@ const addWeb = () => {
     type: 'iframe',
     attrs: {
       src: url,
-      width: 640,
+      width: '100%',
       height: 360,
       frameborder: '0',
       allowfullscreen: 'true',
