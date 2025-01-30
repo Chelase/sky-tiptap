@@ -120,11 +120,6 @@ onBeforeUnmount(() => {
   <input type="file" id="fileInput" style="display: none;" accept="image/*">
   <div class="container">
 
-    <div class="w-100 d-flex justify-content-between align-items-end">
-      <textarea rows="4" cols="50" type="text" v-model="article.title" placeholder="请输入标题..." minlength="1" maxlength="50"></textarea>
-      <div>{{article.title.length}}/50</div>
-    </div>
-
     <div class="editor">
       <editor-content :editor="editor" />
     </div>
@@ -191,7 +186,6 @@ onBeforeUnmount(() => {
       </floating-menu>
     </div>
 
-    <!--    <ElButton @click="testHtml">测试HTML</ElButton>-->
   </div>
 </template>
 
