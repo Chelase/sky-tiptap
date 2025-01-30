@@ -1,0 +1,54 @@
+name: Publish Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20  # 指定 Node.js 版本
+
+      - name: Cache Node Modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Dependencies
+        run: npm ci  # 使用精确依赖安装
+
+      - name: Build Package
+        run: npm run build  # 构建步骤
+
+      # 自动更新补丁版本
+#      - name: Bump Version
+#        run: |
+#          npm version patch -m "Bump version to %s"
+#          git push origin master --follow-tags
+
+      # 发布到 GitHub Packages
+      - name: Publish to GitHub Packages
+        if: success()
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_PACKAGES_TOKEN }}" > .npmrc
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+
+      # 发布到 npm 官方仓库
+      - name: Publish to npm
+        if: success()
+        run: |
+          sed -i 's/"name": "@Chelase\/sky-tiptap"/"name": "sky-tiptap"/g' package.json
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          npm publish --access public --registry=https://registry.npmjs.org
+          git checkout package.json
