@@ -45,18 +45,15 @@ export default {
 }
 </script>
 
-<style lang="scss">
-.tiptap {
-  .code-block {
-    position: relative;
-
-    select {
-      position: absolute;
-      background-color: #fff;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="Black" d="M7 10l5 5 5-5z"/></svg>');
-      right: 0.5rem;
-      top: 0.5rem;
-    }
-  }
+<style scoped>
+.tiptap .code-block {
+  position: relative;
+}
+.code-block select {
+  position: absolute;
+  background-color: #fff;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="Black" d="M7 10l5 5 5-5z"/></svg>');
+  right: 0.5rem;
+  top: 0.5rem;
 }
 </style>

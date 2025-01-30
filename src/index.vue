@@ -1,6 +1,6 @@
 <script setup>
 import {ref, onBeforeMount, onBeforeUnmount, watch} from 'vue'
-import { TipTapPlugin } from '/utils/index.js'
+import { TipTapPlugin } from './utils'
 import {useEditor, EditorContent, BubbleMenu, FloatingMenu} from '@tiptap/vue-3'
 
 const props = defineProps({
