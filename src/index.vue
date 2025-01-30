@@ -114,6 +114,10 @@ onBeforeUnmount(() => {
   editor.value.destroy();
 })
 
+defineExpose({
+  insertImage
+});
+
 </script>
 
 <template>
