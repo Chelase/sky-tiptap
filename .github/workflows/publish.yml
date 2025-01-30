@@ -2,8 +2,9 @@ name: Publish Package
 
 on:
   push:
+    branches: [master]
     tags:
-      - 'v*'
+      - 'v**'
 
 jobs:
   publish:
