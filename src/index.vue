@@ -133,19 +133,6 @@ onBeforeUnmount(() => {
         <button @click="editor.chain().focus().toggleStrike().run()" :class="{ 'is-active': editor.isActive('strike') }">
           删除线
         </button>
-        <button @click="addImage">上传图片</button>
-        <button id="youtube" @click="addYoutube()">
-          嵌入youtube视频
-        </button>
-        <button id="bilibili" @click="addBilibili()">
-          嵌入bilibili视频
-        </button>
-        <button id="tiktok" @click="addTiktok()">
-          嵌入抖音视频
-        </button>
-        <button id="web" @click="addWeb()">
-          嵌入网站
-        </button>
       </bubble-menu>
 
       <floating-menu
@@ -159,8 +146,24 @@ onBeforeUnmount(() => {
         <button @click="editor.chain().focus().toggleHeading({ level: 2 }).run()" :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }">
           2级标题
         </button>
+        <button @click="editor.chain().focus().toggleHeading({ level: 3 }).run()" :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }">
+          3级标题
+        </button>
         <button @click="editor.chain().focus().toggleBulletList().run()" :class="{ 'is-active': editor.isActive('bulletList') }">
           无序列表
+        </button>
+        <button @click="addImage">上传图片</button>
+        <button id="youtube" @click="addYoutube()">
+          嵌入youtube视频
+        </button>
+        <button id="bilibili" @click="addBilibili()">
+          嵌入bilibili视频
+        </button>
+        <button id="tiktok" @click="addTiktok()">
+          嵌入抖音视频
+        </button>
+        <button id="web" @click="addWeb()">
+          嵌入网站
         </button>
       </floating-menu>
     </div>

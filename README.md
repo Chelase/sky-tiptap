@@ -23,7 +23,7 @@ npm install sky-tiptap
 ```vue
 <script setup>
 
-import SkyTiptap from 'sky-tiptap'
+import { SkyTiptap } from 'sky-tiptap'
 
 const editor = ref()
 const content = ref('')
@@ -34,7 +34,6 @@ const content = ref('')
   <sky-tiptap
         ref="editor"
         v-model="content"
-        @uploadPhoto="handleUploadPhoto"
     />
 </template>
 ```
@@ -49,54 +48,50 @@ const content = ref('')
 
 
 
+sky-tiptap会返回文件，只需调用**insertImage**方法插入即可
+
+
+
 ```vue
 vue
 <template>
   <div>
     <sky-tiptap 
+      ref="editor"
       v-model="content" 
       @uploadPhoto="handleUploadPhoto" 
-      ref="childComponent"
     />
-    <div>编辑器内容: {{ content }}</div>
   </div>
 </template>
 
-<script>
-import { ref } from 'vue';
-import ChildComponent from './ChildComponent.vue';
-
-export default {
-  components: {
-    ChildComponent,
-  },
-  setup() {
-    const content = ref(''); // 用于存储编辑器的 HTML 内容
-    const childComponent = ref(null); // 引用子组件
-
-    const handleUploadPhoto = (file) => {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // 调用上传 API
-      publicApi.uploadPhoto(formData).then(res => {
-        if (res.data && res.data.length > 0) {
-          // 上传成功后，获取图片 URL
-          const imageUrl = res.data[0]; // 假设返回的数据中包含图片 URL
-          
-          // 调用子组件的方法插入图片
-          childComponent.value.insertImage(imageUrl);
-        }
-      }).catch(error => {
-        console.error('图片上传失败:', error);
-      });
-    };
-
-    return { content, handleUploadPhoto, childComponent };
-  },
-};
+<script setup>
+import { SkyTiptap, insertImage } from 'sky-tiptap'
+    
+const handleUploadPhoto = async (file) => {
+    console.log(file);
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await uploadPhoto(formData)
+    let url = data[0]
+    insertImage(url);
+}
 </script>
 ```
 
 
+
+### 手动获取富文本内容
+
+
+
+```vue
+<script setup>
+import { SkyTiptap, insertImage, getContent } from 'sky-tiptap'
+    
+const getValue = () => {
+    let value = getContent()
+    console.log(value)
+}
+</script>
+```
 
