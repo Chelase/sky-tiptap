@@ -1,5 +1,6 @@
 <script setup>
-import {ref, onBeforeMount, onBeforeUnmount, watch} from 'vue'
+import { editorRef } from './main'
+import {ref, onBeforeMount, onBeforeUnmount, watch, computed, onMounted} from 'vue'
 import { TipTapPlugin } from './utils'
 import {useEditor, EditorContent, BubbleMenu, FloatingMenu} from '@tiptap/vue-3'
 
@@ -17,17 +18,12 @@ const editor = useEditor(TipTapPlugin)
 const width = ref(640)
 const height = ref(480)
 
-// 监听 props 的变化，更新 internalValue
-watch(editor, () => {
-  if (editor.value) {
-    updateValue(); // 更新父组件的值
-  }
-});
-
-const updateValue = () => {
-  // 当 input 值变化时，通知父组件更新
-  emit('update:modelValue', editor.value.getHTML());
-};
+watch(
+    () => editor.value?.getHTML(), // 监听编辑器的 HTML 内容
+    (newContent) => {
+      emit('update:modelValue', newContent) // 将内容传递给父组件
+    }
+)
 
 
 // 在子组件中
@@ -41,19 +37,6 @@ const addImage = () => {
     // 触发自定义事件，将文件传递给父组件
     emit('uploadPhoto', file);
   }, { once: true }); // 使用 { once: true } 确保事件监听器只触发一次
-}
-
-// 新增一个方法来插入图片
-const insertImage = (imageUrl) => {
-  editor.value.chain().focus().setImage({ src: imageUrl }).run();
-};
-
-function insertVideo() {
-  let url = prompt('请输入视频链接', '')
-  const videoId = extractVideoId(url); // 提取视频 ID 的函数
-  const embedUrl = `https://www.youtube.com/embed/${videoId}`; // YouTube 嵌入链接
-
-  editor.chain().focus().setVideoEmbed({ src: embedUrl }).run();
 }
 
 // 提取视频 ID 的简单示例
@@ -110,13 +93,20 @@ const addWeb = () => {
   });
 }
 
-onBeforeUnmount(() => {
-  editor.value.destroy();
+// 组件挂载时绑定 editor 实例
+onMounted(() => {
+  editorRef.value = {
+    insertImage: (url) => {
+      editor.value.chain().focus().setImage({ src: url }).run()
+    },
+    getContent: () => editor.value.getHTML()
+  }
 })
 
-defineExpose({
-  insertImage
-});
+onBeforeUnmount(() => {
+  editorRef.value = null
+  editor.value.destroy();
+})
 
 </script>
 
@@ -144,7 +134,6 @@ defineExpose({
           删除线
         </button>
         <button @click="addImage">上传图片</button>
-        <button @click="insertVideo()">插入网络视频</button>
         <button id="youtube" @click="addYoutube()">
           嵌入youtube视频
         </button>
@@ -172,20 +161,6 @@ defineExpose({
         </button>
         <button @click="editor.chain().focus().toggleBulletList().run()" :class="{ 'is-active': editor.isActive('bulletList') }">
           无序列表
-        </button>
-        <button @click="addImage">上传图片</button>
-        <button @click="insertVideo()">插入网络视频</button>
-        <button id="youtube" @click="addYoutube()">
-          嵌入youtube视频
-        </button>
-        <button id="bilibili" @click="addBilibili()">
-          嵌入bilibili视频
-        </button>
-        <button id="tiktok" @click="addTiktok()">
-          嵌入抖音视频
-        </button>
-        <button id="web" @click="addWeb()">
-          嵌入网站
         </button>
       </floating-menu>
     </div>

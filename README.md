@@ -16,6 +16,33 @@ npm install sky-tiptap
 
 
 
+### 使用
+
+
+
+```vue
+<script setup>
+
+import SkyTiptap from 'sky-tiptap'
+
+const editor = ref()
+const content = ref('')
+
+</script>
+
+<template>
+  <sky-tiptap
+        ref="editor"
+        v-model="content"
+        @uploadPhoto="handleUploadPhoto"
+    />
+</template>
+```
+
+
+
+
+
 
 
 ### 上传图片
