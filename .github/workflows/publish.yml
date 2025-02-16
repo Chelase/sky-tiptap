@@ -2,9 +2,8 @@ name: Publish Package
 
 on:
   push:
-    branches: [master]
-#    tags:
-#      - 'v**'
+    tags:
+      - 'v*'  # 匹配所有以 v 开头的标签 (如 v1.0.0)
 
 jobs:
   publish:
@@ -13,38 +12,21 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 新增：配置 Git 用户信息
-      - name: Configure Git
-        run: |
-          git config --global user.name "Chelase"
-          git config --global user.email "2911996843@qq.com"
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Cache Node Modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
 
       - name: Install Dependencies
-        run: npm ci  # 使用精确依赖安装
+        run: npm ci
 
       - name: Build Package
-        run: npm run build  # 构建步骤
-
-      # 自动更新补丁版本
-      - name: Bump Version
-        run: |
-          npm version patch -m "Bump version to %s"
-          git push origin master --follow-tags
+        run: npm run build
 
       # 发布到 GitHub Packages
       - name: Publish to GitHub Packages
-        if: success()
         run: |
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_PACKAGES_TOKEN }}" > .npmrc
           npm publish
@@ -53,7 +35,6 @@ jobs:
 
       # 发布到 npm 官方仓库
       - name: Publish to npm
-        if: success()
         run: |
           sed -i 's/"name": "@Chelase\/sky-tiptap"/"name": "sky-tiptap"/g' package.json
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
