@@ -1,5 +1,9 @@
 import { ref } from 'vue'
 import SkyTiptapComponent from './index.vue'
+import InsertMenu from './components/InsertMenu.vue'
+
+import { createApp } from 'vue'
+import App from './App.vue'
 
 // 导出一个全局的编辑器引用
 export const editorRef = ref()
@@ -24,3 +28,10 @@ export const getContent = () => {
 
 // 默认导出组件
 export { SkyTiptapComponent as SkyTiptap }
+
+
+const app = createApp(App)
+
+app.component('InsertMenu', InsertMenu)
+
+app.mount('#app')

@@ -1,6 +1,6 @@
 {
   "name": "@Chelase/sky-tiptap",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "A tiptap template for Vue3 - 一个适用于 tiptap 的 Vue3 模板",
   "license": "MIT",
   "author": {
@@ -32,6 +32,7 @@
     }
   },
   "scripts": {
+    "dev": "vite",
     "build": "vite build && npm run postbuild",
     "postbuild": "rimraf ./dist/assets",
     "prepack": "npm run build",
@@ -41,12 +42,14 @@
     "@tiptap/extension-code-block-lowlight": "^2.11.3",
     "@tiptap/extension-highlight": "^2.11.3",
     "@tiptap/extension-image": "^2.11.3",
+    "@tiptap/extension-paragraph": "^2.11.5",
     "@tiptap/extension-typography": "^2.11.3",
     "@tiptap/extension-youtube": "^2.11.3",
     "@tiptap/starter-kit": "^2.11.3",
     "@tiptap/vue-3": "^2.11.3",
     "@vitejs/plugin-vue": "^5.2.1",
     "lowlight": "^3.3.0",
+    "mitt": "^3.0.1",
     "vue": "^3.5.13"
   },
   "devDependencies": {

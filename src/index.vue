@@ -3,6 +3,8 @@ import { editorRef } from './main'
 import {ref, onBeforeMount, onBeforeUnmount, watch, computed, onMounted} from 'vue'
 import { TipTapPlugin } from './utils'
 import {useEditor, EditorContent, BubbleMenu, FloatingMenu} from '@tiptap/vue-3'
+import {emitter} from "./utils/emitter";
+// 新增 emitter 导入
 
 const props = defineProps({
   modelValue: '',
@@ -101,9 +103,17 @@ onMounted(() => {
     },
     getContent: () => editor.value.getHTML()
   }
+  emitter.on('trigger-add-image', addImage)
+  emitter.on('trigger-add-bilibili', addBilibili)
+  emitter.on('trigger-add-youtube', addYoutube)
+  emitter.on('trigger-add-tiktok', addTiktok)
 })
 
 onBeforeUnmount(() => {
+  emitter.off('trigger-add-image', addImage)
+  emitter.off('trigger-add-bilibili', addBilibili)
+  emitter.off('trigger-add-youtube', addYoutube)
+  emitter.off('trigger-add-tiktok', addTiktok)
   editorRef.value = null
   editor.value.destroy();
 })
@@ -168,9 +178,14 @@ onBeforeUnmount(() => {
       </floating-menu>
     </div>
 
+    <!-- 在模板中添加 InsertMenu -->
+    <InsertMenu v-if="editor" />
   </div>
 </template>
 
 <style scoped>
-
+textarea {
+  border: none;
+  outline: none;
+}
 </style>

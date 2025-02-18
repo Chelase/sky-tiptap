@@ -7,9 +7,10 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Youtube from '@tiptap/extension-youtube'
 
 import CodeBlockComponent from '../components/CodeBlockComponent.vue'
-import VideoEmbed from './modules/web-video.js'
-import Iframe from './modules/iframe.js'
+import VideoEmbed from './extensions/web-video.js'
+import Iframe from './extensions/iframe.js'
 import {all, createLowlight} from 'lowlight'
+import {CustomParagraph} from "./extensions/CustomParagraph";
 
 const lowlight = createLowlight(all)
 
@@ -35,6 +36,7 @@ export const TipTapPlugin = {
         }),
         VideoEmbed,
         Iframe,
+        CustomParagraph,
     ],
     // 设置初始内容
     content: '<p>I’m running Tiptap with Vue.js. 🎉</p>',
