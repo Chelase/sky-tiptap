@@ -3,7 +3,7 @@ name: Publish Package
 on:
   push:
     tags:
-      - 'v*'  # 匹配所有以 v 开头的标签 (如 v1.0.0)
+      - 'v*'  # 匹配所有以 v 开头的标签
 
 jobs:
   publish:
@@ -18,6 +18,8 @@ jobs:
           node-version: 20
 
       - name: Cache Node Modules
+        with:
+          path: node_modules
 
       - name: Install Dependencies
         run: npm ci
@@ -25,7 +27,12 @@ jobs:
       - name: Build Package
         run: npm run build
 
-      # 发布到 GitHub Packages
+      - name: Debug Info
+        run: |
+          echo "Tag: ${{ github.ref }}"
+          echo "Package name: $(jq -r .name package.json)"
+          echo "Version: $(jq -r .version package.json)"
+
       - name: Publish to GitHub Packages
         run: |
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_PACKAGES_TOKEN }}" > .npmrc
@@ -33,7 +40,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
 
-      # 发布到 npm 官方仓库
       - name: Publish to npm
         run: |
           sed -i 's/"name": "@Chelase\/sky-tiptap"/"name": "sky-tiptap"/g' package.json
