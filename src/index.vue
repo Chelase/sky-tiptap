@@ -50,7 +50,7 @@ function extractVideoId(url) {
 
 const addYoutube = () => {
   const url = prompt('请输入youtube视频链接')
-
+  if (!url) return
   editor.value.commands.setYoutubeVideo({
     src: url,
     width: Math.max(320, parseInt(width.value, 10)) || 640,
@@ -61,6 +61,7 @@ const addYoutube = () => {
 
 const addBilibili = () => {
   const url = prompt('请输入bilibili视频链接')
+  if (!url) return
   const bvid = url.match(/video\/([^/]+)/)[1]; // 提取 Bilibili 视频 ID
 
   editor.value.commands.insertContent({
@@ -76,6 +77,7 @@ const addBilibili = () => {
 
 const addTiktok = async () => {
   const url = prompt('请输入抖音视频链接')
+  if (!url) return
   const vid = url.match(/douyin.com\/video\/([^/]+)/)[1];
   const { data: { iframe_code } } = await otherApi.getTiktokVideo(vid)
   console.log(iframe_code);
@@ -83,6 +85,7 @@ const addTiktok = async () => {
 
 const addWeb = () => {
   const url = prompt('请输入网站地址')
+  if (!url) return
   editor.value.commands.insertContent({
     type: 'iframe',
     attrs: {
@@ -107,6 +110,7 @@ onMounted(() => {
   emitter.on('trigger-add-bilibili', addBilibili)
   emitter.on('trigger-add-youtube', addYoutube)
   emitter.on('trigger-add-tiktok', addTiktok)
+  emitter.on('trigger-add-website', addWeb)
 })
 
 onBeforeUnmount(() => {
@@ -114,6 +118,7 @@ onBeforeUnmount(() => {
   emitter.off('trigger-add-bilibili', addBilibili)
   emitter.off('trigger-add-youtube', addYoutube)
   emitter.off('trigger-add-tiktok', addTiktok)
+  emitter.off('trigger-add-website', addWeb)
   editorRef.value = null
   editor.value.destroy();
 })
@@ -122,15 +127,15 @@ onBeforeUnmount(() => {
 
 <template>
   <input type="file" id="fileInput" style="display: none;" accept="image/*">
-  <div class="container">
+  <div class="sky-container">
 
-    <div class="editor">
+    <div class="sky-editor">
       <editor-content :editor="editor" />
     </div>
 
     <div v-if="editor">
       <bubble-menu
-          class="bubble-menu"
+          class="sky-bubble-menu"
           :tippy-options="{ duration: 100 }"
           :editor="editor"
       >
@@ -146,7 +151,7 @@ onBeforeUnmount(() => {
       </bubble-menu>
 
       <floating-menu
-          class="floating-menu"
+          class="sky-floating-menu"
           :tippy-options="{ duration: 100 }"
           :editor="editor"
       >
@@ -162,19 +167,19 @@ onBeforeUnmount(() => {
         <button @click="editor.chain().focus().toggleBulletList().run()" :class="{ 'is-active': editor.isActive('bulletList') }">
           无序列表
         </button>
-        <button @click="addImage">上传图片</button>
-        <button id="youtube" @click="addYoutube()">
-          嵌入youtube视频
-        </button>
-        <button id="bilibili" @click="addBilibili()">
-          嵌入bilibili视频
-        </button>
-        <button id="tiktok" @click="addTiktok()">
-          嵌入抖音视频
-        </button>
-        <button id="web" @click="addWeb()">
-          嵌入网站
-        </button>
+<!--        <button @click="addImage">上传图片</button>-->
+<!--        <button id="youtube" @click="addYoutube()">-->
+<!--          嵌入youtube视频-->
+<!--        </button>-->
+<!--        <button id="bilibili" @click="addBilibili()">-->
+<!--          嵌入bilibili视频-->
+<!--        </button>-->
+<!--        <button id="tiktok" @click="addTiktok()">-->
+<!--          嵌入抖音视频-->
+<!--        </button>-->
+<!--        <button id="web" @click="addWeb()">-->
+<!--          嵌入网站-->
+<!--        </button>-->
       </floating-menu>
     </div>
 

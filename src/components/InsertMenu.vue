@@ -11,6 +11,7 @@
     <button @click="insert('image')">插入图片</button>
     <button @click="insert('video')">插入视频</button>
     <button @click="insert('codeBlock')">插入代码块</button>
+    <button @click="insert('embeddedWebSite')">嵌入网站</button>
   </div>
   <div class="video-menu insert-menu" v-if="showVideoMenu">
     <button @click="insertVideo('bilibili')">bilibili视频</button>

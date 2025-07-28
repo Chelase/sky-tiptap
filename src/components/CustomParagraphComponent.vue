@@ -77,6 +77,9 @@ const handleInsert = (type) => {
           })
           .run()
       break
+    case 'embeddedWebSite':
+      emitter.emit('trigger-add-website')
+      break
   }
 }
 
@@ -88,12 +91,11 @@ onMounted(() => {
 <style>
 .custom-paragraph {
   position: relative;
-  padding-left: 28px;
 }
 
 .add-button {
   position: absolute;
-  left: 0;
+  left: -2%;
   top: 50%;
   transform: translateY(-50%);
   width: 24px;
