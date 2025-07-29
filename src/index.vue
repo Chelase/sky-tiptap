@@ -148,13 +148,6 @@ onBeforeUnmount(() => {
         <button @click="editor.chain().focus().toggleStrike().run()" :class="{ 'is-active': editor.isActive('strike') }">
           删除线
         </button>
-      </bubble-menu>
-
-      <floating-menu
-          class="sky-floating-menu"
-          :tippy-options="{ duration: 100 }"
-          :editor="editor"
-      >
         <button @click="editor.chain().focus().toggleHeading({ level: 1 }).run()" :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }">
           1级标题
         </button>
@@ -167,6 +160,13 @@ onBeforeUnmount(() => {
         <button @click="editor.chain().focus().toggleBulletList().run()" :class="{ 'is-active': editor.isActive('bulletList') }">
           无序列表
         </button>
+      </bubble-menu>
+
+<!--      <floating-menu-->
+<!--          class="sky-floating-menu"-->
+<!--          :tippy-options="{ duration: 100 }"-->
+<!--          :editor="editor"-->
+<!--      >-->
 <!--        <button @click="addImage">上传图片</button>-->
 <!--        <button id="youtube" @click="addYoutube()">-->
 <!--          嵌入youtube视频-->
@@ -180,7 +180,7 @@ onBeforeUnmount(() => {
 <!--        <button id="web" @click="addWeb()">-->
 <!--          嵌入网站-->
 <!--        </button>-->
-      </floating-menu>
+<!--      </floating-menu>-->
     </div>
 
     <!-- 在模板中添加 InsertMenu -->

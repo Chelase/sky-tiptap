@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import SkyTiptapComponent from './index.vue'
 import InsertMenu from './components/InsertMenu.vue'
+import './style/index.scss'
 
 import { createApp } from 'vue'
 import App from './App.vue'
