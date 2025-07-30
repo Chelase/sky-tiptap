@@ -1,11 +1,14 @@
 ﻿<!-- components/CustomParagraphComponent.vue -->
 <template>
-  <NodeViewWrapper class="custom-paragraph">
+  <NodeViewWrapper
+      class="custom-paragraph"
+      @click.stop="handleParagraphClick"
+  >
     <button
+        v-if="showButton"
         class="add-button"
         @click.stop="showMenu"
-    >+
-    </button>
+    >+</button>
     <div ref="contentRef" class="content-wrapper">
       <NodeViewContent as="p"/>
     </div>
@@ -13,10 +16,9 @@
 </template>
 
 <script setup>
-import {inject, ref, onMounted} from 'vue'
-import {NodeViewWrapper, NodeViewContent} from '@tiptap/vue-3'
-import {emitter} from "../utils/emitter";
-
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { NodeViewWrapper, NodeViewContent } from '@tiptap/vue-3'
+import { emitter } from "../utils/emitter";
 
 const props = defineProps({
   editor: Object,
@@ -30,14 +32,28 @@ const props = defineProps({
 })
 
 const contentRef = ref()
+const showButton = ref(false) // 控制按钮显示状态
 
 const isDOMElement = (el) => {
   return el instanceof HTMLElement || el instanceof Element
 }
 
+// 点击段落显示按钮
+const handleParagraphClick = (e) => {
+  e.stopPropagation()
+  // 隐藏其他段落的按钮
+  emitter.emit('hide-all-paragraph-buttons')
+  // 显示当前段落的按钮
+  showButton.value = true
+}
+
+// 隐藏按钮的方法
+const hideButton = () => {
+  showButton.value = false
+}
+
 const showMenu = (e) => {
   e.stopPropagation()
-
   if (!contentRef.value || !isDOMElement(contentRef.value)) {
     console.warn('DOM reference not ready')
     return
@@ -68,7 +84,6 @@ const handleInsert = (type) => {
       emitter.emit('trigger-add-video')
       break
     case 'codeBlock':
-      // 保留原有代码块逻辑
       props.editor.chain()
           .focus()
           .insertContentAt(pos, {
@@ -84,13 +99,20 @@ const handleInsert = (type) => {
 }
 
 onMounted(() => {
-  console.log('Component mounted with ref:', contentRef.value)
+  // 监听全局隐藏按钮事件
+  emitter.on('hide-all-paragraph-buttons', hideButton)
+})
+
+onBeforeUnmount(() => {
+  // 移除事件监听
+  emitter.off('hide-all-paragraph-buttons', hideButton)
 })
 </script>
 
 <style>
 .custom-paragraph {
   position: relative;
+  cursor: text;
 }
 
 .add-button {
@@ -104,11 +126,13 @@ onMounted(() => {
   background: #eee;
   border-radius: 4px;
   cursor: pointer;
-  opacity: 0;
+  opacity: 1; /* 始终显示 */
   transition: opacity 0.2s;
+  z-index: 10; /* 确保按钮在内容上方 */
 }
 
-.custom-paragraph:hover .add-button {
+/* 移除悬停效果 */
+/* .custom-paragraph:hover .add-button {
   opacity: 1;
-}
+} */
 </style>

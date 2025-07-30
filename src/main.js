@@ -1,3 +1,4 @@
+// main.js
 import { ref } from 'vue'
 import SkyTiptapComponent from './index.vue'
 import InsertMenu from './components/InsertMenu.vue'
@@ -5,6 +6,7 @@ import './style/index.scss'
 
 import { createApp } from 'vue'
 import App from './App.vue'
+import {emitter} from "./utils/emitter";
 
 // 导出一个全局的编辑器引用
 export const editorRef = ref()
@@ -29,6 +31,13 @@ export const getContent = () => {
 
 // 默认导出组件
 export { SkyTiptapComponent as SkyTiptap }
+
+// 添加全局点击事件处理
+document.addEventListener('click', () => {
+    // 点击页面任何地方时隐藏所有段落按钮
+    emitter.emit('hide-all-paragraph-buttons')
+})
+
 
 
 const app = createApp(App)

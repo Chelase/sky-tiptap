@@ -1,4 +1,5 @@
-﻿<template>
+﻿<!-- InsertMenu.vue -->
+<template>
   <div
       v-if="visible"
       class="insert-menu"
@@ -26,7 +27,6 @@ import { ref, onMounted, onBeforeUnmount, onUnmounted } from 'vue'
 
 import {emitter} from "../utils/emitter";
 
-
 const visible = ref(false)
 const position = ref({ top: 0, left: 0 })
 let insertCallback = null
@@ -48,6 +48,8 @@ const show = (options) => {
 const hide = () => {
   visible.value = false
   showVideoMenu.value = false
+  // 添加这行：隐藏所有段落按钮
+  emitter.emit('hide-all-paragraph-buttons')
 }
 
 // 添加点击菜单内部的事件阻止
