@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import {ref, onMounted, onBeforeUnmount, watch} from 'vue'
 import { NodeViewWrapper, NodeViewContent } from '@tiptap/vue-3'
 import { emitter } from "../utils/emitter";
 
@@ -33,6 +33,7 @@ const props = defineProps({
 
 const contentRef = ref()
 const showButton = ref(false) // 控制按钮显示状态
+const isActive = ref(false) // 跟踪段落是否激活
 
 const isDOMElement = (el) => {
   return el instanceof HTMLElement || el instanceof Element
@@ -50,6 +51,17 @@ const handleParagraphClick = (e) => {
 // 隐藏按钮的方法
 const hideButton = () => {
   showButton.value = false
+}
+
+// 检查段落是否包含光标
+const checkCursorPosition = () => {
+  if (!props.editor || !props.editor.state) return false;
+
+  const { selection } = props.editor.state;
+  const start = props.getPos();
+  const end = start + props.node.nodeSize;
+
+  return selection.from >= start && selection.to <= end;
 }
 
 const showMenu = (e) => {
@@ -97,6 +109,18 @@ const handleInsert = (type) => {
       break
   }
 }
+
+// 监听编辑器选择变化
+watch(() => props.editor?.state?.selection, () => {
+  if (props.editor?.isFocused && checkCursorPosition()) {
+    // 隐藏其他段落的按钮
+    emitter.emit('hide-all-paragraph-buttons')
+    showButton.value = true
+    isActive.value = true
+  } else if (!isActive.value) {
+    showButton.value = false
+  }
+}, { deep: true })
 
 onMounted(() => {
   // 监听全局隐藏按钮事件

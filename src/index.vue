@@ -21,13 +21,6 @@
   const width = ref(640)
   const height = ref(480)
 
-  watch(
-      () => editor.value?.getHTML(), // 监听编辑器的 HTML 内容
-      (newContent) => {
-        emit('update:modelValue', newContent) // 将内容传递给父组件
-      }
-  )
-
   const handleContainerClick = (e) => {
     // 当点击编辑器容器时，隐藏所有段落按钮
     emitter.emit('hide-all-paragraph-buttons')
@@ -104,12 +97,22 @@
     });
   }
 
+  watch(
+      () => editor.value?.getHTML(), // 监听编辑器的 HTML 内容
+      (newContent) => {
+        emit('update:modelValue', newContent) // 将内容传递给父组件
+      }
+  )
+
+  watch(() => editor.value?.state?.selection, () => {
+    // 当选择变化时，通知所有段落检查光标位置
+    emitter.emit('update-paragraph-buttons')
+  }, { deep: true })
+
   // 组件挂载时绑定 editor 实例
   onMounted(() => {
     editorRef.value = {
-      insertImage: (url) => {
-        editor.value.chain().focus().setImage({ src: url }).run()
-      },
+      insertImage: (url) => editor.value.chain().focus().setImage({ src: url }).run(),
       getContent: () => editor.value.getHTML()
     }
     emitter.on('trigger-add-image', addImage)
