@@ -4,3 +4,12 @@
 .sky-editor {
   color: #333333;
 }
+.content-wrapper {
+  p {
+    margin: 0;
+    height: 30px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+  }
+}

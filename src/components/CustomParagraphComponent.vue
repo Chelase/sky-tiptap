@@ -153,6 +153,10 @@ onBeforeUnmount(() => {
   opacity: 1; /* 始终显示 */
   transition: opacity 0.2s;
   z-index: 10; /* 确保按钮在内容上方 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
 }
 
 /* 移除悬停效果 */

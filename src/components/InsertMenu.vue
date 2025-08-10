@@ -4,9 +4,9 @@
       v-if="visible"
       class="insert-menu"
       :style="{
-      top: `${position.top}px`,
-      left: `${position.left}px`
-    }"
+        top: `${position.top}px`,
+        left: `${position.left}px`
+      }"
       @click.stop="onMenuClick"
   >
     <button @click="insert('image')">插入图片</button>
