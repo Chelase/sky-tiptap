@@ -1,9 +1,30 @@
 :focus-visible {
   outline: none;
 }
+
+button {
+  background: none;
+  //border: none;
+  border-width: 1px;
+  outline: none;
+  cursor: pointer;
+  margin-right: 2.5px;
+}
+
 .sky-editor {
   color: #333333;
 }
+
+.sky-bubble-menu {
+  width: 500px;
+  display: flex;
+  position: relative;
+  right: -38%;
+  //button {
+  //  width: 50px;
+  //}
+}
+
 .content-wrapper {
   p {
     margin: 0;

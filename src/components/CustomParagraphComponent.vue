@@ -141,14 +141,12 @@ onBeforeUnmount(() => {
 
 .add-button {
   position: absolute;
-  left: -2%;
+  left: -2.5%;
   top: 50%;
   transform: translateY(-50%);
   width: 24px;
   height: 24px;
   border: none;
-  background: #eee;
-  border-radius: 4px;
   cursor: pointer;
   opacity: 1; /* 始终显示 */
   transition: opacity 0.2s;
