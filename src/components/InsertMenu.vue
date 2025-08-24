@@ -96,7 +96,8 @@ onUnmounted(() => {
 .insert-menu {
   position: fixed;
   background: white;
-  border: 1px solid #ccc;
+  border-radius: 2px;
+  box-shadow: 0 4px 8px rgba(51, 51, 51, 0.2), 0 2px 4px rgba(51, 51, 51, 0.1);
   padding: 8px;
   display: flex;
   flex-direction: column;

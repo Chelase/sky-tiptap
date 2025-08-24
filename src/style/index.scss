@@ -1,3 +1,48 @@
+.flex {
+  display: flex;
+
+  &.justify-between {
+    justify-content: space-between;
+  }
+
+  &.justify-center {
+    justify-content: center;
+  }
+
+  &.justify-around {
+    justify-content: space-around;
+  }
+
+  &.justify-start {
+    justify-content: start;
+  }
+
+  &.justify-end {
+    justify-content: flex-end;
+  }
+
+  &.items-center {
+    align-items: center;
+  }
+
+  &.items-start {
+    align-items: flex-start;
+  }
+
+  &.items-end {
+    align-items: flex-end;
+  }
+
+  &.flex-column {
+    flex-direction: column;
+  }
+
+  &.wrap {
+    flex-wrap: wrap;
+  }
+}
+
+
 :focus-visible {
   outline: none;
 }
@@ -20,9 +65,16 @@ button {
   display: flex;
   position: relative;
   right: -38%;
-  //button {
-  //  width: 50px;
-  //}
+  button {
+    @extend .flex;
+    @extend .justify-center;
+    @extend .items-center;
+    img {
+      width: 15px;
+      height: 15px;
+    }
+  }
+
 }
 
 .content-wrapper {

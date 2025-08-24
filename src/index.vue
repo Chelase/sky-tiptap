@@ -5,6 +5,7 @@
   import { TipTapPlugin } from './utils'
   import {useEditor, EditorContent, BubbleMenu, FloatingMenu} from '@tiptap/vue-3'
   import {emitter} from "./utils/emitter";
+  import Tooltip from "./components/tooltip.vue";
   // 新增 emitter 导入
 
   const props = defineProps({
@@ -148,27 +149,48 @@
             :tippy-options="{ duration: 100 }"
             :editor="editor"
         >
-          <button @click="editor.chain().focus().toggleBold().run()" :class="{ 'is-active': editor.isActive('bold') }">
-            加粗
-          </button>
-          <button @click="editor.chain().focus().toggleItalic().run()" :class="{ 'is-active': editor.isActive('italic') }">
-            斜体
-          </button>
-          <button @click="editor.chain().focus().toggleStrike().run()" :class="{ 'is-active': editor.isActive('strike') }">
-            删除线
-          </button>
-          <button @click="editor.chain().focus().toggleHeading({ level: 1 }).run()" :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }">
-            1级标题
-          </button>
-          <button @click="editor.chain().focus().toggleHeading({ level: 2 }).run()" :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }">
-            2级标题
-          </button>
-          <button @click="editor.chain().focus().toggleHeading({ level: 3 }).run()" :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }">
-            3级标题
-          </button>
-          <button @click="editor.chain().focus().toggleBulletList().run()" :class="{ 'is-active': editor.isActive('bulletList') }">
-            无序列表
-          </button>
+          <tooltip text="加粗">
+            <button @click="editor.chain().focus().toggleBold().run()" :class="{ 'is-active': editor.isActive('bold') }">
+              <img src="../src/assets/svg/bold.svg" alt="">
+            </button>
+          </tooltip>
+
+          <tooltip text="斜体">
+            <button @click="editor.chain().focus().toggleItalic().run()" :class="{ 'is-active': editor.isActive('italic') }">
+              <img src="../src/assets/svg/font-I.svg" alt="">
+            </button>
+          </tooltip>
+
+          <tooltip text="删除线">
+            <button @click="editor.chain().focus().toggleStrike().run()" :class="{ 'is-active': editor.isActive('strike') }">
+              <img src="../src/assets/svg/delete.svg" alt="">
+            </button>
+          </tooltip>
+
+          <tooltip text="1级标题">
+            <button @click="editor.chain().focus().toggleHeading({ level: 1 }).run()" :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }">
+              1级标题
+            </button>
+          </tooltip>
+
+          <tooltip text="2级标题">
+            <button @click="editor.chain().focus().toggleHeading({ level: 2 }).run()" :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }">
+              2级标题
+            </button>
+          </tooltip>
+
+          <tooltip text="3级标题">
+            <button @click="editor.chain().focus().toggleHeading({ level: 3 }).run()" :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }">
+              3级标题
+            </button>
+          </tooltip>
+
+          <tooltip text="无序列表">
+            <button @click="editor.chain().focus().toggleBulletList().run()" :class="{ 'is-active': editor.isActive('bulletList') }">
+              无序列表
+            </button>
+          </tooltip>
+
         </bubble-menu>
 
   <!--      <floating-menu-->
