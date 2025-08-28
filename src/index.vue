@@ -151,19 +151,19 @@
         >
           <tooltip text="加粗">
             <button @click="editor.chain().focus().toggleBold().run()" :class="{ 'is-active': editor.isActive('bold') }">
-              <img src="../src/assets/svg/bold.svg" alt="">
+              <img src="../src/assets/svg/bold.svg" alt="加粗">
             </button>
           </tooltip>
 
           <tooltip text="斜体">
             <button @click="editor.chain().focus().toggleItalic().run()" :class="{ 'is-active': editor.isActive('italic') }">
-              <img src="../src/assets/svg/font-I.svg" alt="">
+              <img src="../src/assets/svg/font-I.svg" alt="斜体">
             </button>
           </tooltip>
 
           <tooltip text="删除线">
             <button @click="editor.chain().focus().toggleStrike().run()" :class="{ 'is-active': editor.isActive('strike') }">
-              <img src="../src/assets/svg/delete.svg" alt="">
+              <img src="../src/assets/svg/delete.svg" alt="删除线">
             </button>
           </tooltip>
 

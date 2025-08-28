@@ -1,45 +1,67 @@
 <script setup>
+import {ref} from "vue";
 
 const props = defineProps({
   text: {
     type: String,
-    default: () => ''
+    required: true
   }
 })
 
+const show = ref(false)
 </script>
 
 <template>
-  <div class="tooltip">
-    <span class="tooltip-text">{{ text }}</span>
+  <div class="tooltip-container" @mouseenter="show = true" @mouseleave="show = false">
+    <slot />
+    <transition name="fade">
+      <div v-if="show" class="tooltip-box">
+        {{ text }}
+      </div>
+    </transition>
   </div>
 </template>
 
 <style scoped>
-/* Tooltip 容器 */
-.tooltip {
+.tooltip-container {
   position: relative;
   display: inline-block;
-  border-bottom: 1px dotted black; /* 悬停元素上显示点线 */
 }
 
-/* Tooltip 文本 */
-.tooltip .tooltip-text {
-  visibility: hidden;
-  width: 120px;
-  background-color: black;
-  color: #fff;
-  text-align: center;
-  padding: 5px 0;
-  border-radius: 6px;
-
-  /* 定位 */
+.tooltip-box {
   position: absolute;
-  z-index: 1;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  margin-bottom: 8px;
+  pointer-events: none;
+  z-index: 1000;
 }
 
-/* 鼠标移动上去后显示提示框 */
-.tooltip:hover .tooltip-text {
-  visibility: visible;
+.tooltip-box::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -4px;
+  border-width: 4px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
