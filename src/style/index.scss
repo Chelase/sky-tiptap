@@ -58,6 +58,9 @@ button {
 
 .sky-editor {
   color: #333333;
+  p {
+    margin-bottom: 1em;
+  }
 }
 
 .sky-bubble-menu {
@@ -69,9 +72,11 @@ button {
     @extend .flex;
     @extend .justify-center;
     @extend .items-center;
+    background: #ffffff;
+    padding: 4px 7px;
     img {
-      width: 15px;
-      height: 15px;
+      width: 13px;
+      height: 13px;
     }
   }
 

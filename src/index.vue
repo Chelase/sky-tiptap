@@ -1,12 +1,12 @@
   <!-- index.vue -->
   <script setup>
   import { editorRef } from './main'
-  import {ref, onBeforeMount, onBeforeUnmount, watch, computed, onMounted} from 'vue'
+  import { ref, onBeforeMount, onBeforeUnmount, watch, computed, onMounted } from 'vue'
   import { TipTapPlugin } from './utils'
-  import {useEditor, EditorContent, BubbleMenu, FloatingMenu} from '@tiptap/vue-3'
-  import {emitter} from "./utils/emitter";
+  import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from '@tiptap/vue-3'
+  import { emitter } from "./utils/emitter";
   import Tooltip from "./components/tooltip.vue";
-  // 新增 emitter 导入
+  import MarkdownIt from 'markdown-it';
 
   const props = defineProps({
     modelValue: '',
@@ -98,6 +98,37 @@
     });
   }
 
+  const askAI = async () => {
+    const question = prompt('请输入');
+    if (!question) return;
+    // 使用 fetch 发送请求，添加 message 参数
+    const response = await fetch(`https://sky-ai.timewishtips.cn/Sky-ai/chat/stream?message=${encodeURIComponent(question)}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    // 获取响应的 ReadableStream
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let done = false;
+    let result = '';
+    // 逐步读取流数据
+    while (!done) {
+      const { value, done: doneReading } = await reader.read();
+      done = doneReading;
+      // 解码并追加到结果中
+      result += decoder.decode(value, { stream: true });
+      // 使用 markdown-it 渲染当前的结果
+      const md = new MarkdownIt({
+        breaks: true // 将单个换行符转换为<br>
+      });
+      const renderedContent = md.render(result); // 将获取的内容渲染为 HTML
+      // 追加编辑器内容
+      editor.value.commands.setContent(renderedContent);
+
+    }
+  }
+
+
   watch(
       () => editor.value?.getHTML(), // 监听编辑器的 HTML 内容
       (newContent) => {
@@ -121,6 +152,7 @@
     emitter.on('trigger-add-youtube', addYoutube)
     emitter.on('trigger-add-tiktok', addTiktok)
     emitter.on('trigger-add-website', addWeb)
+    emitter.on('AI-generated', askAI)
   })
 
   onBeforeUnmount(() => {
@@ -129,6 +161,7 @@
     emitter.off('trigger-add-youtube', addYoutube)
     emitter.off('trigger-add-tiktok', addTiktok)
     emitter.off('trigger-add-website', addWeb)
+    emitter.off('AI-generated', askAI)
     editorRef.value = null
     editor.value.destroy();
   })

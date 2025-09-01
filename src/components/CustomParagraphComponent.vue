@@ -107,6 +107,9 @@ const handleInsert = (type) => {
     case 'embeddedWebSite':
       emitter.emit('trigger-add-website')
       break
+    case 'AI':
+      emitter.emit('AI-generated')
+      break
   }
 }
 
