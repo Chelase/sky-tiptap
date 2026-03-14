@@ -1,0 +1,255 @@
+/**
+ * Sky Tiptap - Base Styles
+ * 基础样式重置和通用样式
+ */
+
+@import './variables.css';
+
+/* ===== 重置样式 ===== */
+.sky-tiptap-wrapper * {
+  box-sizing: border-box;
+}
+
+.sky-tiptap-wrapper :focus-visible {
+  outline: 2px solid var(--sky-color-primary);
+  outline-offset: 2px;
+}
+
+/* ===== 按钮基础样式 ===== */
+.sky-tiptap-wrapper button {
+  background: none;
+  border: 1px solid transparent;
+  outline: none;
+  cursor: pointer;
+  font-family: var(--sky-font-family);
+  font-size: var(--sky-font-size-sm);
+  color: var(--sky-color-text);
+  border-radius: var(--sky-radius-md);
+  transition: all var(--sky-transition-fast);
+}
+
+.sky-tiptap-wrapper button:hover {
+  background-color: var(--sky-color-bg-tertiary);
+  border-color: var(--sky-color-border-hover);
+}
+
+.sky-tiptap-wrapper button:active {
+  background-color: var(--sky-color-bg-secondary);
+}
+
+.sky-tiptap-wrapper button.is-active {
+  background-color: var(--sky-color-primary);
+  color: white;
+  border-color: var(--sky-color-primary);
+}
+
+.sky-tiptap-wrapper button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== 编辑器容器 ===== */
+.sky-tiptap-wrapper {
+  font-family: var(--sky-font-family);
+  font-size: var(--sky-font-size-md);
+  line-height: var(--sky-line-height-normal);
+  color: var(--sky-color-text);
+  background-color: var(--sky-color-bg);
+  border-radius: var(--sky-radius-lg);
+  border: 1px solid var(--sky-color-border);
+  overflow: hidden;
+}
+
+/* ===== 工具栏 ===== */
+.sky-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sky-spacing-sm);
+  padding: var(--sky-spacing-md);
+  background-color: var(--sky-color-bg-secondary);
+  border-bottom: 1px solid var(--sky-color-border);
+  align-items: center;
+}
+
+.sky-toolbar-group {
+  display: flex;
+  gap: var(--sky-spacing-xs);
+  padding-right: var(--sky-spacing-md);
+  margin-right: var(--sky-spacing-md);
+  border-right: 1px solid var(--sky-color-border);
+}
+
+.sky-toolbar-group:last-child {
+  border-right: none;
+  padding-right: 0;
+  margin-right: 0;
+}
+
+/* ===== 编辑器内容区域 ===== */
+.sky-editor {
+  padding: var(--sky-spacing-lg);
+  min-height: 300px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.sky-editor:focus-within {
+  background-color: var(--sky-color-bg);
+}
+
+/* ===== 编辑器内容样式 ===== */
+.sky-editor .ProseMirror {
+  outline: none;
+}
+
+.sky-editor .ProseMirror p {
+  margin-bottom: var(--sky-spacing-md);
+}
+
+.sky-editor .ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+.sky-editor .ProseMirror h1,
+.sky-editor .ProseMirror h2,
+.sky-editor .ProseMirror h3,
+.sky-editor .ProseMirror h4,
+.sky-editor .ProseMirror h5,
+.sky-editor .ProseMirror h6 {
+  margin-top: var(--sky-spacing-xl);
+  margin-bottom: var(--sky-spacing-md);
+  font-weight: 600;
+  line-height: var(--sky-line-height-tight);
+  color: var(--sky-color-text);
+}
+
+.sky-editor .ProseMirror h1 { font-size: 2em; }
+.sky-editor .ProseMirror h2 { font-size: 1.5em; }
+.sky-editor .ProseMirror h3 { font-size: 1.25em; }
+
+.sky-editor .ProseMirror ul,
+.sky-editor .ProseMirror ol {
+  padding-left: var(--sky-spacing-xl);
+  margin-bottom: var(--sky-spacing-md);
+}
+
+.sky-editor .ProseMirror li {
+  margin-bottom: var(--sky-spacing-xs);
+}
+
+.sky-editor .ProseMirror code {
+  font-family: var(--sky-font-mono);
+  font-size: 0.9em;
+  background-color: var(--sky-color-bg-tertiary);
+  padding: var(--sky-spacing-xs) var(--sky-spacing-sm);
+  border-radius: var(--sky-radius-sm);
+  color: var(--sky-color-primary);
+}
+
+.sky-editor .ProseMirror pre {
+  background-color: var(--sky-color-bg-secondary);
+  padding: var(--sky-spacing-lg);
+  border-radius: var(--sky-radius-md);
+  overflow-x: auto;
+  margin-bottom: var(--sky-spacing-md);
+}
+
+.sky-editor .ProseMirror pre code {
+  background: none;
+  padding: 0;
+  color: var(--sky-color-text);
+}
+
+.sky-editor .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--sky-radius-md);
+}
+
+.sky-editor .ProseMirror a {
+  color: var(--sky-color-primary);
+  text-decoration: none;
+}
+
+.sky-editor .ProseMirror a:hover {
+  text-decoration: underline;
+}
+
+.sky-editor .ProseMirror blockquote {
+  border-left: 3px solid var(--sky-color-primary);
+  padding-left: var(--sky-spacing-lg);
+  margin-left: 0;
+  color: var(--sky-color-text-secondary);
+  font-style: italic;
+}
+
+.sky-editor .ProseMirror hr {
+  border: none;
+  border-top: 1px solid var(--sky-color-border);
+  margin: var(--sky-spacing-xl) 0;
+}
+
+/* ===== 悬浮菜单 ===== */
+.sky-bubble-menu {
+  display: flex;
+  gap: var(--sky-spacing-xs);
+  padding: var(--sky-spacing-sm);
+  background-color: var(--sky-color-bg);
+  border-radius: var(--sky-radius-md);
+  box-shadow: var(--sky-shadow-lg);
+  border: 1px solid var(--sky-color-border);
+}
+
+.sky-bubble-menu button {
+  padding: var(--sky-spacing-xs) var(--sky-spacing-sm);
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sky-bubble-menu button img {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== 插入菜单 ===== */
+.sky-insert-menu {
+  position: fixed;
+  background: var(--sky-color-bg);
+  border-radius: var(--sky-radius-md);
+  box-shadow: var(--sky-shadow-xl);
+  border: 1px solid var(--sky-color-border);
+  padding: var(--sky-spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sky-spacing-xs);
+  z-index: var(--sky-z-dropdown);
+  min-width: 150px;
+}
+
+.sky-insert-menu button {
+  padding: var(--sky-spacing-sm) var(--sky-spacing-md);
+  text-align: left;
+  width: 100%;
+}
+
+/* ===== 滚动条样式 ===== */
+.sky-editor .ProseMirror::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sky-editor .ProseMirror::-webkit-scrollbar-track {
+  background: var(--sky-color-bg-tertiary);
+  border-radius: var(--sky-radius-full);
+}
+
+.sky-editor .ProseMirror::-webkit-scrollbar-thumb {
+  background: var(--sky-color-border-hover);
+  border-radius: var(--sky-radius-full);
+}
+
+.sky-editor .ProseMirror::-webkit-scrollbar-thumb:hover {
+  background: var(--sky-color-text-muted);
+}
