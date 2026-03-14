@@ -4,6 +4,7 @@
  */
 
 @import './variables.css';
+@import './editor.css';
 
 /* ===== 重置样式 ===== */
 .sky-tiptap-wrapper * {

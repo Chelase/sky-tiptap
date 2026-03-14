@@ -1,0 +1,190 @@
+/**
+ * Sky Tiptap - Editor Styles
+ * 编辑器内容区域样式
+ */
+
+@import './variables.css';
+
+/* ===== 编辑器基础样式 ===== */
+.sky-editor {
+  padding: var(--sky-spacing-xl);
+  min-height: 400px;
+  max-height: 600px;
+  overflow-y: auto;
+  background-color: var(--sky-color-bg);
+}
+
+.sky-editor:focus-within {
+  background-color: var(--sky-color-bg);
+}
+
+/* ===== ProseMirror 编辑器样式 ===== */
+.sky-editor .ProseMirror {
+  outline: none;
+  min-height: 300px;
+}
+
+/* 段落样式 */
+.sky-editor .ProseMirror p {
+  margin-bottom: var(--sky-spacing-md);
+  line-height: var(--sky-line-height-relaxed);
+}
+
+.sky-editor .ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+/* 列表样式 */
+.sky-editor .ProseMirror ul,
+.sky-editor .ProseMirror ol {
+  padding-left: var(--sky-spacing-xl);
+  margin-bottom: var(--sky-spacing-md);
+}
+
+.sky-editor .ProseMirror li {
+  margin-bottom: var(--sky-spacing-xs);
+}
+
+.sky-editor .ProseMirror ul {
+  list-style-type: disc;
+}
+
+.sky-editor .ProseMirror ol {
+  list-style-type: decimal;
+}
+
+/* 代码块样式 */
+.sky-editor .ProseMirror pre {
+  background-color: var(--sky-color-bg-secondary);
+  padding: var(--sky-spacing-lg);
+  border-radius: var(--sky-radius-md);
+  overflow-x: auto;
+  margin-bottom: var(--sky-spacing-md);
+  border: 1px solid var(--sky-color-border);
+}
+
+.sky-editor .ProseMirror code {
+  font-family: var(--sky-font-mono);
+  font-size: 0.9em;
+  background-color: var(--sky-color-bg-tertiary);
+  padding: var(--sky-spacing-xs) var(--sky-spacing-sm);
+  border-radius: var(--sky-radius-sm);
+  color: var(--sky-color-primary);
+}
+
+.sky-editor .ProseMirror pre code {
+  background: none;
+  padding: 0;
+  color: var(--sky-color-text);
+}
+
+/* 图片样式 */
+.sky-editor .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--sky-radius-md);
+  display: block;
+  margin: var(--sky-spacing-md) 0;
+}
+
+.sky-editor .ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid var(--sky-color-primary);
+}
+
+/* 链接样式 */
+.sky-editor .ProseMirror a {
+  color: var(--sky-color-primary);
+  text-decoration: none;
+}
+
+.sky-editor .ProseMirror a:hover {
+  text-decoration: underline;
+}
+
+/* 引用样式 */
+.sky-editor .ProseMirror blockquote {
+  border-left: 3px solid var(--sky-color-primary);
+  padding-left: var(--sky-spacing-lg);
+  margin-left: 0;
+  margin-right: 0;
+  color: var(--sky-color-text-secondary);
+  font-style: italic;
+  background-color: var(--sky-color-bg-secondary);
+  padding: var(--sky-spacing-md) var(--sky-spacing-lg);
+  border-radius: 0 var(--sky-radius-md) var(--sky-radius-md) 0;
+}
+
+/* 分割线样式 */
+.sky-editor .ProseMirror hr {
+  border: none;
+  border-top: 1px solid var(--sky-color-border);
+  margin: var(--sky-spacing-xl) 0;
+}
+
+/* 选中状态 */
+.sky-editor .ProseMirror ::selection {
+  background-color: var(--sky-color-primary);
+  color: white;
+}
+
+/* iframe/视频容器 */
+.sky-editor .sky-iframe-container,
+.sky-editor .sky-video-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 比例 */
+  height: 0;
+  margin: var(--sky-spacing-md) 0;
+  border-radius: var(--sky-radius-md);
+  overflow: hidden;
+  background-color: var(--sky-color-bg-tertiary);
+}
+
+.sky-editor .sky-iframe-container iframe,
+.sky-editor .sky-video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* 代码块容器 */
+.sky-editor .sky-code-block {
+  margin: var(--sky-spacing-lg) 0;
+}
+
+/* 占位符样式 */
+.sky-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--sky-color-text-muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ===== 滚动条样式 ===== */
+.sky-editor .ProseMirror::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sky-editor .ProseMirror::-webkit-scrollbar-track {
+  background: var(--sky-color-bg-tertiary);
+  border-radius: var(--sky-radius-full);
+}
+
+.sky-editor .ProseMirror::-webkit-scrollbar-thumb {
+  background: var(--sky-color-border-hover);
+  border-radius: var(--sky-radius-full);
+}
+
+.sky-editor .ProseMirror::-webkit-scrollbar-thumb:hover {
+  background: var(--sky-color-text-muted);
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 640px) {
+  .sky-editor {
+    padding: var(--sky-spacing-md);
+  }
+}

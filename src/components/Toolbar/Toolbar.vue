@@ -173,5 +173,4 @@ const askAI = () => {
 </script>
 
 <style scoped>
-@import '../../styles/variables.css';
 </style>
