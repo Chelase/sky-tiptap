@@ -48,6 +48,17 @@ const Iframe = Node.create({
     ]
   },
 
+  addCommands() {
+    return {
+      setIframe: (options) => ({ commands }) => {
+        return commands.insertContent({
+          type: this.name,
+          attrs: options,
+        })
+      },
+    }
+  },
+
   addNodeView() {
     return ({ node }) => {
       const div = document.createElement('div')

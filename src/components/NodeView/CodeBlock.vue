@@ -2,7 +2,24 @@
 <template>
   <node-view-wrapper class="sky-code-block">
     <div class="sky-code-block__header">
-      <span class="sky-code-block__language">{{ language }}</span>
+      <select v-model="selectedLanguage" class="sky-code-block__language-select">
+        <option value="text">纯文本</option>
+        <option value="javascript">JavaScript</option>
+        <option value="typescript">TypeScript</option>
+        <option value="python">Python</option>
+        <option value="java">Java</option>
+        <option value="cpp">C++</option>
+        <option value="c">C</option>
+        <option value="go">Go</option>
+        <option value="rust">Rust</option>
+        <option value="html">HTML</option>
+        <option value="css">CSS</option>
+        <option value="sql">SQL</option>
+        <option value="json">JSON</option>
+        <option value="markdown">Markdown</option>
+        <option value="shell">Shell</option>
+        <option value="yaml">YAML</option>
+      </select>
       <button @click="copyCode" class="sky-code-block__copy" title="复制代码">
         <svg v-html="icons.check" class="sky-code-block__icon" v-if="copied"></svg>
         <svg v-html="icons.code" class="sky-code-block__icon" v-else></svg>
@@ -14,15 +31,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3'
 import { icons } from '../../icons'
 
 const props = defineProps(nodeViewProps)
+const updateAttributes = props.updateAttributes
 const codeRef = ref(null)
 const copied = ref(false)
 
-const language = props.node.attrs.language || 'text'
+const selectedLanguage = computed({
+  get: () => props.node.attrs.language || 'text',
+  set: (language) => {
+    updateAttributes({ language })
+  }
+})
 
 const copyCode = async () => {
   try {
@@ -56,11 +79,27 @@ const copyCode = async () => {
   border-bottom: 1px solid var(--sky-color-border);
 }
 
-.sky-code-block__language {
+.sky-code-block__language-select {
   font-size: var(--sky-font-size-xs);
   font-weight: 600;
   color: var(--sky-color-text-muted);
   text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--sky-color-border);
+  border-radius: var(--sky-radius-sm);
+  padding: var(--sky-spacing-xs) var(--sky-spacing-sm);
+  cursor: pointer;
+  outline: none;
+  transition: all var(--sky-transition-fast);
+}
+
+.sky-code-block__language-select:hover {
+  border-color: var(--sky-color-border-hover);
+  background-color: var(--sky-color-bg-tertiary);
+}
+
+.sky-code-block__language-select:focus {
+  border-color: var(--sky-color-primary);
 }
 
 .sky-code-block__copy {

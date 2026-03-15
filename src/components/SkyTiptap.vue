@@ -101,10 +101,42 @@ onMounted(() => {
   emitter.on('trigger-add-image', () => {
     fileInputRef.value?.click()
   })
+  
+  emitter.on('trigger-add-bilibili', () => {
+    const url = window.prompt('输入 Bilibili 视频链接或 BV 号')
+    if (url) {
+      editor.value?.chain().focus().setBilibiliVideo({ src: url }).run()
+    }
+  })
+
+  emitter.on('trigger-add-youtube', () => {
+    const url = window.prompt('输入 YouTube 视频链接')
+    if (url) {
+      editor.value?.chain().focus().setYoutubeVideo({ src: url }).run()
+    }
+  })
+  
+  emitter.on('trigger-add-tiktok', () => {
+    const url = window.prompt('输入抖音视频链接')
+    if (url) {
+      editor.value?.chain().focus().setTiktokVideo({ src: url }).run()
+    }
+  })
+
+  emitter.on('trigger-add-website', () => {
+    const url = window.prompt('输入网站链接')
+    if (url) {
+      editor.value?.chain().focus().setIframe({ src: url }).run()
+    }
+  })
 })
 
 onBeforeUnmount(() => {
   emitter.off('trigger-add-image')
+  emitter.off('trigger-add-bilibili')
+  emitter.off('trigger-add-youtube')
+  emitter.off('trigger-add-tiktok')
+  emitter.off('trigger-add-website')
   if (typeof window !== 'undefined') {
     window.skyTiptapEditor = null
   }

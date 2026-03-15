@@ -45,6 +45,31 @@
       />
     </div>
     
+    <!-- 标题组 -->
+    <div class="sky-toolbar-group">
+      <ToolbarButton
+        :onClick="() => editor.chain().focus().toggleHeading({ level: 1 }).run()"
+        :isActive="editor?.isActive('heading', { level: 1 })"
+        tooltip="一级标题"
+      >
+        H1
+      </ToolbarButton>
+      <ToolbarButton
+        :onClick="() => editor.chain().focus().toggleHeading({ level: 2 }).run()"
+        :isActive="editor?.isActive('heading', { level: 2 })"
+        tooltip="二级标题"
+      >
+        H2
+      </ToolbarButton>
+      <ToolbarButton
+        :onClick="() => editor.chain().focus().toggleHeading({ level: 3 }).run()"
+        :isActive="editor?.isActive('heading', { level: 3 })"
+        tooltip="三级标题"
+      >
+        H3
+      </ToolbarButton>
+    </div>
+    
     <!-- 列表组 -->
     <div class="sky-toolbar-group">
       <ToolbarButton

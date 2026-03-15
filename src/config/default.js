@@ -10,6 +10,11 @@ import Typography from '@tiptap/extension-typography'
 import Image from '@tiptap/extension-image'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Youtube from '@tiptap/extension-youtube'
+import Link from '@tiptap/extension-link'
+import Table from '@tiptap/extension-table'
+import TableRow from '@tiptap/extension-table-row'
+import TableCell from '@tiptap/extension-table-cell'
+import TableHeader from '@tiptap/extension-table-header'
 import { all, createLowlight } from 'lowlight'
 
 import CodeBlockComponent from '../components/NodeView/CodeBlock.vue'
@@ -24,12 +29,27 @@ export const TipTapPlugin = {
   extensions: [
     StarterKit.configure({
       codeBlock: false, // 禁用 StarterKit 中的 codeBlock
-      heading: false,   // 禁用标题功能（根据需求）
+      heading: {
+        levels: [1, 2, 3]
+      },
       paragraph: false, // 禁用默认段落，使用自定义段落
+      codeBlockHighlight: false,
     }),
     Highlight,
     Typography,
     Image,
+    Link.configure({
+      openOnClick: false,
+      HTMLAttributes: {
+        class: 'sky-link'
+      }
+    }),
+    Table.configure({
+      resizable: true,
+    }),
+    TableRow,
+    TableCell,
+    TableHeader,
     CodeBlockLowlight
       .extend({
         addNodeView() {
@@ -55,6 +75,8 @@ export const TipTapPlugin = {
   injectCSS: true,
   // 粘贴规则
   enablePasteRules: true,
+  // 启用输入规则（Markdown 语法支持）
+  enableInputRules: true,
   editorProps: {
     attributes: {
       spellcheck: 'false',

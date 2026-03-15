@@ -20,6 +20,10 @@
         <svg v-html="icons.video" class="sky-insert-menu__icon"></svg>
         <span>视频</span>
       </button>
+      <button @click="insertVideo('website')" class="sky-insert-menu__item">
+        <svg v-html="icons.website" class="sky-insert-menu__icon"></svg>
+        <span>嵌入网站</span>
+      </button>
       <button @click="insert('codeBlock')" class="sky-insert-menu__item">
         <svg v-html="icons.code" class="sky-insert-menu__icon"></svg>
         <span>代码块</span>
@@ -57,9 +61,6 @@
       <button @click="insertVideo('tiktok')" class="sky-video-menu__item">
         抖音视频
       </button>
-      <button @click="insertVideo('website')" class="sky-video-menu__item">
-        嵌入网站
-      </button>
     </div>
   </div>
 </template>
@@ -83,9 +84,23 @@ let insertCallback = null
 
 // 显示菜单
 const show = (options) => {
-  position.value = options.position
-  insertCallback = options.insert
-  visible.value = true
+  // 如果 options 是事件对象（从 emit 传递过来的），则设置默认位置
+  if (options && options.type) { // Event object checking
+    position.value = { 
+      top: window.innerHeight / 2 - 100, 
+      left: window.innerWidth / 2 - 140 
+    }
+    showVideoMenu.value = true
+    visible.value = false // 此时不显示主菜单，只显示视频菜单
+  } else if (options && options.position) {
+    position.value = options.position
+    insertCallback = options.insert
+    visible.value = true
+  } else {
+    // 从工具栏按钮点击时，显示视频选择菜单
+    showVideoMenu.value = true
+    visible.value = false
+  }
 }
 
 // 隐藏菜单
@@ -106,8 +121,8 @@ const insert = (type) => {
   } else if (type === 'codeBlock') {
     props.editor.chain().focus().toggleCodeBlock().run()
   } else if (type === 'table') {
-    // TODO: 实现表格插入
-    console.log('插入表格')
+    // 插入一个 3x3 的表格
+    props.editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
   }
   hide()
 }
@@ -128,12 +143,16 @@ const handleKeydown = (e) => {
 
 onMounted(() => {
   emitter.on('show-insert-menu', show)
+  emitter.on('show-video-menu', () => {
+    showVideoMenu.value = true
+  })
   document.addEventListener('click', hide)
   window.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
   emitter.off('show-insert-menu', show)
+  emitter.off('show-video-menu')
   document.removeEventListener('click', hide)
   window.removeEventListener('keydown', handleKeydown)
 })
