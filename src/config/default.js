@@ -25,6 +25,7 @@ export const TipTapPlugin = {
     StarterKit.configure({
       codeBlock: false, // 禁用 StarterKit 中的 codeBlock
       heading: false,   // 禁用标题功能（根据需求）
+      paragraph: false, // 禁用默认段落，使用自定义段落
     }),
     Highlight,
     Typography,

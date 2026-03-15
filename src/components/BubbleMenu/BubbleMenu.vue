@@ -84,18 +84,18 @@ const setLink = () => {
 .sky-bubble-menu {
   display: flex;
   align-items: center;
-  gap: var(--sky-spacing-xs);
-  padding: var(--sky-spacing-sm);
+  gap: 2px;
+  padding: 4px;
   background-color: var(--sky-color-bg);
-  border-radius: var(--sky-radius-lg);
-  box-shadow: var(--sky-shadow-xl);
-  border: 1px solid var(--sky-color-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .sky-bubble-menu__divider {
   width: 1px;
-  height: 24px;
+  height: 20px;
   background-color: var(--sky-color-border);
-  margin: 0 var(--sky-spacing-xs);
+  margin: 0 4px;
 }
 </style>

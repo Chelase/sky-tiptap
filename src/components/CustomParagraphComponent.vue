@@ -2,13 +2,15 @@
 <template>
   <NodeViewWrapper
       class="custom-paragraph"
-      @click.stop="handleParagraphClick"
+      @mouseenter="showButton = true"
+      @mouseleave="handleMouseLeave"
   >
     <button
-        v-if="showButton"
+        v-show="showButton"
         class="add-button"
         @click.stop="showMenu"
-    >+</button>
+        v-html="icons.plus"
+    ></button>
     <div ref="contentRef" class="content-wrapper">
       <NodeViewContent as="p"/>
     </div>
@@ -19,6 +21,7 @@
 import {ref, onMounted, onBeforeUnmount, watch} from 'vue'
 import { NodeViewWrapper, NodeViewContent } from '@tiptap/vue-3'
 import { emitter } from "../utils/emitter";
+import { icons } from '../icons'
 
 const props = defineProps({
   editor: Object,
@@ -33,35 +36,41 @@ const props = defineProps({
 
 const contentRef = ref()
 const showButton = ref(false) // 控制按钮显示状态
-const isActive = ref(false) // 跟踪段落是否激活
 
 const isDOMElement = (el) => {
   return el instanceof HTMLElement || el instanceof Element
 }
 
-// 点击段落显示按钮
-const handleParagraphClick = (e) => {
-  e.stopPropagation()
-  // 隐藏其他段落的按钮
-  emitter.emit('hide-all-paragraph-buttons')
-  // 显示当前段落的按钮
-  showButton.value = true
+const handleMouseLeave = () => {
+  if (!checkCursorPosition()) {
+    showButton.value = false
+  }
 }
 
 // 隐藏按钮的方法
 const hideButton = () => {
-  showButton.value = false
+  if (!checkCursorPosition()) {
+    showButton.value = false
+  }
 }
 
 // 检查段落是否包含光标
 const checkCursorPosition = () => {
-  if (!props.editor || !props.editor.state) return false;
+  if (!props.editor || !props.editor.state || typeof props.getPos !== 'function') return false;
 
   const { selection } = props.editor.state;
   const start = props.getPos();
   const end = start + props.node.nodeSize;
 
-  return selection.from >= start && selection.to <= end;
+  // 考虑到光标可能刚好在段落的开始或结束位置
+  const isCursorInside = selection.from >= start && selection.to <= end;
+  const isCursorAtStart = selection.from === start;
+  const isCursorAtEnd = selection.to === end;
+
+  // Also check if the node itself is selected
+  const isNodeSelected = props.selected;
+
+  return isCursorInside || isCursorAtStart || isCursorAtEnd || isNodeSelected;
 }
 
 const showMenu = (e) => {
@@ -115,14 +124,14 @@ const handleInsert = (type) => {
 
 // 监听编辑器选择变化
 watch(() => props.editor?.state?.selection, () => {
-  if (props.editor?.isFocused && checkCursorPosition()) {
-    // 隐藏其他段落的按钮
-    emitter.emit('hide-all-paragraph-buttons')
-    showButton.value = true
-    isActive.value = true
-  } else if (!isActive.value) {
-    showButton.value = false
-  }
+  // Add a small delay to allow DOM/focus to update
+  setTimeout(() => {
+    if (props.editor?.isFocused && checkCursorPosition()) {
+      showButton.value = true
+    } else {
+      showButton.value = false
+    }
+  }, 10)
 }, { deep: true })
 
 onMounted(() => {
@@ -140,24 +149,39 @@ onBeforeUnmount(() => {
 .custom-paragraph {
   position: relative;
   cursor: text;
+  /* Ensure paragraph has some min-height so button has room to position */
+  min-height: 24px;
 }
 
 .add-button {
   position: absolute;
-  left: -2.5%;
-  top: 50%;
-  transform: translateY(-50%);
+  left: -32px;
+  top: 3px;
   width: 24px;
   height: 24px;
   border: none;
+  background: transparent;
   cursor: pointer;
   opacity: 1; /* 始终显示 */
-  transition: opacity 0.2s;
+  transition: all 0.2s;
   z-index: 10; /* 确保按钮在内容上方 */
   display: flex;
   justify-content: center;
   align-items: center;
   user-select: none;
+  color: #9ca3af; /* muted text color */
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.add-button:hover {
+  color: #1f2937; /* text color */
+  background-color: #f3f4f6; /* bg-tertiary */
+}
+
+.add-button svg {
+  width: 100%;
+  height: 100%;
 }
 
 /* 移除悬停效果 */

@@ -88,7 +88,7 @@
 
 /* ===== 编辑器内容区域 ===== */
 .sky-editor {
-  padding: var(--sky-spacing-lg);
+  padding: var(--sky-spacing-lg) var(--sky-spacing-7xl);
   min-height: 300px;
   max-height: 600px;
   overflow-y: auto;
@@ -226,7 +226,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--sky-spacing-xs);
-  z-index: var(--sky-z-dropdown);
+  z-index: var(--sky-z-tooltip);
   min-width: 150px;
 }
 

@@ -5,33 +5,33 @@
 
 :root {
   /* ===== 颜色系统 ===== */
-  
+
   /* 主色调 */
   --sky-color-primary: #2563eb;
   --sky-color-primary-hover: #1d4ed8;
   --sky-color-primary-active: #1e40af;
-  
+
   /* 文本颜色 */
   --sky-color-text: #1f2937;
   --sky-color-text-secondary: #4b5563;
   --sky-color-text-muted: #6b7280;
   --sky-color-text-disabled: #9ca3af;
-  
+
   /* 背景颜色 */
   --sky-color-bg: #ffffff;
   --sky-color-bg-secondary: #f9fafb;
   --sky-color-bg-tertiary: #f3f4f6;
-  
+
   /* 边框颜色 */
   --sky-color-border: #e5e7eb;
   --sky-color-border-hover: #d1d5db;
-  
+
   /* 状态颜色 */
   --sky-color-success: #10b981;
   --sky-color-warning: #f59e0b;
   --sky-color-error: #ef4444;
   --sky-color-info: #3b82f6;
-  
+
   /* ===== 间距系统 ===== */
   --sky-spacing-xs: 4px;
   --sky-spacing-sm: 8px;
@@ -39,41 +39,46 @@
   --sky-spacing-lg: 16px;
   --sky-spacing-xl: 20px;
   --sky-spacing-2xl: 24px;
-  
+  --sky-spacing-3xl: 28px;
+  --sky-spacing-4xl: 32px;
+  --sky-spacing-5xl: 36px;
+  --sky-spacing-6xl: 40px;
+  --sky-spacing-7xl: 44px;
+
   /* ===== 圆角系统 ===== */
   --sky-radius-sm: 4px;
   --sky-radius-md: 6px;
   --sky-radius-lg: 8px;
   --sky-radius-xl: 12px;
   --sky-radius-full: 9999px;
-  
+
   /* ===== 阴影系统 ===== */
   --sky-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --sky-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --sky-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --sky-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  
+
   /* ===== 字体系统 ===== */
   --sky-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --sky-font-mono: 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', monospace;
-  
+
   /* ===== 字号系统 ===== */
   --sky-font-size-xs: 12px;
   --sky-font-size-sm: 14px;
   --sky-font-size-md: 16px;
   --sky-font-size-lg: 18px;
   --sky-font-size-xl: 20px;
-  
+
   /* ===== 行高系统 ===== */
   --sky-line-height-tight: 1.25;
   --sky-line-height-normal: 1.5;
   --sky-line-height-relaxed: 1.75;
-  
+
   /* ===== 过渡动画 ===== */
   --sky-transition-fast: 150ms ease;
   --sky-transition-normal: 250ms ease;
   --sky-transition-slow: 350ms ease;
-  
+
   /* ===== Z-index 层级 ===== */
   --sky-z-dropdown: 100;
   --sky-z-sticky: 200;
@@ -86,19 +91,19 @@
   --sky-color-primary: #3b82f6;
   --sky-color-primary-hover: #60a5fa;
   --sky-color-primary-active: #93c5fd;
-  
+
   --sky-color-text: #f9fafb;
   --sky-color-text-secondary: #e5e7eb;
   --sky-color-text-muted: #9ca3af;
   --sky-color-text-disabled: #6b7280;
-  
+
   --sky-color-bg: #111827;
   --sky-color-bg-secondary: #1f2937;
   --sky-color-bg-tertiary: #374151;
-  
+
   --sky-color-border: #374151;
   --sky-color-border-hover: #4b5563;
-  
+
   --sky-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --sky-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
   --sky-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);

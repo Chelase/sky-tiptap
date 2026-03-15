@@ -9,8 +9,9 @@
     }"
     @click.stop
   >
-    <div class="sky-insert-menu__section">
-      <div class="sky-insert-menu__title">插入媒体</div>
+    <div class="sky-insert-menu__header">插入</div>
+    
+    <div class="sky-insert-menu__content">
       <button @click="insert('image')" class="sky-insert-menu__item">
         <svg v-html="icons.image" class="sky-insert-menu__icon"></svg>
         <span>图片</span>
@@ -19,10 +20,6 @@
         <svg v-html="icons.video" class="sky-insert-menu__icon"></svg>
         <span>视频</span>
       </button>
-    </div>
-    
-    <div class="sky-insert-menu__section">
-      <div class="sky-insert-menu__title">插入内容</div>
       <button @click="insert('codeBlock')" class="sky-insert-menu__item">
         <svg v-html="icons.code" class="sky-insert-menu__icon"></svg>
         <span>代码块</span>
@@ -35,10 +32,6 @@
         <svg v-html="icons.divider" class="sky-insert-menu__icon"></svg>
         <span>分割线</span>
       </button>
-    </div>
-    
-    <div class="sky-insert-menu__section">
-      <div class="sky-insert-menu__title">AI 功能</div>
       <button @click="insert('ai')" class="sky-insert-menu__item sky-insert-menu__item--ai">
         <svg v-html="icons.ai" class="sky-insert-menu__icon"></svg>
         <span>AI 生成</span>
@@ -151,15 +144,15 @@ onUnmounted(() => {
 .sky-insert-menu {
   position: fixed;
   background: var(--sky-color-bg);
-  border-radius: var(--sky-radius-lg);
-  box-shadow: var(--sky-shadow-xl);
-  border: 1px solid var(--sky-color-border);
-  padding: var(--sky-spacing-md);
+  border-radius: var(--sky-radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 6px;
   display: flex;
   flex-direction: column;
-  gap: var(--sky-spacing-md);
+  gap: 2px;
   z-index: var(--sky-z-dropdown);
-  min-width: 200px;
+  min-width: 180px;
   animation: slideIn 0.15s ease;
 }
 
@@ -174,32 +167,38 @@ onUnmounted(() => {
   }
 }
 
-.sky-insert-menu__section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sky-spacing-xs);
+.sky-insert-menu__header {
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--sky-color-text-muted);
+  border-bottom: 1px solid var(--sky-color-border);
+  margin-bottom: 4px;
 }
 
-.sky-insert-menu__title {
-  font-size: var(--sky-font-size-xs);
-  font-weight: 600;
-  color: var(--sky-color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0 var(--sky-spacing-sm);
+.sky-insert-menu__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
+
+/* Remove old section styles */
+/* .sky-insert-menu__section { ... } */
+/* .sky-insert-menu__title { ... } */
 
 .sky-insert-menu__item {
   display: flex;
   align-items: center;
-  gap: var(--sky-spacing-sm);
-  padding: var(--sky-spacing-sm) var(--sky-spacing-md);
-  border-radius: var(--sky-radius-md);
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 4px;
   transition: all var(--sky-transition-fast);
   text-align: left;
   width: 100%;
-  font-size: var(--sky-font-size-sm);
+  font-size: 14px;
   color: var(--sky-color-text);
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
 .sky-insert-menu__item:hover {
@@ -207,18 +206,18 @@ onUnmounted(() => {
 }
 
 .sky-insert-menu__item--ai {
-  color: var(--sky-color-primary);
+  color: var(--sky-color-text);
 }
 
 .sky-insert-menu__item--ai:hover {
-  background-color: var(--sky-color-primary);
-  color: white;
+  background-color: var(--sky-color-bg-tertiary);
 }
 
 .sky-insert-menu__icon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
+  color: var(--sky-color-text-secondary);
 }
 
 /* 视频菜单 */

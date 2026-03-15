@@ -2,7 +2,7 @@
 <template>
   <div class="sky-tiptap-wrapper" :data-theme="theme">
     <!-- 工具栏 -->
-    <Toolbar v-if="showToolbar" :editor="editor" />
+    <Toolbar v-if="showToolbar && editor" :editor="editor" />
     
     <!-- 编辑器内容区域 -->
     <div class="sky-editor" @click="handleContainerClick">
