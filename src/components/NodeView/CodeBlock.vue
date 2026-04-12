@@ -26,18 +26,17 @@
         <span>{{ copied ? '已复制' : '复制' }}</span>
       </button>
     </div>
-    <pre><code :ref="codeRef"></code></pre>
+    <pre><code><node-view-content></node-view-content></code></pre>
   </node-view-wrapper>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-import { nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3'
+import { nodeViewProps, NodeViewWrapper, NodeViewContent } from '@tiptap/vue-3'
 import { icons } from '../../icons'
 
 const props = defineProps(nodeViewProps)
 const updateAttributes = props.updateAttributes
-const codeRef = ref(null)
 const copied = ref(false)
 
 const selectedLanguage = computed({

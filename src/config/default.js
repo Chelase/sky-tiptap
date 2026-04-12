@@ -8,6 +8,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Highlight from '@tiptap/extension-highlight'
 import Typography from '@tiptap/extension-typography'
 import Image from '@tiptap/extension-image'
+import Underline from '@tiptap/extension-underline'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Youtube from '@tiptap/extension-youtube'
 import Link from '@tiptap/extension-link'
@@ -38,6 +39,7 @@ export const TipTapPlugin = {
     Highlight,
     Typography,
     Image,
+    Underline,
     Link.configure({
       openOnClick: false,
       HTMLAttributes: {
@@ -81,6 +83,16 @@ export const TipTapPlugin = {
     attributes: {
       spellcheck: 'false',
       class: 'sky-prosemirror',
+    },
+    handleClick: (view, pos, event) => {
+      const link = event.target.closest('a')
+      if (link && (event.ctrlKey || event.metaKey)) {
+        const href = link.getAttribute('href')
+        if (href) {
+          window.open(href, '_blank', 'noopener,noreferrer')
+        }
+        return true
+      }
     },
   },
 }

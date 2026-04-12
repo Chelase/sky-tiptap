@@ -5,6 +5,7 @@
 
 @import './variables.css';
 @import './editor.css';
+@import 'highlight.js/styles/atom-one-dark.css';
 
 /* ===== 重置样式 ===== */
 .sky-tiptap-wrapper * {

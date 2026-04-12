@@ -92,12 +92,15 @@
 }
 
 /* 链接样式 */
-.sky-editor .ProseMirror a {
+.sky-editor .ProseMirror a,
+.sky-editor .ProseMirror .sky-link {
   color: var(--sky-color-primary);
   text-decoration: none;
+  cursor: pointer;
 }
 
-.sky-editor .ProseMirror a:hover {
+.sky-editor .ProseMirror a:hover,
+.sky-editor .ProseMirror .sky-link:hover {
   text-decoration: underline;
 }
 

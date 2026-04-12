@@ -168,8 +168,7 @@ const insertCodeBlock = () => {
 }
 
 const insertTable = () => {
-  // TODO: 实现表格插入
-  console.log('插入表格')
+  props.editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
 }
 
 const insertDivider = () => {

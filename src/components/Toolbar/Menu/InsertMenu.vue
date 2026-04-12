@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { icons } from '../../../icons'
 import { emitter } from '../../../utils/emitter'
 
@@ -81,6 +81,8 @@ const visible = ref(false)
 const position = ref({ top: 0, left: 0 })
 const showVideoMenu = ref(false)
 let insertCallback = null
+let isShowingVideoMenu = false
+let skipNextHide = false
 
 // 显示菜单
 const show = (options) => {
@@ -105,6 +107,15 @@ const show = (options) => {
 
 // 隐藏菜单
 const hide = () => {
+  if (skipNextHide) {
+    skipNextHide = false
+    return
+  }
+  // 如果正在显示视频菜单，不要隐藏
+  if (isShowingVideoMenu) {
+    isShowingVideoMenu = false
+    return
+  }
   visible.value = false
   showVideoMenu.value = false
   emitter.emit('hide-all-paragraph-buttons')
@@ -144,7 +155,11 @@ const handleKeydown = (e) => {
 onMounted(() => {
   emitter.on('show-insert-menu', show)
   emitter.on('show-video-menu', () => {
-    showVideoMenu.value = true
+    visible.value = false
+    skipNextHide = true
+    nextTick(() => {
+      showVideoMenu.value = true
+    })
   })
   document.addEventListener('click', hide)
   window.addEventListener('keydown', handleKeydown)
