@@ -104,6 +104,54 @@
   text-decoration: underline;
 }
 
+/* 表格样式 */
+.sky-editor .ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: var(--sky-spacing-md) 0;
+  table-layout: fixed;
+}
+
+.sky-editor .ProseMirror table,
+.sky-editor .ProseMirror th,
+.sky-editor .ProseMirror td {
+  border: 1px solid var(--sky-color-border);
+}
+
+.sky-editor .ProseMirror th,
+.sky-editor .ProseMirror td {
+  padding: var(--sky-spacing-sm) var(--sky-spacing-md);
+  text-align: left;
+  vertical-align: top;
+}
+
+.sky-editor .ProseMirror th {
+  background-color: var(--sky-color-bg-secondary);
+  font-weight: 600;
+}
+
+.sky-editor .ProseMirror tr:hover {
+  background-color: var(--sky-color-bg-tertiary);
+}
+
+/* 选中单元格高亮 */
+.sky-editor .ProseMirror .selectedCell:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--sky-color-primary);
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.sky-editor .ProseMirror th.selectedCell,
+.sky-editor .ProseMirror td.selectedCell {
+  position: relative;
+}
+
 /* 引用样式 */
 .sky-editor .ProseMirror blockquote {
   border-left: 3px solid var(--sky-color-primary);

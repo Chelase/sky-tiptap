@@ -2,6 +2,7 @@
 <template>
   <div
     v-if="visible"
+    ref="menuRef"
     class="sky-insert-menu"
     :style="{
       top: `${position.top}px`,
@@ -79,10 +80,9 @@ const props = defineProps({
 
 const visible = ref(false)
 const position = ref({ top: 0, left: 0 })
+const menuRef = ref(null)
 const showVideoMenu = ref(false)
 let insertCallback = null
-let isShowingVideoMenu = false
-let skipNextHide = false
 
 // 显示菜单
 const show = (options) => {
@@ -106,16 +106,9 @@ const show = (options) => {
 }
 
 // 隐藏菜单
-const hide = () => {
-  if (skipNextHide) {
-    skipNextHide = false
-    return
-  }
-  // 如果正在显示视频菜单，不要隐藏
-  if (isShowingVideoMenu) {
-    isShowingVideoMenu = false
-    return
-  }
+const hide = (e) => {
+  // 点击在菜单内部，不关闭
+  if (e && menuRef.value && menuRef.value.contains(e.target)) return
   visible.value = false
   showVideoMenu.value = false
   emitter.emit('hide-all-paragraph-buttons')
@@ -152,23 +145,33 @@ const handleKeydown = (e) => {
   }
 }
 
+const handleShowInsertMenu = (options) => {
+  if (options && options.position) {
+    position.value = options.position
+    insertCallback = options.insert
+    visible.value = true
+    showVideoMenu.value = false
+  } else {
+    show(options)
+  }
+}
+
+const handleShowVideoMenu = () => {
+  visible.value = false
+  showVideoMenu.value = true
+}
+
 onMounted(() => {
-  emitter.on('show-insert-menu', show)
-  emitter.on('show-video-menu', () => {
-    visible.value = false
-    skipNextHide = true
-    nextTick(() => {
-      showVideoMenu.value = true
-    })
-  })
-  document.addEventListener('click', hide)
+  emitter.on('show-insert-menu', handleShowInsertMenu)
+  emitter.on('show-video-menu', handleShowVideoMenu)
+  document.addEventListener('mousedown', hide)
   window.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
-  emitter.off('show-insert-menu', show)
-  emitter.off('show-video-menu')
-  document.removeEventListener('click', hide)
+  emitter.off('show-insert-menu', handleShowInsertMenu)
+  emitter.off('show-video-menu', handleShowVideoMenu)
+  document.removeEventListener('mousedown', hide)
   window.removeEventListener('keydown', handleKeydown)
 })
 </script>

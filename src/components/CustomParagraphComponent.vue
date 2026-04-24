@@ -87,8 +87,8 @@ const showMenu = (e) => {
 
   emitter.emit('show-insert-menu', {
     position: {
-      top: rect.top + window.scrollY + 16,
-      left: rect.left + window.scrollX - 40
+      top: rect.top + 16,
+      left: rect.left - 40
     },
     insert: (type) => handleInsert(type)
   })
