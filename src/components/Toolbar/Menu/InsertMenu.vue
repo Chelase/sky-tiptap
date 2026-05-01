@@ -45,7 +45,7 @@
   </div>
   
   <!-- 视频平台选择菜单 -->
-  <div v-if="showVideoMenu" class="sky-video-menu-overlay" @click="showVideoMenu = false">
+  <div v-if="showVideoMenu" ref="videoMenuRef" class="sky-video-menu-overlay" @click="showVideoMenu = false">
     <div class="sky-video-menu" @click.stop>
       <div class="sky-video-menu__header">
         <span>选择视频平台</span>
@@ -81,6 +81,7 @@ const props = defineProps({
 const visible = ref(false)
 const position = ref({ top: 0, left: 0 })
 const menuRef = ref(null)
+const videoMenuRef = ref(null)
 const showVideoMenu = ref(false)
 let insertCallback = null
 
@@ -109,6 +110,8 @@ const show = (options) => {
 const hide = (e) => {
   // 点击在菜单内部，不关闭
   if (e && menuRef.value && menuRef.value.contains(e.target)) return
+  // 点击在视频子菜单内部，不关闭
+  if (e && videoMenuRef.value && videoMenuRef.value.contains(e.target)) return
   visible.value = false
   showVideoMenu.value = false
   emitter.emit('hide-all-paragraph-buttons')

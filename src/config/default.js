@@ -10,7 +10,7 @@ import Typography from '@tiptap/extension-typography'
 import Image from '@tiptap/extension-image'
 import Underline from '@tiptap/extension-underline'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
-import Youtube from '@tiptap/extension-youtube'
+// import Youtube from '@tiptap/extension-youtube'
 import Link from '@tiptap/extension-link'
 import Table from '@tiptap/extension-table'
 import TableRow from '@tiptap/extension-table-row'
@@ -59,10 +59,6 @@ export const TipTapPlugin = {
         },
       })
       .configure({ lowlight }),
-    Youtube.configure({
-      controls: false,
-      nocookie: true,
-    }),
     VideoEmbed,
     Iframe,
     CustomParagraph,

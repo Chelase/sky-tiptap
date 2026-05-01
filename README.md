@@ -10,6 +10,8 @@
 npm install @Chelase/sky-tiptap
 ```
 
+如果你使用 GitHub Actions 同步发布到 npm 的公共包版本，请将安装和 import 路径替换为 `sky-tiptap`。以下示例默认以仓库源码包名 `@Chelase/sky-tiptap` 为例。
+
 ---
 
 ### 基础使用
@@ -156,6 +158,6 @@ const html = getContent()
 
 ### 版本
 
-当前版本：**1.2.0**
+当前版本：**1.2.1**
 
 详细更新日志请查看 [CHANGELOG.md](./CHANGELOG.md)

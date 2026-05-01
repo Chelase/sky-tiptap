@@ -1,10 +1,10 @@
 // extensions/web-video.js
-// 视频嵌入扩展（Bilibili、YouTube 等）
+// 视频嵌入扩展（Bilibili、YouTube、抖音等）
 
 import { Node, mergeAttributes } from '@tiptap/core'
 
-const Video = Node.create({
-  name: 'video',
+const VideoEmbed = Node.create({
+  name: 'videoEmbed',
   group: 'block',
   selectable: true,
   draggable: true,
@@ -21,18 +21,18 @@ const Video = Node.create({
   parseHTML() {
     return [
       {
-        tag: 'iframe',
+        tag: 'div[data-video-embed]',
         getAttrs: (node) => ({
-          src: node.getAttribute('src'),
-          width: node.getAttribute('width'),
-          height: node.getAttribute('height'),
+          src: node.getAttribute('data-src'),
+          width: node.getAttribute('data-width'),
+          height: node.getAttribute('data-height'),
         }),
       },
     ]
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['iframe', mergeAttributes(HTMLAttributes)]
+    return ['div', mergeAttributes({ 'data-video-embed': '' }, HTMLAttributes)]
   },
 
   addCommands() {
@@ -82,6 +82,8 @@ const Video = Node.create({
     return ({ node }) => {
       const div = document.createElement('div')
       div.className = 'sky-video-container'
+      div.setAttribute('data-video-embed', '')
+      div.setAttribute('data-src', node.attrs.src)
 
       const iframe = document.createElement('iframe')
       iframe.src = node.attrs.src
@@ -96,4 +98,4 @@ const Video = Node.create({
   },
 })
 
-export default Video
+export default VideoEmbed

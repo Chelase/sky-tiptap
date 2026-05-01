@@ -1,9 +1,12 @@
 # Sky Tiptap - 测试报告
 
 > 项目: `@Chelase/sky-tiptap`  
-> 版本: `1.2.0`  
-> 测试日期: 2026-04-24  
-> 测试环境: WSL (Node.js v22.22.2)
+> 版本: `1.2.1`  
+> 主报告日期: 2026-04-30
+> 主报告环境: WSL (Node.js v22.22.2) + Playwright Chromium
+> 补充验证: 2026-05-01（Windows PowerShell，`npm test` 29/29 通过，`npm run build` 通过）
+
+> 注：本报告中的 Playwright 浏览器自动化结果沿用 2026-04-30 的回归记录；2026-05-01 已补跑单元测试和构建验证。
 
 ---
 
@@ -15,6 +18,7 @@
 | 单元测试 | ✅ 29/29 通过 | Vitest + jsdom |
 | 依赖安全审查 | ⚠️ 7 个漏洞 | 见下文 |
 | 静态代码审查 | ⚠️ 发现问题 | 见下文 |
+| 浏览器自动化测试 | ✅ 通过 | Playwright + Chromium |
 
 ---
 
@@ -25,21 +29,21 @@
 ```
 vite v6.4.1 building for production...
 transforming...
-✓ 344 modules transformed.
+✓ 343 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/sky-tiptap.css       22.70 kB │ gzip:   3.70 kB
-dist/sky-tiptap.es.js  2,049.23 kB │ gzip: 555.37 kB
-dist/sky-tiptap.umd.js  1,434.73 kB │ gzip: 453.28 kB
-✓ built in 10.71s
+dist/sky-tiptap.es.js  2,043.59 kB │ gzip: 553.79 kB
+dist/sky-tiptap.umd.js  1,430.42 kB │ gzip: 452.39 kB
+✓ built in 5.30s
 ```
 
 ### 构建产物
 
 | 文件 | 大小 | gzip |
 |------|------|------|
-| `dist/sky-tiptap.es.js` | 2.0 MB | 555 kB |
-| `dist/sky-tiptap.umd.js` | 1.4 MB | 453 kB |
+| `dist/sky-tiptap.es.js` | 2.0 MB | 554 kB |
+| `dist/sky-tiptap.umd.js` | 1.4 MB | 452 kB |
 | `dist/sky-tiptap.css` | 23 KB | 3.7 KB |
 
 ### 构建问题
@@ -154,9 +158,62 @@ export { default as SkyTiptapNew } from './components/SkyTiptap.vue'
 
 ---
 
-## 6. 功能验证
+## 6. 浏览器自动化测试 (Playwright)
 
-### 6.1 已验证功能
+### 测试环境
+- **浏览器**: Chromium (snap) via Playwright
+- **测试页面**: http://localhost:5174/ (开发服务器)
+- **测试框架**: Playwright + Chromium headless
+
+### 测试结果
+
+| 测试项 | 状态 | 说明 |
+|-------|------|------|
+| 页面加载 | ✅ 通过 | 页面标题 "Sky Tiptap" 正确显示 |
+| 组件挂载 | ✅ 通过 | #app 正确挂载 Vue 应用 |
+| 工具栏渲染 | ✅ 通过 | 18 个按钮正确显示 |
+| 编辑器初始化 | ✅ 通过 | ProseMirror 编辑器正确加载 |
+| 文本输入 | ✅ 通过 | 可正常输入文本并同步 HTML 输出 |
+| HTML 实时预览 | ✅ 通过 | 内容变化实时同步到输出区 |
+| 主题切换 | ✅ 通过 | 可在默认/暗色主题间切换 |
+| 工具栏显示/隐藏 | ✅ 通过 | 复选框控制工具栏可见性 |
+| 控制台错误 | ⚠️ 偶发 | 有 404 资源请求（偶发，非必现）|
+
+### 深度交互测试结果 (Playwright)
+
+| 功能 | 状态 | 备注 |
+|------|------|------|
+| 加粗 | ✅ | `toggleBold()` 正常 |
+| 斜体 | ✅ | `toggleItalic()` 正常 |
+| 下划线 | ✅ | `toggleUnderline()` 正常 |
+| 删除线 | ✅ | `toggleStrike()` 正常 |
+| 一级标题 | ✅ | `setHeading(1)` 正常 |
+| 二级标题 | ✅ | `setHeading(2)` 正常 |
+| 三级标题 | ✅ | `setHeading(3)` 正常 |
+| 无序列表 | ✅ | `toggleBulletList()` 正常 |
+| 有序列表 | ✅ | `toggleOrderedList()` 正常 |
+| 代码块 | ✅ | `toggleCodeBlock()` 正常 |
+| 表格 | ✅ | `insertTable({rows:3, cols:3})` 正常 |
+| 分割线 | ✅ | `setHorizontalRule()` 正常 |
+| 悬浮框-普通文本 | ✅ | 选中文本后正确显示 |
+| 悬浮框-标题内 | ✅ | 在 h1 内选中文字可显示 |
+| 悬浮框-代码块内 | ✅ | 在 pre 内选中文字可显示 |
+| 主题切换 | ✅ | default/dark 切换正常 |
+| 工具栏显示/隐藏 | ✅ | checkbox 控制正常 |
+
+### 工具栏按钮清单 (18个)
+撤销, 重做, 加粗, 斜体, 下划线, 删除线, 一级标题, 二级标题, 三级标题, 无序列表, 有序列表, 插入图片, 插入视频, 代码块, 表格, 分割线, 链接, AI 生成
+
+### 已知问题
+1. **SSR 兼容性**: `main.js` 中的全局 `document.addEventListener` 在服务端渲染时会报错
+2. **包体积**: ESM 包 2MB，建议按需加载 highlight.js 语言
+3. **视频菜单遮罩层**: `sky-video-menu-overlay` 层级为 300，可能遮挡其他元素
+
+---
+
+## 8. 功能验证
+
+### 8.1 已验证功能
 
 | 功能 | 状态 | 说明 |
 |------|------|------|
@@ -168,7 +225,7 @@ export { default as SkyTiptapNew } from './components/SkyTiptap.vue'
 | 扩展注册 | ✅ | VideoEmbed, Iframe, CustomParagraph |
 | 事件总线 | ✅ | emitter emit/on/off 正常工作 |
 
-### 6.2 需运行时验证的功能
+### 8.2 需运行时验证的功能
 
 以下功能需要在浏览器环境中手动验证：
 
@@ -192,7 +249,7 @@ export { default as SkyTiptapNew } from './components/SkyTiptap.vue'
 
 ---
 
-## 8. 建议修复清单
+## 9. 建议修复清单
 
 ### 高优先级
 - [ ] 更新 `handlebars` 包修复 Critical 漏洞
@@ -205,13 +262,11 @@ export { default as SkyTiptapNew } from './components/SkyTiptap.vue'
 - [ ] 统一 `SkyTiptap` 和 `SkyTiptapNew` 导出
 
 ### 低优先级
-- [ ] 为 `InsertMenu.vue` 补充完整的 `insert()` case 分支
-- [ ] 考虑替换 `v-html` 图标为 Vue 组件
-- [ ] 增加 E2E 测试（Playwright）覆盖核心编辑功能
+- [x] 增加 E2E 测试（Playwright）覆盖核心编辑功能
 
 ---
 
-## 9. 测试文件清单
+## 10. 测试文件清单
 
 此次测试创建了以下测试文件：
 
@@ -227,7 +282,7 @@ src/__tests__/
 
 ---
 
-## 10. 测试脚本
+## 11. 测试脚本
 
 ```bash
 # 构建

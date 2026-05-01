@@ -2,75 +2,137 @@
 
 ## 项目概述
 
-**Sky Tiptap** 是一款基于 Tiptap 和 Vue3 的富文本编辑器组件，提供开箱即用的编辑体验和丰富的扩展功能。
+**Sky Tiptap** 是一款基于 Tiptap 和 Vue 3 的富文本编辑器组件库，目标是提供开箱即用的编辑体验和可扩展的多媒体能力。
 
-- **包名：** `@Chelase/sky-tiptap`
-- **版本：** 1.1.1
-- **技术栈：** Vue3 + Tiptap + Vite
+- **源码包名：** `@Chelase/sky-tiptap`
+- **当前版本：** `1.2.1`
+- **技术栈：** Vue 3 + Tiptap 2.x + Vite 6.x
 - **作者：** Chelsea
+
+> 说明：GitHub Actions 会在发布时保留 GitHub Packages 的 `@Chelase/sky-tiptap`，并额外发布 npm 公共包 `sky-tiptap`。如果通过 npm 公共包接入，请把安装和 import 路径替换为 `sky-tiptap`。
+
+---
+
+## 规则入口
+
+项目级 agent 规则统一维护在根目录 `.agent-rules/`：
+
+- `.agent-rules/README.md` - 规则总览、读取顺序、优先级
+- `.agent-rules/development.md` - 开发、样式、组件与验证规范
+- `.agent-rules/release-docs.md` - 版本、文档、发布与提交准备规范
+
+桥接入口文件：
+
+- `AGENTS.md`
+- `CLAUDE.md`
+- `.trae/rules/agent-readme.md`
+
+如果桥接文件与 `.agent-rules/` 冲突，应以 `.agent-rules/` 为准。
 
 ---
 
 ## 核心功能
 
-### 1. 基础编辑功能
-- 粗体、斜体、删除线
+### 1. 基础编辑能力
+
+- 粗体、斜体、下划线、删除线
 - 标题（H1-H3）
 - 无序列表、有序列表
-- 代码块（支持语法高亮）
+- 代码块语法高亮
 - 文本高亮
-- 排版优化（Typography）
+- Typography 排版增强
+- 撤销与重做
 
-### 2. 多媒体嵌入
-- **图片上传** - 通过 `@uploadPhoto` 事件处理
-- **YouTube 视频** - 支持链接嵌入
-- **Bilibili 视频** - 支持 BV 号解析嵌入
-- **抖音/TikTok 视频** - 支持链接嵌入
-- **网页 iframe** - 支持嵌入任意网站
+### 2. 多媒体与嵌入
 
-### 3. AI 功能
-- **AI 生成内容** - 集成 Sky-AI 流式响应
-- 支持 Markdown 渲染
-- 实时内容追加
+- 图片上传
+- Bilibili 视频嵌入
+- YouTube 视频嵌入
+- 抖音/TikTok 视频嵌入
+- 网页 iframe 嵌入
+- 表格插入
+- 链接添加与 Ctrl 或 Meta + Click 打开
 
-### 4. 交互组件
-- **悬浮菜单 (Bubble Menu)** - 选中文本时显示格式化工具
-- **插入菜单 (Insert Menu)** - 快速插入多媒体内容
-- **工具栏 (Toolbar)** - 可配置的按钮组
-- **提示框 (Tooltip)** - 按钮悬停提示
+### 3. 交互能力
+
+- 工具栏（Toolbar）
+- 选区悬浮菜单（Bubble Menu）
+- 插入菜单（Insert Menu）
+- 自定义段落插入按钮
+
+### 4. AI 能力
+
+- AI 内容生成入口
+- 流式文本追加
+- Markdown 渲染支持
+
+---
+
+## 当前主线
+
+当前推荐的主线实现如下：
+
+- `src/components/SkyTiptap.vue`
+  - 主编辑器组件
+  - 负责组合 Toolbar、Bubble Menu、Insert Menu 和文件选择逻辑
+- `src/config/default.js`
+  - 编辑器默认配置唯一主入口
+- `src/extensions/`
+  - 自定义 Tiptap 扩展
+- `src/utils/emitter.js`
+  - 基于 `mitt` 的组件间通信
+- `src/styles/`
+  - 当前样式目录
+
+以下位置视为遗留或过渡面，除兼容性任务或显式清理任务外，不应继续扩展主线功能：
+
+- `src/index.vue`
+- `src/utils/index.js`
+- `src/style/`
 
 ---
 
 ## 项目结构
 
-```
+```text
 sky-tiptap/
+├── .agent-rules/                # 项目级 agent 规则真来源
+├── .trae/rules/agent-readme.md  # Trae 桥接规则入口
 ├── src/
-│   ├── index.vue              # 主入口组件
-│   ├── main.js                # 编辑器实例管理
-│   ├── App.vue                # 示例应用
+│   ├── __tests__/               # Vitest 测试
+│   ├── App.vue                  # 示例应用
+│   ├── index.vue                # 旧实现入口（遗留）
+│   ├── main.js                  # 库导出入口 + 示例应用挂载
 │   ├── components/
-│   │   ├── SkyTiptap.vue      # 核心编辑器组件
-│   │   ├── BubbleMenu/        # 悬浮菜单
-│   │   ├── Toolbar/           # 工具栏组件
-│   │   ├── InsertMenu.vue     # 插入菜单
-│   │   ├── CodeBlock.vue      # 代码块视图
-│   │   └── tooltip.vue        # 提示组件
+│   │   ├── SkyTiptap.vue
+│   │   ├── BubbleMenu/
+│   │   ├── Toolbar/
+│   │   │   ├── Toolbar.vue
+│   │   │   ├── ToolbarButton.vue
+│   │   │   └── Menu/InsertMenu.vue
+│   │   ├── NodeView/
+│   │   │   └── CodeBlock.vue
+│   │   ├── CustomParagraphComponent.vue
+│   │   └── tooltip.vue
 │   ├── config/
-│   │   └── default.js         # 默认配置
-│   ├── extensions/            # 自定义扩展
+│   │   └── default.js
+│   ├── extensions/
 │   │   ├── CustomParagraph.js
 │   │   ├── iframe.js
 │   │   └── web-video.js
-│   ├── utils/
-│   │   ├── index.js           # 工具函数
-│   │   ├── emitter.js         # 事件总线
-│   │   └── extensions/        # 扩展工具
 │   ├── icons/
-│   │   └── index.js           # 图标管理
-│   ├── assets/svg/            # SVG 图标
-│   └── styles/                # 样式文件
-├── dist/                      # 构建输出
+│   │   └── index.js
+│   ├── styles/
+│   ├── style/                   # 旧样式目录（遗留）
+│   └── utils/
+│       ├── emitter.js
+│       ├── index.js             # 旧配置入口（遗留）
+│       └── extensions/          # 旧扩展工具（遗留）
+├── AGENTS.md
+├── CLAUDE.md
+├── CLEANUP_OPTIMIZATION.md
+├── README.md
+├── TEST_REPORT.md
 ├── package.json
 └── vite.config.js
 ```
@@ -83,6 +145,12 @@ sky-tiptap/
 
 ```bash
 npm install @Chelase/sky-tiptap
+```
+
+如果通过 npm 公共包接入，请改用：
+
+```bash
+npm install sky-tiptap
 ```
 
 ### 基础使用
@@ -113,7 +181,9 @@ const content = ref('')
 | Prop | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `modelValue` | String | `''` | 双向绑定的内容 |
-| `fileName` | String | `'file'` | 上传文件的默认名称 |
+| `theme` | String | `'default'` | 主题（`default` / `dark`） |
+| `showToolbar` | Boolean | `true` | 是否显示工具栏 |
+| `placeholder` | String | `'输入内容...'` | 占位符 |
 
 ### 组件事件
 
@@ -127,48 +197,49 @@ const content = ref('')
 ```javascript
 import { insertImage, getContent } from '@Chelase/sky-tiptap'
 
-// 插入图片
 insertImage('https://example.com/image.png')
-
-// 获取编辑器内容
 const html = getContent()
 ```
 
----
+### 组件暴露方法
 
-## 扩展开发
+`SkyTiptap` 组件实例当前暴露以下方法：
 
-### 自定义扩展
-
-项目支持通过 `extensions/` 目录添加自定义 Tiptap 扩展：
-
-```javascript
-// src/extensions/CustomParagraph.js
-import { Extension } from '@tiptap/core'
-
-export const CustomParagraph = Extension.create({
-  name: 'customParagraph',
-  // 扩展实现
-})
-```
-
-### 配置插件
-
-在 `src/config/default.js` 中配置默认插件：
-
-```javascript
-export const TipTapPlugin = {
-  extensions: [
-    StarterKit.configure({ codeBlock: false }),
-    // 添加自定义扩展
-  ],
-  // 其他配置
-}
-```
+- `insertImage(url)`
+- `getContent()`
+- `setContent(content)`
 
 ---
 
-## 构建与发布
+## 开发规范摘要
+
+### 扩展与配置
+
+- `src/config/default.js` 中的 `TipTapPlugin` 是唯一主配置入口
+- 自定义扩展统一放在 `src/extensions/`
+- 自定义 NodeView 使用 `VueNodeViewRenderer` 注册
+- `CodeBlockLowlight` 替代 StarterKit 默认代码块
+- 链接默认不直接打开，通过 Ctrl 或 Meta + Click 新标签页打开
+
+### 兼容层边界
+
+- `window.skyTiptapEditor` 仅作为兼容层，不应作为新 API 的首选入口
+- `src/main.js` 当前同时承载库导出和示例应用挂载，后续清理应参考 `CLEANUP_OPTIMIZATION.md`
+- 新功能不要继续扩展 `src/index.vue`、`src/utils/index.js`、`src/style/`
+
+### 文档同步
+
+当改动影响版本、发布行为、外部 API、安装方式或项目结构时，至少检查：
+
+- `package.json`
+- `CHANGELOG.md`
+- `README.md`
+- `.agent-rules/`
+- `agent_readme.md`
+
+---
+
+## 构建、测试与发布
 
 ### 开发
 
@@ -176,66 +247,48 @@ export const TipTapPlugin = {
 npm run dev
 ```
 
+### 测试
+
+```bash
+npm test
+```
+
 ### 构建
 
 ```bash
 npm run build
-# 自动清理 dist/assets 目录
 ```
+
+构建后会自动清理 `dist/assets`。
 
 ### 发布
 
-```bash
-npm publish
-# 发布到 GitHub Packages
-```
+当前自动发布流程定义在 `.github/workflows/publish.yml`：
 
-### 版本管理
+- 触发条件：推送到 `master` 分支
+- Node 版本：20
+- 执行步骤：
+  - `npm ci`
+  - `npm run build`
+  - 发布到 GitHub Packages
+  - 临时将包名改为 `sky-tiptap`
+  - 发布到 npm
+  - 恢复 `package.json`
 
-```bash
-npm version patch  # 或 minor/major
-# 自动生成 CHANGELOG
-```
+所需 secrets：
 
----
-
-## 技术细节
-
-### 核心依赖
-
-| 依赖 | 版本 | 用途 |
-|------|------|------|
-| `@tiptap/vue-3` | ^2.27.2 | Vue3 编辑器核心 |
-| `@tiptap/starter-kit` | ^2.27.2 | 基础扩展包 |
-| `@tiptap/extension-*` | ^2.27.2 | 官方扩展 |
-| `vue` | ^3.5.30 | Vue3 框架 |
-| `vite` | ^6.4.1 | 构建工具 |
-| `lowlight` | ^3.3.0 | 语法高亮 |
-| `markdown-it` | ^14.1.0 | Markdown 渲染 |
-| `mitt` | ^3.0.1 | 事件总线 |
-
-### 事件总线
-
-使用 `mitt` 实现组件间通信：
-
-```javascript
-import { emitter } from './utils/emitter'
-
-// 触发事件
-emitter.emit('trigger-add-image')
-
-// 监听事件
-emitter.on('trigger-add-image', handler)
-```
+- `GH_PACKAGES_TOKEN`
+- `NPM_TOKEN`
 
 ---
 
 ## 注意事项
 
 1. **Node 版本要求：** >= 18.0.0
-2. **NPM 版本要求：** >= 10.0.0
-3. **发布配置：** 默认发布到 GitHub Packages
-4. **构建输出：** UMD + ES Module 双格式
+2. **npm 版本要求：** >= 10.0.0
+3. **构建输出：** UMD + ES Module 双格式
+4. **规则入口：** 项目级规则统一维护在 `.agent-rules/`
+5. **发布目标：** GitHub Packages + npm
 
 ---
 
@@ -245,4 +298,4 @@ MIT License
 
 ---
 
-*最后更新：2026-03-15*
+*最后更新：2026-05-01*

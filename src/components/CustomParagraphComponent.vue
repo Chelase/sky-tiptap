@@ -9,6 +9,7 @@
         v-show="showButton"
         class="add-button"
         @click.stop="showMenu"
+        @mousedown.stop
         v-html="icons.plus"
     ></button>
     <div ref="contentRef" class="content-wrapper">
