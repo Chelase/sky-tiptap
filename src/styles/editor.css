@@ -212,6 +212,56 @@
   margin: var(--sky-spacing-lg) 0;
 }
 
+/* AI 生成骨架屏 */
+.sky-editor .sky-ai-loading {
+  display: grid;
+  gap: var(--sky-spacing-sm);
+  padding: var(--sky-spacing-md) 0;
+  margin: var(--sky-spacing-md) 0;
+}
+
+.sky-editor .sky-ai-loading__line {
+  display: block;
+  height: 14px;
+  border-radius: var(--sky-radius-full);
+  background:
+    linear-gradient(
+      90deg,
+      var(--sky-color-bg-secondary) 0%,
+      var(--sky-color-bg-tertiary) 45%,
+      var(--sky-color-bg-secondary) 90%
+    );
+  background-size: 220% 100%;
+  animation: sky-ai-loading-shimmer 1.2s ease-in-out infinite;
+}
+
+.sky-editor .sky-ai-loading__line--wide {
+  width: min(100%, 640px);
+}
+
+.sky-editor .sky-ai-loading__line--medium {
+  width: min(78%, 500px);
+}
+
+.sky-editor .sky-ai-loading__line--short {
+  width: min(46%, 280px);
+}
+
+@keyframes sky-ai-loading-shimmer {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-editor .sky-ai-loading__line {
+    animation: none;
+  }
+}
+
 /* 占位符样式 */
 .sky-editor .ProseMirror p.is-editor-empty:first-child::before {
   color: var(--sky-color-text-muted);

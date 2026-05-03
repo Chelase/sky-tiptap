@@ -39,6 +39,7 @@ import markdown from 'highlight.js/lib/languages/markdown'
 import CodeBlockComponent from '../components/NodeView/CodeBlock.vue'
 import VideoEmbed from '../extensions/web-video.js'
 import Iframe from '../extensions/iframe.js'
+import AiLoading from '../extensions/ai-loading.js'
 import { CustomParagraph } from '../extensions/CustomParagraph.js'
 
 // 创建 lowlight 实例并注册常用语言
@@ -100,6 +101,7 @@ export const TipTapPlugin = {
       }),
     VideoEmbed,
     Iframe,
+    AiLoading,
     CustomParagraph,
   ],
   // 设置初始内容

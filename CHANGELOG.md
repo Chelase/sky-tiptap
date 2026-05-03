@@ -29,6 +29,7 @@
 - **新增 AI 生成能力**：通过 `aiConfig.baseUrl` / `aiConfig.apiKey` 配置外部接口，提交提示词后调用 API 并将返回内容插入编辑器
 - **增强 AI 通用请求配置**：`aiConfig.requestBody` 改为原样传递，使用方可通过 `buildBody(prompt)` 或 `buildRequest` 自行决定如何把弹窗输入写入请求参数
 - **支持 AI 流式 Markdown**：使用 `markdown-it` 将 AI 返回内容渲染为 HTML，`stream: true` 时支持 SSE 增量读取并持续更新同一段生成内容
+- **优化 AI 生成交互**：确认提示词后立即关闭弹窗，在编辑器中显示骨架屏加载态；请求失败时移除加载态并显示错误提示
 
 ### 文档更新
 
@@ -43,7 +44,7 @@
 
 ### 验证
 
-- ✅ 单元测试：70/70 通过
+- ✅ 单元测试：72/72 通过
 - ✅ 构建测试：成功生成 UMD 和 ES 模块
 - ✅ SSR 兼容性：Node.js 环境导入无错误
 - ✅ 向后兼容性：所有公共 API 保持不变

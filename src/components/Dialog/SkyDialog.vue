@@ -91,6 +91,7 @@ const cancelText = ref('取消')
 const loadingText = ref('处理中...')
 const errorMessage = ref('')
 const submitting = ref(false)
+const closeOnConfirm = ref(false)
 const inputRef = ref(null)
 const dialogRef = ref(null)
 const titleId = `sky-dialog-title-${Math.random().toString(36).slice(2)}`
@@ -112,6 +113,7 @@ const resetDialog = () => {
   loadingText.value = '处理中...'
   errorMessage.value = ''
   submitting.value = false
+  closeOnConfirm.value = false
   onConfirm = null
   onCancel = null
   validate = null
@@ -129,6 +131,7 @@ const openDialog = async (options = {}) => {
   confirmText.value = options.confirmText || '确认'
   cancelText.value = options.cancelText || '取消'
   loadingText.value = options.loadingText || '处理中...'
+  closeOnConfirm.value = options.closeOnConfirm === true
   onConfirm = typeof options.onConfirm === 'function' ? options.onConfirm : null
   onCancel = typeof options.onCancel === 'function' ? options.onCancel : null
   validate = typeof options.validate === 'function' ? options.validate : null
@@ -170,6 +173,14 @@ const handleConfirm = async () => {
       errorMessage.value = validationResult
       return
     }
+  }
+
+  if (closeOnConfirm.value) {
+    const confirmHandler = onConfirm
+    const confirmValue = mode.value === 'input' ? value : true
+    closeDialog()
+    confirmHandler?.(confirmValue)
+    return
   }
 
   try {

@@ -119,4 +119,32 @@ describe('SkyDialog', () => {
     expect(onCancel).toHaveBeenCalled()
     expect(document.body.querySelector('.sky-dialog')).toBeNull()
   })
+
+  it('can close immediately after confirm before async work finishes', async () => {
+    let resolveConfirm
+    const onConfirm = vi.fn(() => new Promise((resolve) => {
+      resolveConfirm = resolve
+    }))
+    wrapper = mount(SkyDialog, {
+      attachTo: document.body,
+    })
+
+    await openDialog({
+      mode: 'input',
+      title: 'AI 生成内容',
+      inputLabel: '生成提示词',
+      closeOnConfirm: true,
+      onConfirm,
+    })
+
+    await typeIntoDialog('生成一段内容')
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await nextTick()
+
+    expect(onConfirm).toHaveBeenCalledWith('生成一段内容')
+    expect(document.body.querySelector('.sky-dialog')).toBeNull()
+
+    resolveConfirm()
+    await flushPromises()
+  })
 })

@@ -16,7 +16,7 @@ hero:
 features:
   - icon: ✨
     title: 开箱即用
-    details: 内置工具栏、悬浮菜单、插入菜单，无需额外配置
+    details: 内置悬浮菜单、插入菜单，无需额外配置
   - icon: 📝
     title: Markdown 输入
     details: 支持 ## 标题、**加粗**、- 列表等 Markdown 快捷输入
@@ -24,13 +24,13 @@ features:
     title: 图片上传
     details: 通过事件回调自定义上传逻辑，支持单图和多图
   - icon: 🎬
-    title: 视频嵌入
-    details: 支持 Bilibili、YouTube、抖音/TikTok 视频嵌入
+    title: 视频嵌入与上传
+    details: 支持 Bilibili、YouTube、抖音视频嵌入和本地视频上传
   - icon: 🤖
-    title: AI 集成
-    details: 内置 Sky-AI 流式响应支持
+    title: AI 内容生成
+    details: 集成 AI 接口，支持流式响应生成内容
   - icon: 🎨
-    title: 主题支持
-    details: 支持 default 和 dark 主题
+    title: 统一弹窗
+    details: 替代原生 prompt/alert，体验更佳
 ---
 

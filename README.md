@@ -166,7 +166,7 @@ const aiConfig = {
 }
 ```
 
-接口返回支持纯文本，也兼容常见 JSON 字段：`content`、`text`、`message`、`result`、`data.content`、`data.text`、`choices[0].message.content`、`choices[0].text`。如果请求体或配置中声明了 `stream: true`，组件会读取 SSE `data:` 流，持续累计 Markdown 并用 `markdown-it` 渲染后更新同一段生成内容。如果接口未返回可插入内容，弹窗会显示错误提示并停止插入。
+确认提示词后，弹窗会立即关闭，编辑器会在当前光标位置显示 AI 骨架屏。接口返回支持纯文本，也兼容常见 JSON 字段：`content`、`text`、`message`、`result`、`data.content`、`data.text`、`choices[0].message.content`、`choices[0].text`。如果请求体或配置中声明了 `stream: true`，组件会读取 SSE `data:` 流，持续累计 Markdown 并用 `markdown-it` 渲染后更新同一段生成内容。如果接口请求失败或未返回可插入内容，组件会移除骨架屏并弹出错误提示。
 
 ### 上传视频
 

@@ -222,19 +222,70 @@ const insertGeneratedContent = (content) => {
   editor.value?.chain().focus().insertContent(content).run()
 }
 
-const replaceGeneratedContent = (content, range) => {
+const createAiLoadingId = () => `sky-ai-${Date.now()}-${Math.random().toString(36).slice(2)}`
+
+const findAiLoadingRange = (loadingId) => {
   const activeEditor = editor.value
-  if (!activeEditor || !content) {
-    return
+  if (!activeEditor?.state?.doc || !loadingId) {
+    return null
   }
 
+  let foundRange = null
+  activeEditor.state.doc.descendants((node, pos) => {
+    if (node.type?.name === 'aiLoading' && node.attrs?.id === loadingId) {
+      foundRange = {
+        from: pos,
+        to: pos + node.nodeSize,
+      }
+      return false
+    }
+
+    return true
+  })
+
+  return foundRange
+}
+
+const insertAiLoading = (range) => {
+  const activeEditor = editor.value
+  if (!activeEditor) {
+    return null
+  }
+
+  const loadingId = createAiLoadingId()
   activeEditor.chain().focus().insertContentAt({
     from: range.from,
     to: range.to,
+  }, {
+    type: 'aiLoading',
+    attrs: {
+      id: loadingId,
+    },
+  }).run()
+
+  const selection = activeEditor.state?.selection
+  if (selection?.from) {
+    range.to = selection.from
+  }
+
+  return loadingId
+}
+
+const replaceGeneratedContent = (content, range, loadingId) => {
+  const activeEditor = editor.value
+  if (!activeEditor) {
+    return
+  }
+
+  const targetRange = findAiLoadingRange(loadingId) || range
+  activeEditor.chain().focus().insertContentAt({
+    from: targetRange.from,
+    to: targetRange.to,
   }, content).run()
 
   const selection = activeEditor.state?.selection
   if (selection?.from) {
+    range.from = targetRange.from
     range.to = selection.from
   }
 }
@@ -248,6 +299,7 @@ const handleAIGenerated = () => {
     placeholder: '例如：写一段产品介绍，语气专业简洁',
     confirmText: '生成',
     loadingText: '生成中...',
+    closeOnConfirm: true,
     validate: (value) => value ? '' : '请输入生成提示词',
     onConfirm: async (prompt) => {
       const selection = editor.value?.state?.selection
@@ -256,24 +308,30 @@ const handleAIGenerated = () => {
         to: selection?.to || selection?.from || 0,
       }
       let hasStreamingContent = false
+      const loadingId = insertAiLoading(generatedRange)
 
-      const content = await requestAiContent({
-        ...props.aiConfig,
-        prompt,
-        onContent: ({ html }) => {
-          if (!html) {
-            return
-          }
+      try {
+        const content = await requestAiContent({
+          ...props.aiConfig,
+          prompt,
+          onContent: ({ html }) => {
+            if (!html) {
+              return
+            }
 
-          hasStreamingContent = true
-          replaceGeneratedContent(html, generatedRange)
-        },
-      })
+            hasStreamingContent = true
+            replaceGeneratedContent(html, generatedRange, loadingId)
+          },
+        })
 
-      if (hasStreamingContent) {
-        replaceGeneratedContent(content, generatedRange)
-      } else {
-        insertGeneratedContent(content)
+        if (hasStreamingContent) {
+          replaceGeneratedContent(content, generatedRange, loadingId)
+        } else {
+          replaceGeneratedContent(content, generatedRange, loadingId)
+        }
+      } catch (error) {
+        replaceGeneratedContent('', generatedRange, loadingId)
+        showMessageDialog('AI 生成失败', error?.message || '请求失败，请稍后重试')
       }
     },
   })

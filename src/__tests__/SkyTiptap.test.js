@@ -352,7 +352,19 @@ describe('SkyTiptap Component', () => {
         ],
       }),
     }))
-    expect(tiptapState.latestChain.insertContent).toHaveBeenCalledWith('<p>AI 返回内容</p>\n')
+    expect(tiptapState.latestChain.insertContentAt).toHaveBeenNthCalledWith(1, {
+      from: 0,
+      to: 0,
+    }, expect.objectContaining({
+      type: 'aiLoading',
+      attrs: expect.objectContaining({
+        id: expect.stringMatching(/^sky-ai-/),
+      }),
+    }))
+    expect(tiptapState.latestChain.insertContentAt).toHaveBeenLastCalledWith({
+      from: 0,
+      to: 0,
+    }, '<p>AI 返回内容</p>\n')
     expect(tiptapState.latestChain.run).toHaveBeenCalled()
   })
 
@@ -404,5 +416,45 @@ describe('SkyTiptap Component', () => {
       from: 0,
       to: 0,
     }, '<h2>标题</h2>\n<p>正文</p>\n')
+  })
+
+  it('removes AI loading content and shows an error dialog when generation fails', async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: false,
+      status: 500,
+      text: async () => '服务异常',
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        aiConfig: {
+          baseUrl: 'https://api.example.com/ai',
+          apiKey: 'test-key',
+        },
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    emitter.emit('AI-generated')
+    await nextTick()
+    await flushPromises()
+
+    const input = document.body.querySelector('.sky-dialog__input')
+    input.value = '生成内容'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(tiptapState.latestChain.insertContentAt).toHaveBeenLastCalledWith({
+      from: 0,
+      to: 0,
+    }, '')
+    expect(document.body.querySelector('.sky-dialog__title').textContent).toBe('AI 生成失败')
+    expect(document.body.querySelector('.sky-dialog__message').textContent).toBe('服务异常')
   })
 })

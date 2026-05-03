@@ -32,8 +32,7 @@ export default defineConfig({
       {
         text: 'API',
         items: [
-          { text: '组件', link: '/api/' },
-          { text: '工具函数', link: '/api/utils' }
+          { text: '组件与工具函数', link: '/api/' }
         ]
       }
     ],

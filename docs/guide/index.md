@@ -8,11 +8,13 @@
 - ✅ Markdown 快捷输入
 - ✅ 图片上传（单图/多图）
 - ✅ 视频嵌入（Bilibili、YouTube、抖音/TikTok）
+- ✅ 本地视频上传
 - ✅ iframe 嵌入
 - ✅ 表格插入
 - ✅ 链接管理
-- ✅ AI 内容生成
-- ✅ 悬浮菜单、插入菜单、工具栏
+- ✅ AI 内容生成（支持流式响应）
+- ✅ 统一弹窗组件（替代原生 prompt/alert）
+- ✅ 悬浮菜单（含标题、列表）、插入菜单、工具栏
 
 ## 技术栈
 
@@ -55,6 +57,6 @@ const content = ref('')
 
 ## 版本
 
-当前版本：**1.2.2**
+当前版本：**1.3.0**
 
 详细更新日志请查看 [CHANGELOG](https://github.com/Chelase/sky-tiptap/blob/master/CHANGELOG.md)
