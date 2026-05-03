@@ -177,18 +177,24 @@ const insertDivider = () => {
 
 const setLink = () => {
   const previousUrl = props.editor?.getAttributes('link').href
-  const url = window.prompt('URL', previousUrl)
-  
-  if (url === null) {
-    return
-  }
-  
-  if (url === '') {
-    props.editor?.chain().focus().extendMarkRange('link').unsetLink().run()
-    return
-  }
-  
-  props.editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+
+  emitter.emit('open-dialog', {
+    mode: 'input',
+    title: '设置链接',
+    description: '输入要绑定到当前选中文本的链接地址。清空内容可移除链接。',
+    inputLabel: '链接地址',
+    placeholder: 'https://example.com',
+    defaultValue: previousUrl || '',
+    confirmText: '应用',
+    onConfirm: (url) => {
+      if (url === '') {
+        props.editor?.chain().focus().extendMarkRange('link').unsetLink().run()
+        return
+      }
+
+      props.editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+    },
+  })
 }
 
 const askAI = () => {

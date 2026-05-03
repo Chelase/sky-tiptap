@@ -191,13 +191,20 @@
 }
 
 .sky-editor .sky-iframe-container iframe,
-.sky-editor .sky-video-container iframe {
+.sky-editor .sky-video-container iframe,
+.sky-editor .sky-video-container video {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   border: none;
+}
+
+.sky-editor .sky-video-container video {
+  display: block;
+  object-fit: contain;
+  background-color: #000;
 }
 
 /* 代码块容器 */

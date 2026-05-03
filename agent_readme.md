@@ -5,7 +5,7 @@
 **Sky Tiptap** 是一款基于 Tiptap 和 Vue 3 的富文本编辑器组件库，目标是提供开箱即用的编辑体验和可扩展的多媒体能力。
 
 - **源码包名：** `@Chelase/sky-tiptap`
-- **当前版本：** `1.2.2`
+- **当前版本：** `1.3.0`
 - **技术栈：** Vue 3 + Tiptap 2.x + Vite 6.x
 - **作者：** Chelsea
 
@@ -56,15 +56,15 @@
 ### 3. 交互能力
 
 - 工具栏（Toolbar）
-- 选区悬浮菜单（Bubble Menu）
+- 选区悬浮菜单（Bubble Menu，含标题与列表）
 - 插入菜单（Insert Menu）
 - 自定义段落插入按钮
 
 ### 4. AI 能力
 
 - AI 内容生成入口
-- 流式文本追加
-- Markdown 渲染支持
+- 流式 Markdown 渲染与同段内容更新
+- 基于 `markdown-it` 将 AI 返回 Markdown 转换为可插入 HTML
 
 ---
 
@@ -74,7 +74,7 @@
 
 - `src/components/SkyTiptap.vue`
   - 主编辑器组件
-  - 负责组合 Toolbar、Bubble Menu、Insert Menu 和文件选择逻辑
+  - 负责组合 Toolbar、Bubble Menu、Insert Menu、统一弹窗和文件选择逻辑
 - `src/config/default.js`
   - 编辑器默认配置唯一主入口
 - `src/extensions/`
@@ -106,6 +106,7 @@ sky-tiptap/
 │   ├── components/
 │   │   ├── SkyTiptap.vue
 │   │   ├── BubbleMenu/
+│   │   ├── Dialog/
 │   │   ├── Toolbar/
 │   │   │   ├── Toolbar.vue
 │   │   │   ├── ToolbarButton.vue
@@ -186,22 +187,33 @@ const content = ref('')
 |------|------|--------|------|
 | `modelValue` | String | `''` | 双向绑定的内容 |
 | `theme` | String | `'default'` | 主题（`default` / `dark`） |
-| `showToolbar` | Boolean | `true` | 是否显示工具栏 |
+| `showToolbar` | Boolean | `false` | 是否显示工具栏 |
 | `placeholder` | String | `'输入内容...'` | 占位符 |
+| `aiConfig` | Object | `{ baseUrl: '', apiKey: '' }` | AI 生成接口配置，支持原样传递 `requestBody`、用 `buildBody` 组装弹窗输入、用 `buildRequest` 完全接管请求，以及 `headers`、`method`、`parseResponse` |
 
 ### 组件事件
 
 | 事件 | 参数 | 说明 |
 |------|------|------|
 | `update:modelValue` | String | 内容变化时触发 |
-| `uploadPhoto` | File | 图片上传时触发 |
+| `uploadPhoto` | File[] | 选择图片时触发，支持单图和多图 |
+| `uploadVideo` | File[] | 选择视频时触发，支持单视频和多视频 |
 
 ### 导出工具函数
 
 ```javascript
-import { insertImage, getContent } from '@Chelase/sky-tiptap'
+import { insertImage, insertImages, insertVideo, insertVideos, getContent } from '@Chelase/sky-tiptap'
 
 insertImage('https://example.com/image.png')
+insertImages([
+  'https://example.com/one.png',
+  'https://example.com/two.png'
+])
+insertVideo('https://example.com/video.mp4')
+insertVideos([
+  'https://example.com/one.mp4',
+  'https://example.com/two.mp4'
+])
 const html = getContent()
 ```
 
@@ -210,6 +222,10 @@ const html = getContent()
 `SkyTiptap` 组件实例当前暴露以下方法：
 
 - `insertImage(url)`
+- `insertImages(urls)`
+- `insertVideo(url)`
+- `insertVideos(urls)`
+- `insertGeneratedContent(content)`
 - `getContent()`
 - `setContent(content)`
 

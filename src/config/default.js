@@ -94,7 +94,10 @@ export const TipTapPlugin = {
           return VueNodeViewRenderer(CodeBlockComponent)
         },
       })
-      .configure({ lowlight }),
+      .configure({
+        lowlight,
+        exitOnTripleEnter: false,
+      }),
     VideoEmbed,
     Iframe,
     CustomParagraph,
@@ -161,5 +164,16 @@ export const defaultToolbarConfig = {
  * 默认悬浮菜单配置
  */
 export const defaultBubbleMenuConfig = {
-  items: ['bold', 'italic', 'underline', 'strike', 'link']
+  items: [
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'heading1',
+    'heading2',
+    'heading3',
+    'bulletList',
+    'orderedList',
+    'link'
+  ]
 }

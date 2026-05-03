@@ -1,6 +1,16 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { nextTick } from 'vue'
+import { h, nextTick } from 'vue'
+
+vi.mock('../components/BubbleMenu/BubbleMenu.vue', () => ({
+  default: {
+    name: 'BubbleMenuWrapper',
+    props: ['editor'],
+    render() {
+      return h('div', { class: 'sky-bubble-menu' })
+    },
+  },
+}))
 
 import SkyTiptap from '../components/SkyTiptap.vue'
 

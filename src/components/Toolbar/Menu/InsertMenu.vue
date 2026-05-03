@@ -62,6 +62,9 @@
       <button @click="insertVideo('tiktok')" class="sky-video-menu__item">
         抖音视频
       </button>
+      <button @click="uploadVideo" class="sky-video-menu__item">
+        上传视频
+      </button>
     </div>
   </div>
 </template>
@@ -137,6 +140,12 @@ const insert = (type) => {
 // 插入视频
 const insertVideo = (platform) => {
   emitter.emit(`trigger-add-${platform}`)
+  showVideoMenu.value = false
+  hide()
+}
+
+const uploadVideo = () => {
+  emitter.emit('trigger-upload-video')
   showVideoMenu.value = false
   hide()
 }

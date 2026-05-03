@@ -3,6 +3,51 @@
 
 import { Node, mergeAttributes } from '@tiptap/core'
 
+export const extractBilibiliVideoId = (src = '') => {
+  const input = String(src).trim()
+  const match = input.match(/(BV[a-zA-Z0-9]+)/)
+  return match ? match[1] : null
+}
+
+export const extractYoutubeVideoId = (src = '') => {
+  const input = String(src).trim()
+
+  if (/^[a-zA-Z0-9_-]{11}$/.test(input)) {
+    return input
+  }
+
+  const match = input.match(/(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/)
+  return match ? match[1] : null
+}
+
+export const extractDouyinVideoId = (src = '') => {
+  const input = String(src).trim()
+  if (!input) return null
+
+  if (/^\d{10,}$/.test(input)) {
+    return input
+  }
+
+  const patterns = [
+    /open\.douyin\.com\/player\/video\?[^#\s]*\bvid=([0-9]+)/i,
+    /douyin\.com\/video\/([0-9]+)/i,
+    /douyin\.com\/note\/([0-9]+)/i,
+    /iesdouyin\.com\/share\/video\/([0-9]+)/i,
+    /[?&](?:modal_id|video_id|vid)=([0-9]+)/i,
+  ]
+
+  for (const pattern of patterns) {
+    const match = input.match(pattern)
+    if (match) return match[1]
+  }
+
+  return null
+}
+
+export const createDouyinPlayerSrc = (videoId) => {
+  return `https://open.douyin.com/player/video?vid=${videoId}&autoplay=0`
+}
+
 const VideoEmbed = Node.create({
   name: 'videoEmbed',
   group: 'block',
@@ -13,6 +58,7 @@ const VideoEmbed = Node.create({
   addAttributes() {
     return {
       src: { default: null },
+      type: { default: 'iframe' },
       width: { default: 640 },
       height: { default: 360 },
     }
@@ -24,6 +70,7 @@ const VideoEmbed = Node.create({
         tag: 'div[data-video-embed]',
         getAttrs: (node) => ({
           src: node.getAttribute('data-src'),
+          type: node.getAttribute('data-type') || 'iframe',
           width: node.getAttribute('data-width'),
           height: node.getAttribute('data-height'),
         }),
@@ -38,41 +85,64 @@ const VideoEmbed = Node.create({
   addCommands() {
     return {
       setBilibiliVideo: (options) => ({ commands }) => {
-        const { src } = options
-        let videoSrc = src
-
-        // 提取 BV 号
-        const bvMatch = src.match(/(BV[a-zA-Z0-9]+)/)
-        if (bvMatch) {
-          videoSrc = `//player.bilibili.com/player.html?bvid=${bvMatch[1]}&page=1&high_quality=1&danmaku=0`
-        }
+        const videoId = extractBilibiliVideoId(options.src)
+        if (!videoId) return false
 
         return commands.insertContent({
           type: this.name,
-          attrs: { src: videoSrc },
+          attrs: {
+            src: `//player.bilibili.com/player.html?bvid=${videoId}&page=1&high_quality=1&danmaku=0`,
+          },
         })
       },
       setYoutubeVideo: (options) => ({ commands }) => {
-        const { src } = options
-        let videoSrc = src
-
-        // 提取 YouTube ID
-        const ytMatch = src.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
-        if (ytMatch) {
-          videoSrc = `https://www.youtube.com/embed/${ytMatch[1]}`
-        }
+        const videoId = extractYoutubeVideoId(options.src)
+        if (!videoId) return false
 
         return commands.insertContent({
           type: this.name,
-          attrs: { src: videoSrc },
+          attrs: {
+            src: `https://www.youtube.com/embed/${videoId}`,
+          },
+        })
+      },
+      setDouyinVideo: (options) => ({ commands }) => {
+        const videoId = extractDouyinVideoId(options.src)
+        if (!videoId) return false
+
+        return commands.insertContent({
+          type: this.name,
+          attrs: {
+            src: createDouyinPlayerSrc(videoId),
+            width: 720,
+            height: 1280,
+          },
         })
       },
       setTiktokVideo: (options) => ({ commands }) => {
-        // 抖音视频嵌入逻辑需要根据具体情况调整，这里暂时直接使用链接
-        // 注意：抖音网页版通常不支持直接 iframe 嵌入，可能需要使用 embed code 或 api
+        const videoId = extractDouyinVideoId(options.src)
+        if (!videoId) return false
+
         return commands.insertContent({
           type: this.name,
-          attrs: { src: options.src },
+          attrs: {
+            src: createDouyinPlayerSrc(videoId),
+            width: 720,
+            height: 1280,
+          },
+        })
+      },
+      setUploadedVideo: (options) => ({ commands }) => {
+        if (!options.src) return false
+
+        return commands.insertContent({
+          type: this.name,
+          attrs: {
+            src: options.src,
+            type: 'video',
+            width: options.width || 640,
+            height: options.height || 360,
+          },
         })
       }
     }
@@ -84,15 +154,25 @@ const VideoEmbed = Node.create({
       div.className = 'sky-video-container'
       div.setAttribute('data-video-embed', '')
       div.setAttribute('data-src', node.attrs.src)
+      div.setAttribute('data-type', node.attrs.type)
 
-      const iframe = document.createElement('iframe')
-      iframe.src = node.attrs.src
-      iframe.width = node.attrs.width
-      iframe.height = node.attrs.height
-      iframe.allowFullscreen = true
-      iframe.frameBorder = '0'
+      if (node.attrs.type === 'video') {
+        const video = document.createElement('video')
+        video.src = node.attrs.src
+        video.controls = true
+        video.preload = 'metadata'
+        div.appendChild(video)
+      } else {
+        const iframe = document.createElement('iframe')
+        iframe.src = node.attrs.src
+        iframe.allowFullscreen = true
+        iframe.frameBorder = '0'
+        if (node.attrs.src?.includes('open.douyin.com/player/video')) {
+          iframe.referrerPolicy = 'unsafe-url'
+        }
+        div.appendChild(iframe)
+      }
 
-      div.appendChild(iframe)
       return { dom: div }
     }
   },

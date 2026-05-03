@@ -10,7 +10,7 @@
         v-show="showButton"
         class="add-button"
         @click.stop="showMenu"
-        @mousedown.stop
+        @mousedown.prevent.stop
         v-html="icons.plus"
     ></button>
     <div ref="contentRef" class="content-wrapper">
@@ -82,7 +82,15 @@ const getMenuAnchorElement = () => {
     return isDOMElement(wrapperRef.value) ? wrapperRef.value : null
   }
 
-  return contentElement.querySelector('[data-node-view-content], p') || contentElement
+  const innerAnchor = contentElement.querySelector('[data-node-view-content], p')
+  if (isDOMElement(innerAnchor)) {
+    const rect = innerAnchor.getBoundingClientRect()
+    if (rect.width > 0 || rect.height > 0) {
+      return innerAnchor
+    }
+  }
+
+  return contentElement
 }
 
 const showMenu = (e) => {

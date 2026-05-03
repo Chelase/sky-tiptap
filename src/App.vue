@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <h1>Sky Tiptap - 开发测试</h1>
-    
+
     <div class="test-controls">
       <label>
         <input type="checkbox" v-model="showToolbar"> 显示工具栏
@@ -14,14 +14,16 @@
         </select>
       </label>
     </div>
-    
+
     <SkyTiptap
-      v-model="content"
-      :showToolbar="showToolbar"
-      :theme="theme"
-      @uploadPhoto="handleUploadPhoto"
+        v-model="content"
+        :showToolbar="showToolbar"
+        :theme="theme"
+        @uploadPhoto="handleUploadPhoto"
+        @uploadVideo="handleUploadVideo"
+        :ai-config="aiConfig"
     />
-    
+
     <div class="content-preview">
       <h3>HTML 输出：</h3>
       <pre>{{ content }}</pre>
@@ -30,18 +32,45 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { SkyTiptap, insertImage } from './main.js'
+import {ref} from 'vue'
+import {SkyTiptap, insertImages, insertVideos} from './main.js'
 
 const content = ref('<p>开始编辑内容...</p>')
-const showToolbar = ref(true)
+const showToolbar = ref(false)
 const theme = ref('default')
+const aiConfig = {
+  baseUrl: 'https://www.right.codes/codex/v1/responses',
+  apiKey: 'sk-4476b366cf854e07bc6e5cf1cb285057',
+  buildBody: (prompt) => ({
+    model: 'gpt-5.2',
+    input: [
+      {
+        type: 'message',
+        role: 'user',
+        content: [
+          {
+            type: 'input_text',
+            text: prompt,
+          },
+        ],
+      },
+    ],
+    stream: true,
+  }),
+}
 
-const handleUploadPhoto = async (file) => {
-  console.log('上传文件:', file)
+const handleUploadPhoto = async (files) => {
+  console.log('上传文件:', files)
   // 模拟上传
-  const url = URL.createObjectURL(file)
-  insertImage(url)
+  const urls = files.map((file) => URL.createObjectURL(file))
+  insertImages(urls)
+}
+
+const handleUploadVideo = async (files) => {
+  console.log('上传视频:', files)
+  // 模拟上传
+  const urls = files.map((file) => URL.createObjectURL(file))
+  insertVideos(urls)
 }
 </script>
 
@@ -70,7 +99,7 @@ h1 {
   padding: 15px;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .test-controls label {
@@ -85,7 +114,7 @@ h1 {
   padding: 15px;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .content-preview h3 {

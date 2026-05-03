@@ -32,6 +32,40 @@
     />
     <div class="sky-bubble-menu__divider"></div>
     <ToolbarButton
+      :onClick="() => editor.chain().focus().toggleHeading({ level: 1 }).run()"
+      :isActive="editor.isActive('heading', { level: 1 })"
+      tooltip="一级标题"
+    >
+      H1
+    </ToolbarButton>
+    <ToolbarButton
+      :onClick="() => editor.chain().focus().toggleHeading({ level: 2 }).run()"
+      :isActive="editor.isActive('heading', { level: 2 })"
+      tooltip="二级标题"
+    >
+      H2
+    </ToolbarButton>
+    <ToolbarButton
+      :onClick="() => editor.chain().focus().toggleHeading({ level: 3 }).run()"
+      :isActive="editor.isActive('heading', { level: 3 })"
+      tooltip="三级标题"
+    >
+      H3
+    </ToolbarButton>
+    <ToolbarButton
+      :onClick="() => editor.chain().focus().toggleBulletList().run()"
+      :isActive="editor.isActive('bulletList')"
+      tooltip="无序列表"
+      :iconSvg="icons.bulletList"
+    />
+    <ToolbarButton
+      :onClick="() => editor.chain().focus().toggleOrderedList().run()"
+      :isActive="editor.isActive('orderedList')"
+      tooltip="有序列表"
+      :iconSvg="icons.orderedList"
+    />
+    <div class="sky-bubble-menu__divider"></div>
+    <ToolbarButton
       :onClick="setLink"
       :isActive="editor.isActive('link')"
       tooltip="链接"
@@ -43,6 +77,7 @@
 <script setup>
 import { BubbleMenu } from '@tiptap/vue-3'
 import { icons } from '../../icons'
+import { emitter } from '../../utils/emitter'
 import ToolbarButton from '../Toolbar/ToolbarButton.vue'
 
 const props = defineProps({
@@ -63,18 +98,24 @@ const tippyOptions = {
 // 设置链接
 const setLink = () => {
   const previousUrl = props.editor.getAttributes('link').href
-  const url = window.prompt('输入链接地址', previousUrl)
-  
-  if (url === null) {
-    return
-  }
-  
-  if (url === '') {
-    props.editor.chain().focus().extendMarkRange('link').unsetLink().run()
-    return
-  }
-  
-  props.editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+
+  emitter.emit('open-dialog', {
+    mode: 'input',
+    title: '设置链接',
+    description: '输入要绑定到当前选中文本的链接地址。清空内容可移除链接。',
+    inputLabel: '链接地址',
+    placeholder: 'https://example.com',
+    defaultValue: previousUrl || '',
+    confirmText: '应用',
+    onConfirm: (url) => {
+      if (url === '') {
+        props.editor.chain().focus().extendMarkRange('link').unsetLink().run()
+        return
+      }
+
+      props.editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+    },
+  })
 }
 </script>
 

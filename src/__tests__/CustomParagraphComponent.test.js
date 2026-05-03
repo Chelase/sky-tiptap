@@ -54,15 +54,30 @@ describe('CustomParagraphComponent', () => {
       },
     })
 
-    const anchor = wrapper.find('[data-node-view-content]').element
-    Object.defineProperty(anchor, 'getBoundingClientRect', {
+    const emptyInnerContent = wrapper.find('[data-node-view-content]').element
+    Object.defineProperty(emptyInnerContent, 'getBoundingClientRect', {
+      value: () => ({
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: 0,
+        height: 0,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }),
+    })
+
+    const contentWrapper = wrapper.find('.content-wrapper').element
+    Object.defineProperty(contentWrapper, 'getBoundingClientRect', {
       value: () => ({
         top: 120,
         left: 80,
-        right: 80,
-        bottom: 120,
-        width: 0,
-        height: 0,
+        right: 280,
+        bottom: 144,
+        width: 200,
+        height: 24,
         x: 80,
         y: 120,
         toJSON: () => ({}),

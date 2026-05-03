@@ -19,6 +19,36 @@ export const insertImage = (url) => {
   }
 }
 
+export const insertImages = (urls) => {
+  if (typeof window !== 'undefined' && window.skyTiptapEditor) {
+    const imageUrls = Array.isArray(urls) ? urls : [urls]
+    imageUrls.filter(Boolean).forEach((url) => {
+      window.skyTiptapEditor.chain().focus().setImage({ src: url }).run()
+    })
+  } else {
+    console.warn('编辑器未初始化，请确保 SkyTiptap 组件已挂载')
+  }
+}
+
+export const insertVideo = (url) => {
+  if (typeof window !== 'undefined' && window.skyTiptapEditor) {
+    window.skyTiptapEditor.chain().focus().setUploadedVideo({ src: url }).run()
+  } else {
+    console.warn('编辑器未初始化，请确保 SkyTiptap 组件已挂载')
+  }
+}
+
+export const insertVideos = (urls) => {
+  if (typeof window !== 'undefined' && window.skyTiptapEditor) {
+    const videoUrls = Array.isArray(urls) ? urls : [urls]
+    videoUrls.filter(Boolean).forEach((url) => {
+      window.skyTiptapEditor.chain().focus().setUploadedVideo({ src: url }).run()
+    })
+  } else {
+    console.warn('编辑器未初始化，请确保 SkyTiptap 组件已挂载')
+  }
+}
+
 // 获取编辑器内容
 export const getContent = () => {
   if (typeof window !== 'undefined' && window.skyTiptapEditor) {
