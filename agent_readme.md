@@ -5,7 +5,7 @@
 **Sky Tiptap** 是一款基于 Tiptap 和 Vue 3 的富文本编辑器组件库，目标是提供开箱即用的编辑体验和可扩展的多媒体能力。
 
 - **源码包名：** `@Chelase/sky-tiptap`
-- **当前版本：** `1.2.1`
+- **当前版本：** `1.2.2`
 - **技术栈：** Vue 3 + Tiptap 2.x + Vite 6.x
 - **作者：** Chelsea
 
@@ -101,8 +101,8 @@ sky-tiptap/
 ├── src/
 │   ├── __tests__/               # Vitest 测试
 │   ├── App.vue                  # 示例应用
-│   ├── index.vue                # 旧实现入口（遗留）
-│   ├── main.js                  # 库导出入口 + 示例应用挂载
+│   ├── main.js                  # 库导出入口（纯净，无副作用）
+│   ├── demo.js                  # 开发环境示例应用入口
 │   ├── components/
 │   │   ├── SkyTiptap.vue
 │   │   ├── BubbleMenu/
@@ -115,18 +115,17 @@ sky-tiptap/
 │   │   ├── CustomParagraphComponent.vue
 │   │   └── tooltip.vue
 │   ├── config/
-│   │   └── default.js
+│   │   └── default.js           # 唯一配置来源
 │   ├── extensions/
 │   │   ├── CustomParagraph.js
 │   │   ├── iframe.js
 │   │   └── web-video.js
 │   ├── icons/
 │   │   └── index.js
-│   ├── styles/
+│   ├── styles/                  # 当前样式目录
 │   ├── style/                   # 旧样式目录（遗留）
 │   └── utils/
 │       ├── emitter.js
-│       ├── index.js             # 旧配置入口（遗留）
 │       └── extensions/          # 旧扩展工具（遗留）
 ├── AGENTS.md
 ├── CLAUDE.md
@@ -136,6 +135,11 @@ sky-tiptap/
 ├── package.json
 └── vite.config.js
 ```
+
+**注意**：
+- `src/index.vue` 和 `src/utils/index.js` 已删除（2026-05-03）
+- `src/main.js` 现在是纯净的库导出入口，不包含示例应用代码
+- `src/demo.js` 是新增的开发环境入口，用于 `npm run dev`
 
 ---
 
@@ -224,8 +228,9 @@ const html = getContent()
 ### 兼容层边界
 
 - `window.skyTiptapEditor` 仅作为兼容层，不应作为新 API 的首选入口
-- `src/main.js` 当前同时承载库导出和示例应用挂载，后续清理应参考 `CLEANUP_OPTIMIZATION.md`
-- 新功能不要继续扩展 `src/index.vue`、`src/utils/index.js`、`src/style/`
+- `src/main.js` 现在是纯净的库导出入口，不包含示例应用代码（2026-05-03 已修复）
+- `src/demo.js` 是独立的开发环境入口，用于 `npm run dev`
+- 新功能不要继续扩展 `src/style/`（遗留目录）
 
 ### 文档同步
 
@@ -298,4 +303,4 @@ MIT License
 
 ---
 
-*最后更新：2026-05-01*
+*最后更新：2026-05-03*

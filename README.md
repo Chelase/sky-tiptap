@@ -158,6 +158,6 @@ const html = getContent()
 
 ### 版本
 
-当前版本：**1.2.1**
+当前版本：**1.2.2**
 
 详细更新日志请查看 [CHANGELOG.md](./CHANGELOG.md)

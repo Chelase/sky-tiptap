@@ -43,15 +43,17 @@
 本仓库当前推荐的主线实现路径是：
 
 - 主编辑器组件：`src/components/SkyTiptap.vue`
-- 编辑器默认配置：`src/config/default.js`
+- 编辑器默认配置：`src/config/default.js`（唯一配置来源）
+- 库导出入口：`src/main.js`（纯净，无副作用）
+- 开发环境入口：`src/demo.js`（示例应用）
 - 事件总线：`src/utils/emitter.js`
 - 样式目录：`src/styles/`
 - 自定义扩展：`src/extensions/`
 
 以下位置视为遗留实现或过渡面，除兼容性任务或显式清理任务外，不应继续扩展主线功能：
 
-- `src/index.vue`
-- `src/utils/index.js`
+- ~~`src/index.vue`~~ (已删除 2026-05-03)
+- ~~`src/utils/index.js`~~ (已删除 2026-05-03)
 - `src/style/`
 
 ## 5. 必须遵守的工作底线

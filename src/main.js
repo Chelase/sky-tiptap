@@ -3,12 +3,7 @@
 
 import { ref } from 'vue'
 import SkyTiptapComponent from './components/SkyTiptap.vue'
-import InsertMenu from './components/Toolbar/Menu/InsertMenu.vue'
 import './styles/base.css'
-
-import { createApp } from 'vue'
-import App from './App.vue'
-import { emitter } from './utils/emitter'
 
 // ===== 向后兼容导出 =====
 
@@ -37,15 +32,9 @@ export const getContent = () => {
 // 默认导出组件（向后兼容）
 export { SkyTiptapComponent as SkyTiptap }
 
-// 添加全局点击事件处理
-document.addEventListener('click', () => {
-  emitter.emit('hide-all-paragraph-buttons')
-})
-
 // ===== 新架构导出 =====
 
-// 导出新组件
-export { default as SkyTiptapNew } from './components/SkyTiptap.vue'
+// 导出组件
 export { default as Toolbar } from './components/Toolbar/Toolbar.vue'
 export { default as ToolbarButton } from './components/Toolbar/ToolbarButton.vue'
 export { default as BubbleMenu } from './components/BubbleMenu/BubbleMenu.vue'
@@ -65,8 +54,3 @@ export { emitter } from './utils/emitter'
 export { CustomParagraph } from './extensions/CustomParagraph'
 export { default as VideoEmbed } from './extensions/web-video'
 export { default as Iframe } from './extensions/iframe'
-
-// ===== 开发环境示例应用 =====
-const app = createApp(App)
-app.component('InsertMenu', InsertMenu)
-app.mount('#app')

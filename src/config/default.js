@@ -16,14 +16,50 @@ import Table from '@tiptap/extension-table'
 import TableRow from '@tiptap/extension-table-row'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
-import { all, createLowlight } from 'lowlight'
+import { createLowlight } from 'lowlight'
+
+// 按需导入常用语言，而不是全部语言
+import javascript from 'highlight.js/lib/languages/javascript'
+import typescript from 'highlight.js/lib/languages/typescript'
+import python from 'highlight.js/lib/languages/python'
+import java from 'highlight.js/lib/languages/java'
+import cpp from 'highlight.js/lib/languages/cpp'
+import csharp from 'highlight.js/lib/languages/csharp'
+import php from 'highlight.js/lib/languages/php'
+import ruby from 'highlight.js/lib/languages/ruby'
+import go from 'highlight.js/lib/languages/go'
+import rust from 'highlight.js/lib/languages/rust'
+import sql from 'highlight.js/lib/languages/sql'
+import bash from 'highlight.js/lib/languages/bash'
+import json from 'highlight.js/lib/languages/json'
+import xml from 'highlight.js/lib/languages/xml'
+import css from 'highlight.js/lib/languages/css'
+import markdown from 'highlight.js/lib/languages/markdown'
 
 import CodeBlockComponent from '../components/NodeView/CodeBlock.vue'
 import VideoEmbed from '../extensions/web-video.js'
 import Iframe from '../extensions/iframe.js'
 import { CustomParagraph } from '../extensions/CustomParagraph.js'
 
-const lowlight = createLowlight(all)
+// 创建 lowlight 实例并注册常用语言
+const lowlight = createLowlight()
+lowlight.register('javascript', javascript)
+lowlight.register('typescript', typescript)
+lowlight.register('python', python)
+lowlight.register('java', java)
+lowlight.register('cpp', cpp)
+lowlight.register('csharp', csharp)
+lowlight.register('php', php)
+lowlight.register('ruby', ruby)
+lowlight.register('go', go)
+lowlight.register('rust', rust)
+lowlight.register('sql', sql)
+lowlight.register('bash', bash)
+lowlight.register('json', json)
+lowlight.register('xml', xml)
+lowlight.register('html', xml) // HTML 使用 XML 语法
+lowlight.register('css', css)
+lowlight.register('markdown', markdown)
 
 export const TipTapPlugin = {
   // 注册配置插件

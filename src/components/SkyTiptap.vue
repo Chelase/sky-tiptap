@@ -90,18 +90,28 @@ const handleFileChange = (event) => {
   event.target.value = ''
 }
 
+// 全局点击处理函数
+const handleGlobalClick = () => {
+  emitter.emit('hide-all-paragraph-buttons')
+}
+
 // 暴露方法给外部
 onMounted(() => {
   // 注册全局编辑器引用（向后兼容）
   if (typeof window !== 'undefined') {
     window.skyTiptapEditor = editor.value
   }
-  
+
+  // 添加全局点击事件监听（SSR 安全）
+  if (typeof document !== 'undefined') {
+    document.addEventListener('click', handleGlobalClick)
+  }
+
   // 监听插入事件
   emitter.on('trigger-add-image', () => {
     fileInputRef.value?.click()
   })
-  
+
   emitter.on('trigger-add-bilibili', () => {
     const url = window.prompt('输入 Bilibili 视频链接或 BV 号')
     if (url) {
@@ -115,7 +125,7 @@ onMounted(() => {
       editor.value?.chain().focus().setYoutubeVideo({ src: url }).run()
     }
   })
-  
+
   emitter.on('trigger-add-tiktok', () => {
     const url = window.prompt('输入抖音视频链接')
     if (url) {
@@ -132,6 +142,11 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  // 移除全局点击事件监听
+  if (typeof document !== 'undefined') {
+    document.removeEventListener('click', handleGlobalClick)
+  }
+
   emitter.off('trigger-add-image')
   emitter.off('trigger-add-bilibili')
   emitter.off('trigger-add-youtube')

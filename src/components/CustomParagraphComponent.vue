@@ -1,6 +1,7 @@
 ﻿<!-- components/CustomParagraphComponent.vue -->
 <template>
   <NodeViewWrapper
+      ref="wrapperRef"
       class="custom-paragraph"
       @mouseenter="showButton = true"
       @mouseleave="handleMouseLeave"
@@ -35,6 +36,7 @@ const props = defineProps({
   deleteNode: Function,
 })
 
+const wrapperRef = ref()
 const contentRef = ref()
 const showButton = ref(false) // 控制按钮显示状态
 
@@ -74,17 +76,24 @@ const checkCursorPosition = () => {
   return isCursorInside || isCursorAtStart || isCursorAtEnd || isNodeSelected;
 }
 
+const getMenuAnchorElement = () => {
+  const contentElement = contentRef.value
+  if (!isDOMElement(contentElement)) {
+    return isDOMElement(wrapperRef.value) ? wrapperRef.value : null
+  }
+
+  return contentElement.querySelector('[data-node-view-content], p') || contentElement
+}
+
 const showMenu = (e) => {
   e.stopPropagation()
-  if (!contentRef.value || !isDOMElement(contentRef.value)) {
+  const anchorElement = getMenuAnchorElement()
+  if (!anchorElement) {
     console.warn('DOM reference not ready')
     return
   }
 
-  const paragraphElement = contentRef.value.querySelector('p')
-  if (!paragraphElement) return
-
-  const rect = paragraphElement.getBoundingClientRect()
+  const rect = anchorElement.getBoundingClientRect()
 
   emitter.emit('show-insert-menu', {
     position: {
