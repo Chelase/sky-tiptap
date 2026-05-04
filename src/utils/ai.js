@@ -235,7 +235,7 @@ export const createAiFetchRequest = async (config) => {
 }
 
 export const requestAiContent = async ({ fetchImpl = fetch, ...config }) => {
-  const { baseUrl, apiKey, prompt, parseResponse, onContent } = config
+  const { baseUrl, apiKey, prompt, parseResponse, onContent, forceTextResponse = false } = config
 
   if (!baseUrl) {
     throw new Error('AI baseUrl 未配置')
@@ -257,11 +257,13 @@ export const requestAiContent = async ({ fetchImpl = fetch, ...config }) => {
     throw new Error(errorText || `AI 请求失败：${response.status}`)
   }
 
-  if (stream && response.body?.getReader) {
+  if (!forceTextResponse && stream && response.body?.getReader) {
     const streamMarkdownContent = await readAiStreamContent(response, onContent)
     if (streamMarkdownContent) {
       return renderMarkdown(streamMarkdownContent)
     }
+
+    throw new Error('AI 接口未返回可插入内容')
   }
 
   const responseText = await response.text()

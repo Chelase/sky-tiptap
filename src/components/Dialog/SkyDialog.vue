@@ -315,6 +315,7 @@ onBeforeUnmount(() => {
   margin: 0;
   color: var(--sky-color-text-secondary);
   line-height: var(--sky-line-height-relaxed);
+  white-space: pre-line;
 }
 
 .sky-dialog__error {

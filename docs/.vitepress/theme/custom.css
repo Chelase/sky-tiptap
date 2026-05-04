@@ -1,0 +1,52 @@
+/* Hero Logo 光圈效果 */
+.VPHero .VPImage,
+.VPHero .image {
+  position: relative;
+}
+
+.VPHero .VPImage::before,
+.VPHero .image::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 110%;
+  height: 110%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(29, 78, 216, 0.7) 0%,
+    rgba(37, 99, 235, 0.5) 30%,
+    rgba(59, 130, 246, 0.3) 50%,
+    rgba(96, 165, 250, 0.15) 70%,
+    transparent 100%
+  );
+  z-index: -1;
+  filter: blur(15px);
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+/* 暗色模式适配 */
+.dark .VPHero .VPImage::before,
+.dark .VPHero .image::before {
+  background: radial-gradient(
+    circle,
+    rgba(29, 78, 216, 0.8) 0%,
+    rgba(37, 99, 235, 0.55) 30%,
+    rgba(59, 130, 246, 0.35) 50%,
+    rgba(96, 165, 250, 0.2) 70%,
+    transparent 100%
+  );
+}

@@ -13,6 +13,7 @@
 - ✅ 表格插入
 - ✅ 链接管理
 - ✅ AI 内容生成（支持流式响应）
+- ✅ AI 操控编辑器（结构化 actions 白名单执行）
 - ✅ 统一弹窗组件（替代原生 prompt/alert）
 - ✅ 悬浮菜单（含标题、列表）、插入菜单、工具栏
 
@@ -57,6 +58,6 @@ const content = ref('')
 
 ## 版本
 
-当前版本：**1.3.0**
+当前版本：**1.7.0**
 
 详细更新日志请查看 [CHANGELOG](https://github.com/Chelase/sky-tiptap/blob/master/CHANGELOG.md)

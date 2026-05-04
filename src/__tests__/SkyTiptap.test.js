@@ -6,6 +6,7 @@ import { emitter } from '../utils/emitter'
 
 const tiptapState = vi.hoisted(() => ({
   latestChain: null,
+  latestEditor: null,
 }))
 
 // Mock child components to avoid Tiptap editor complexity
@@ -45,13 +46,26 @@ vi.mock('@tiptap/vue-3', async () => {
   return {
     ...actual,
     useEditor: (options) => {
-      const run = vi.fn()
+      const run = vi.fn(() => true)
       const chain = {
         focus: vi.fn(() => chain),
         setImage: vi.fn(() => chain),
         setUploadedVideo: vi.fn(() => chain),
         insertContent: vi.fn(() => chain),
         insertContentAt: vi.fn(() => chain),
+        insertTable: vi.fn(() => chain),
+        extendMarkRange: vi.fn(() => chain),
+        toggleBulletList: vi.fn(() => chain),
+        toggleOrderedList: vi.fn(() => chain),
+        setLink: vi.fn(() => chain),
+        unsetLink: vi.fn(() => chain),
+        setHorizontalRule: vi.fn(() => chain),
+        setImage: vi.fn(() => chain),
+        setUploadedVideo: vi.fn(() => chain),
+        setBilibiliVideo: vi.fn(() => chain),
+        setYoutubeVideo: vi.fn(() => chain),
+        setDouyinVideo: vi.fn(() => chain),
+        setIframe: vi.fn(() => chain),
         setContent: vi.fn(() => chain),
         run,
       }
@@ -83,6 +97,7 @@ vi.mock('@tiptap/vue-3', async () => {
         element: document.createElement('div'),
         options: {}
       }
+      tiptapState.latestEditor = editor
       return { value: editor }
     },
     EditorContent: {
@@ -456,5 +471,484 @@ describe('SkyTiptap Component', () => {
     }, '')
     expect(document.body.querySelector('.sky-dialog__title').textContent).toBe('AI 生成失败')
     expect(document.body.querySelector('.sky-dialog__message').textContent).toBe('服务异常')
+  })
+
+  it('executes structured AI actions when aiConfig mode is actions', async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      text: async () => JSON.stringify({
+        mode: 'actions',
+        actions: [
+          {
+            type: 'setHeading',
+            params: {
+              level: 2,
+              text: '项目计划',
+            },
+          },
+          {
+            type: 'insertTable',
+            params: {
+              rows: 3,
+              cols: 4,
+              withHeaderRow: true,
+            },
+          },
+        ],
+      }),
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        aiConfig: {
+          mode: 'actions',
+          baseUrl: 'https://api.example.com/ai-actions',
+          apiKey: 'test-key',
+          buildBody: (prompt) => ({
+            prompt,
+            stream: false,
+          }),
+        },
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    emitter.emit('AI-generated')
+    await nextTick()
+    await flushPromises()
+
+    const input = document.body.querySelector('.sky-dialog__input')
+    input.value = '请执行结构化操作'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/ai-actions', expect.objectContaining({
+      body: JSON.stringify({
+        prompt: '请执行结构化操作',
+        stream: false,
+      }),
+    }))
+    expect(tiptapState.latestChain.insertContentAt).toHaveBeenNthCalledWith(1, {
+      from: 0,
+      to: 0,
+    }, expect.objectContaining({
+      type: 'aiLoading',
+    }))
+    expect(tiptapState.latestChain.insertContentAt).toHaveBeenNthCalledWith(2, {
+      from: 0,
+      to: 0,
+    }, '')
+    expect(tiptapState.latestChain.insertContent).toHaveBeenCalledWith({
+      type: 'heading',
+      attrs: {
+        level: 2,
+      },
+      content: [
+        {
+          type: 'text',
+          text: '项目计划',
+        },
+      ],
+    })
+    expect(tiptapState.latestChain.insertTable).toHaveBeenCalledWith({
+      rows: 3,
+      cols: 4,
+      withHeaderRow: true,
+    })
+  })
+
+  it('executes clear local editor intent without calling the AI API', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        aiConfig: {
+          mode: 'actions',
+          baseUrl: 'https://api.example.com/ai-actions',
+          apiKey: 'test-key',
+        },
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    emitter.emit('AI-generated')
+    await nextTick()
+    await flushPromises()
+
+    const input = document.body.querySelector('.sky-dialog__input')
+    input.value = '插入抖音视频：https://www.douyin.com/video/7633060374058167217'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(tiptapState.latestChain.insertContentAt).toHaveBeenNthCalledWith(2, {
+      from: 0,
+      to: 0,
+    }, '')
+    expect(tiptapState.latestChain.setDouyinVideo).toHaveBeenCalledWith({
+      src: 'https://www.douyin.com/video/7633060374058167217',
+    })
+  })
+
+  it('opens a project-owned prompt when local editor intent misses required data', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        aiConfig: {
+          mode: 'actions',
+          baseUrl: 'https://api.example.com/ai-actions',
+          apiKey: 'test-key',
+        },
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    emitter.emit('AI-generated')
+    await nextTick()
+    await flushPromises()
+
+    const input = document.body.querySelector('.sky-dialog__input')
+    input.value = '插入抖音视频'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(document.body.querySelector('.sky-dialog__title').textContent).toBe('插入抖音视频')
+    expect(document.body.querySelector('.sky-dialog__input').getAttribute('placeholder')).toBe('https://www.douyin.com/video/7635170198135278902')
+  })
+
+  it('shows an operation error when actions mode cannot resolve AI text into actions', async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      text: async () => '这是一段普通内容，不包含编辑器操作',
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        aiConfig: {
+          mode: 'actions',
+          baseUrl: 'https://api.example.com/ai-actions',
+          apiKey: 'test-key',
+        },
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    emitter.emit('AI-generated')
+    await nextTick()
+    await flushPromises()
+
+    const input = document.body.querySelector('.sky-dialog__input')
+    input.value = '请判断要做什么'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(document.body.querySelector('.sky-dialog__title').textContent).toBe('AI 操作失败')
+    expect(document.body.querySelector('.sky-dialog__message').textContent).toBe('未识别到可执行的编辑器操作')
+  })
+
+  it('falls back to inserting markdown content in auto mode when no action is resolved', async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      text: async () => '## 自动内容\n\n正文',
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        aiConfig: {
+          mode: 'auto',
+          baseUrl: 'https://api.example.com/ai-auto',
+          apiKey: 'test-key',
+        },
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    emitter.emit('AI-generated')
+    await nextTick()
+    await flushPromises()
+
+    const input = document.body.querySelector('.sky-dialog__input')
+    input.value = '写一段普通内容'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(tiptapState.latestChain.insertContentAt).toHaveBeenLastCalledWith({
+      from: 0,
+      to: 0,
+    }, '<h2>自动内容</h2>\n<p>正文</p>\n')
+  })
+
+  it('triggers local file pickers from structured AI upload actions', async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      text: async () => JSON.stringify({
+        mode: 'actions',
+        actions: [
+          {
+            type: 'requestImageUpload',
+          },
+          {
+            type: 'requestVideoUpload',
+          },
+        ],
+      }),
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {})
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        aiConfig: {
+          mode: 'actions',
+          baseUrl: 'https://api.example.com/ai-actions',
+          apiKey: 'test-key',
+        },
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    emitter.emit('AI-generated')
+    await nextTick()
+    await flushPromises()
+
+    const input = document.body.querySelector('.sky-dialog__input')
+    input.value = '上传图片和视频'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(clickSpy).toHaveBeenCalledTimes(2)
+    clickSpy.mockRestore()
+  })
+
+  it('previews resolved actions and executes only after confirmation', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        aiConfig: {
+          mode: 'actions',
+          previewActions: true,
+          baseUrl: 'https://api.example.com/ai-actions',
+          apiKey: 'test-key',
+        },
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    emitter.emit('AI-generated')
+    await nextTick()
+    await flushPromises()
+
+    const input = document.body.querySelector('.sky-dialog__input')
+    input.value = '插入抖音视频：https://www.douyin.com/video/7633060374058167217'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(document.body.querySelector('.sky-dialog__title').textContent).toBe('确认执行操作')
+    expect(document.body.querySelector('.sky-dialog__message').textContent).toContain('1. 插入抖音视频')
+    expect(tiptapState.latestChain.setDouyinVideo).not.toHaveBeenCalled()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(tiptapState.latestChain.setDouyinVideo).toHaveBeenCalledWith({
+      src: 'https://www.douyin.com/video/7633060374058167217',
+    })
+  })
+
+  it('can preview actions without executing them', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        aiConfig: {
+          mode: 'actions',
+          executeActions: false,
+          baseUrl: 'https://api.example.com/ai-actions',
+          apiKey: 'test-key',
+        },
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    emitter.emit('AI-generated')
+    await nextTick()
+    await flushPromises()
+
+    const input = document.body.querySelector('.sky-dialog__input')
+    input.value = '插入 3 行 4 列表格'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(document.body.querySelector('.sky-dialog__title').textContent).toBe('确认执行操作')
+    expect(document.body.querySelector('.sky-dialog__message').textContent).toContain('1. 插入 3 行 4 列表格')
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(tiptapState.latestChain.insertTable).not.toHaveBeenCalled()
+  })
+
+  it('rolls back editor content when action execution fails', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        aiConfig: {
+          mode: 'actions',
+          baseUrl: 'https://api.example.com/ai-actions',
+          apiKey: 'test-key',
+        },
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    tiptapState.latestEditor.getHTML.mockReturnValue('<p>before</p>')
+    tiptapState.latestChain.run
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false)
+
+    emitter.emit('AI-generated')
+    await nextTick()
+    await flushPromises()
+
+    const input = document.body.querySelector('.sky-dialog__input')
+    input.value = '插入 3 行 4 列表格'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(tiptapState.latestChain.insertTable).toHaveBeenCalledWith({
+      rows: 3,
+      cols: 4,
+      withHeaderRow: true,
+    })
+    expect(tiptapState.latestEditor.commands.setContent).toHaveBeenCalledWith('<p>before</p>')
+    expect(document.body.querySelector('.sky-dialog__title').textContent).toBe('AI 操作失败')
+  })
+
+  it('shows an execution summary when configured', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        aiConfig: {
+          mode: 'actions',
+          showActionResult: true,
+          baseUrl: 'https://api.example.com/ai-actions',
+          apiKey: 'test-key',
+        },
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    emitter.emit('AI-generated')
+    await nextTick()
+    await flushPromises()
+
+    const input = document.body.querySelector('.sky-dialog__input')
+    input.value = '插入抖音视频：https://www.douyin.com/video/7633060374058167217'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(document.body.querySelector('.sky-dialog__title').textContent).toBe('AI 操作完成')
+    expect(document.body.querySelector('.sky-dialog__message').textContent).toContain('1. 插入抖音视频')
+  })
+
+  it('does not replace follow-up input dialogs with execution summaries', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        aiConfig: {
+          mode: 'actions',
+          showActionResult: true,
+          baseUrl: 'https://api.example.com/ai-actions',
+          apiKey: 'test-key',
+        },
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    emitter.emit('AI-generated')
+    await nextTick()
+    await flushPromises()
+
+    const input = document.body.querySelector('.sky-dialog__input')
+    input.value = '插入抖音视频'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    document.body.querySelector('.sky-dialog__button--primary').click()
+    await flushPromises()
+
+    expect(document.body.querySelector('.sky-dialog__title').textContent).toBe('插入抖音视频')
+    expect(document.body.querySelector('.sky-dialog__input').getAttribute('placeholder')).toBe('https://www.douyin.com/video/7635170198135278902')
   })
 })

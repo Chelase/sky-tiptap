@@ -48,7 +48,9 @@ import Toolbar from './Toolbar/Toolbar.vue'
 import BubbleMenuWrapper from './BubbleMenu/BubbleMenu.vue'
 import InsertMenu from './Toolbar/Menu/InsertMenu.vue'
 import SkyDialog from './Dialog/SkyDialog.vue'
-import { requestAiContent } from '../utils/ai'
+import { renderMarkdown, requestAiContent } from '../utils/ai'
+import { describeAiActions, executeAiActions } from '../utils/ai-actions'
+import { resolveActionsFromAiText, resolveActionsFromText } from '../utils/ai-intent'
 
 const props = defineProps({
   modelValue: {
@@ -218,6 +220,78 @@ const handleTriggerAddWebsite = () => {
   })
 }
 
+const confirmActionPreview = (actions) => {
+  return new Promise((resolve) => {
+    emitter.emit('open-dialog', {
+      mode: 'message',
+      title: '确认执行操作',
+      description: '项目已把输入解析为以下受控编辑器操作。',
+      message: describeAiActions(actions).map((item, index) => `${index + 1}. ${item}`).join('\n'),
+      confirmText: props.aiConfig?.executeActions === false ? '知道了' : '执行',
+      cancelText: props.aiConfig?.executeActions === false ? '关闭' : '取消',
+      onConfirm: () => resolve(true),
+      onCancel: () => resolve(false),
+    })
+  })
+}
+
+const showActionResultDialog = (result) => {
+  const summary = Array.isArray(result?.summary) ? result.summary : []
+  showMessageDialog(
+    result?.ok ? 'AI 操作完成' : 'AI 操作失败',
+    summary.length ? summary.map((item, index) => `${index + 1}. ${item}`).join('\n') : (result?.message || '没有可显示的操作结果')
+  )
+}
+
+const hasFollowUpAction = (actions) => {
+  return actions.some((action) => typeof action?.type === 'string' && action.type.startsWith('request'))
+}
+
+const handleTriggerAddImageUrl = () => {
+  emitter.emit('open-dialog', {
+    mode: 'input',
+    title: '插入图片',
+    description: '输入图片 URL，编辑器会直接插入该图片。',
+    inputLabel: '图片 URL',
+    placeholder: 'https://example.com/image.png',
+    confirmText: '插入',
+    validate: (value) => value ? '' : '请输入图片 URL',
+    onConfirm: (url) => {
+      editor.value?.chain().focus().setImage({ src: url }).run()
+    },
+  })
+}
+
+const handleTriggerAddUploadedVideoUrl = () => {
+  emitter.emit('open-dialog', {
+    mode: 'input',
+    title: '插入视频',
+    description: '输入已上传的视频 URL，编辑器会直接插入该视频。',
+    inputLabel: '视频 URL',
+    placeholder: 'https://example.com/video.mp4',
+    confirmText: '插入',
+    validate: (value) => value ? '' : '请输入视频 URL',
+    onConfirm: (url) => {
+      editor.value?.chain().focus().setUploadedVideo({ src: url }).run()
+    },
+  })
+}
+
+const handleTriggerAddLink = () => {
+  emitter.emit('open-dialog', {
+    mode: 'input',
+    title: '设置链接',
+    description: '输入链接地址，编辑器会应用到当前选区。',
+    inputLabel: '链接地址',
+    placeholder: 'https://example.com',
+    confirmText: '设置',
+    validate: (value) => value ? '' : '请输入链接地址',
+    onConfirm: (url) => {
+      editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+    },
+  })
+}
+
 const insertGeneratedContent = (content) => {
   editor.value?.chain().focus().insertContent(content).run()
 }
@@ -290,17 +364,88 @@ const replaceGeneratedContent = (content, range, loadingId) => {
   }
 }
 
+const requestAndExecuteAiActions = async (prompt, generatedRange, loadingId, { fallbackToContent = false } = {}) => {
+  const executeActions = async (actions) => {
+    const shouldPreviewActions = props.aiConfig?.previewActions === true || props.aiConfig?.executeActions === false
+    const shouldExecuteActions = props.aiConfig?.executeActions !== false
+    const shouldRollbackActions = props.aiConfig?.rollbackOnActionFailure !== false
+    const shouldShowActionResult = props.aiConfig?.showActionResult === true
+
+    replaceGeneratedContent('', generatedRange, loadingId)
+
+    if (shouldPreviewActions) {
+      const confirmed = await confirmActionPreview(actions)
+      if (!confirmed || !shouldExecuteActions) {
+        return
+      }
+    }
+
+    const snapshot = shouldRollbackActions ? editor.value?.getHTML?.() : null
+    const result = executeAiActions(editor.value, actions, {
+      requestImageUpload: handleTriggerAddImage,
+      requestVideoUpload: handleTriggerUploadVideo,
+      requestImageUrl: handleTriggerAddImageUrl,
+      requestUploadedVideoUrl: handleTriggerAddUploadedVideoUrl,
+      requestBilibiliVideo: handleTriggerAddBilibili,
+      requestYoutubeVideo: handleTriggerAddYoutube,
+      requestDouyinVideo: handleTriggerAddTikTok,
+      requestIframeUrl: handleTriggerAddWebsite,
+      requestLink: handleTriggerAddLink,
+    })
+    if (!result.ok) {
+      if (shouldRollbackActions && snapshot !== null && snapshot !== undefined) {
+        editor.value?.commands?.setContent?.(snapshot)
+      }
+      throw new Error(result.message || 'AI 操作执行失败')
+    }
+
+    if (shouldShowActionResult && !hasFollowUpAction(actions)) {
+      showActionResultDialog(result)
+    }
+  }
+
+  const promptActions = resolveActionsFromText(prompt)
+  if (promptActions.length) {
+    await executeActions(promptActions)
+    return
+  }
+
+  const responseText = await requestAiContent({
+    ...props.aiConfig,
+    prompt,
+    forceTextResponse: true,
+    parseResponse: props.aiConfig.parseResponse || ((text) => text),
+  })
+  const actions = resolveActionsFromAiText(responseText)
+
+  if (!actions.length) {
+    if (fallbackToContent) {
+      replaceGeneratedContent(renderMarkdown(responseText), generatedRange, loadingId)
+      return
+    }
+
+    throw new Error('未识别到可执行的编辑器操作')
+  }
+
+  await executeActions(actions)
+}
+
 const handleAIGenerated = () => {
+  const aiMode = props.aiConfig?.mode || 'content'
+  const isActionsMode = aiMode === 'actions'
+  const isAutoMode = aiMode === 'auto'
+  const isEditorIntentMode = isActionsMode || isAutoMode
+
   emitter.emit('open-dialog', {
     mode: 'input',
-    title: 'AI 生成内容',
-    description: '输入生成要求，AI 返回的内容会插入到当前光标位置。',
-    inputLabel: '生成提示词',
-    placeholder: '例如：写一段产品介绍，语气专业简洁',
-    confirmText: '生成',
-    loadingText: '生成中...',
+    title: isEditorIntentMode ? 'AI 操控编辑器' : 'AI 生成内容',
+    description: isEditorIntentMode ? '输入编辑需求，项目会优先识别并执行受控编辑器操作。' : '输入生成要求，AI 返回的内容会插入到当前光标位置。',
+    inputLabel: isEditorIntentMode ? '编辑需求' : '生成提示词',
+    placeholder: isEditorIntentMode ? '例如：插入抖音视频：https://www.douyin.com/video/...' : '例如：写一段产品介绍，语气专业简洁',
+    confirmText: isEditorIntentMode ? '执行' : '生成',
+    loadingText: isEditorIntentMode ? '执行中...' : '生成中...',
     closeOnConfirm: true,
-    validate: (value) => value ? '' : '请输入生成提示词',
+    validate: (value) => value ? '' : (isEditorIntentMode ? '请输入编辑需求' : '请输入生成提示词'),
     onConfirm: async (prompt) => {
       const selection = editor.value?.state?.selection
       const generatedRange = {
@@ -311,6 +456,13 @@ const handleAIGenerated = () => {
       const loadingId = insertAiLoading(generatedRange)
 
       try {
+        if (isEditorIntentMode) {
+          await requestAndExecuteAiActions(prompt, generatedRange, loadingId, {
+            fallbackToContent: isAutoMode,
+          })
+          return
+        }
+
         const content = await requestAiContent({
           ...props.aiConfig,
           prompt,
@@ -331,7 +483,7 @@ const handleAIGenerated = () => {
         }
       } catch (error) {
         replaceGeneratedContent('', generatedRange, loadingId)
-        showMessageDialog('AI 生成失败', error?.message || '请求失败，请稍后重试')
+        showMessageDialog(isEditorIntentMode ? 'AI 操作失败' : 'AI 生成失败', error?.message || '请求失败，请稍后重试')
       }
     },
   })

@@ -6,11 +6,19 @@
 
 ### 安装
 
+GitHub Packages 包名：
+
 ```bash
 npm install @Chelase/sky-tiptap
 ```
 
-如果你使用 GitHub Actions 同步发布到 npm 的公共包版本，请将安装和 import 路径替换为 `sky-tiptap`。以下示例默认以仓库源码包名 `@Chelase/sky-tiptap` 为例。
+npm 公共包名：
+
+```bash
+npm install sky-tiptap
+```
+
+如果使用 npm 公共包版本，请将示例中的 import 路径替换为 `sky-tiptap`。以下示例默认以 GitHub Packages 包名 `@Chelase/sky-tiptap` 为例。
 
 ---
 
@@ -168,6 +176,109 @@ const aiConfig = {
 
 确认提示词后，弹窗会立即关闭，编辑器会在当前光标位置显示 AI 骨架屏。接口返回支持纯文本，也兼容常见 JSON 字段：`content`、`text`、`message`、`result`、`data.content`、`data.text`、`choices[0].message.content`、`choices[0].text`。如果请求体或配置中声明了 `stream: true`，组件会读取 SSE `data:` 流，持续累计 Markdown 并用 `markdown-it` 渲染后更新同一段生成内容。如果接口请求失败或未返回可插入内容，组件会移除骨架屏并弹出错误提示。
 
+### AI 操控编辑器
+
+从 1.4.0 开始，`aiConfig.mode` 可以设置为 `actions`。从 1.6.0 开始，编辑器会先从用户输入中做本地意图解析，明确命令不再依赖 AI 返回 JSON。AI 只作为补充文本来源；编辑器不会执行 AI 返回的 JavaScript，也不会通过 DOM 点击模拟完成操作。从 1.7.0 开始，受控 actions 支持执行前预览、只预览不执行、失败回滚和可选执行结果摘要。
+
+支持的模式：
+
+| mode | 说明 |
+|------|------|
+| `content` | 默认模式，AI 返回文本或 Markdown 后插入编辑器 |
+| `actions` | 只执行受控编辑器动作；无法识别动作时提示失败 |
+| `auto` | 优先执行受控编辑器动作；无法识别动作时把 AI 返回内容作为 Markdown 插入 |
+
+第三阶段执行控制配置：
+
+| 配置项 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `previewActions` | `boolean` | `false` | 执行前展示项目解析出的受控操作，用户确认后才执行 |
+| `executeActions` | `boolean` | `true` | 设置为 `false` 时只展示操作预览，不真正执行编辑器命令 |
+| `rollbackOnActionFailure` | `boolean` | `true` | action 组执行失败时恢复执行前内容 |
+| `showActionResult` | `boolean` | `false` | 执行成功后展示操作摘要 |
+
+当前支持的 action：
+
+| Action | 说明 |
+|--------|------|
+| `insertMarkdown` | 将 Markdown 渲染为 HTML 后插入 |
+| `setHeading` | 插入 H1-H3 标题 |
+| `insertTable` | 插入表格，最多 20 行、10 列 |
+| `insertCodeBlock` | 插入代码块文本 |
+| `toggleBulletList` | 切换无序列表 |
+| `toggleOrderedList` | 切换有序列表 |
+| `setLink` | 给当前选区设置链接，或插入带链接文本 |
+| `unsetLink` | 移除当前链接 |
+| `insertDivider` | 插入分割线 |
+| `insertImage` | 插入图片 URL |
+| `insertUploadedVideo` | 插入已上传的视频 URL |
+| `insertBilibiliVideo` | 插入 Bilibili 视频 |
+| `insertYoutubeVideo` | 插入 YouTube 视频 |
+| `insertDouyinVideo` | 插入抖音视频 |
+| `insertIframe` | 嵌入网页 iframe |
+| `requestImageUpload` | 触发现有图片文件选择入口 |
+| `requestVideoUpload` | 触发现有视频文件选择入口 |
+
+```vue
+<template>
+  <sky-tiptap
+    v-model="content"
+    :ai-config="{
+      mode: 'actions',
+      previewActions: true,
+      rollbackOnActionFailure: true,
+      baseUrl: 'https://api.example.com/ai/actions',
+      apiKey: 'your-api-key',
+      buildBody: (prompt) => ({
+        prompt,
+        stream: false
+      })
+    }"
+  />
+</template>
+```
+
+明确命令会优先由项目本地解析。例如下面的输入会直接插入抖音视频，不需要 AI 返回 JSON：
+
+```text
+插入抖音视频：https://www.douyin.com/video/7633060374058167217
+```
+
+如果用户输入缺少必要参数，例如：
+
+```text
+插入抖音视频
+```
+
+项目会打开现有抖音视频链接输入弹窗，让用户补充地址。
+
+需要地址的 action 应由 AI 在 JSON 中返回完整参数。例如 Bilibili、YouTube、抖音和 iframe 嵌入需要 `src`，链接需要 `href`。图片 URL、已上传视频 URL、iframe URL、链接 URL 只接受 `http:` / `https:` 地址。本地文件上传不会由 AI 直接读取文件，只能通过 `requestImageUpload` / `requestVideoUpload` 触发现有文件选择入口，后续上传仍由业务侧通过 `uploadPhoto` / `uploadVideo` 事件完成。
+
+接口返回示例：
+
+```json
+{
+  "mode": "actions",
+  "actions": [
+    {
+      "type": "setHeading",
+      "params": {
+        "level": 2,
+        "text": "项目计划"
+      }
+    },
+    {
+      "type": "insertTable",
+      "params": {
+        "rows": 3,
+        "cols": 4,
+        "withHeaderRow": true
+      }
+    }
+  ]
+}
+```
+
 ### 上传视频
 
 除 Bilibili、YouTube、抖音链接嵌入外，也可以上传本地视频文件。sky-tiptap 不内置视频上传接口，组件会通过 `uploadVideo` 返回选择的视频文件数组；业务侧上传完成后调用 **insertVideo** 或 **insertVideos** 插入视频 URL。
@@ -230,8 +341,9 @@ const handleUploadVideo = async (files) => {
 - ✅ 统一弹窗交互（视频、链接、嵌入网站、错误提示）
 
 #### 其他
-- ✅ AI 内容生成（集成 Sky-AI 流式响应）
+- ✅ AI 内容生成（外部接口配置，支持流式响应）
 - ✅ AI 流式 Markdown 渲染
+- ✅ AI 操控编辑器（结构化 actions 白名单执行）
 - ✅ 悬浮菜单（Bubble Menu，含标题与列表）
 - ✅ 插入菜单（Insert Menu）
 - ✅ 工具栏（Toolbar）
@@ -248,7 +360,7 @@ const handleUploadVideo = async (files) => {
 | `theme` | String | `'default'` | 主题（default/dark） |
 | `showToolbar` | Boolean | `false` | 是否显示工具栏 |
 | `placeholder` | String | `'输入内容...'` | 占位符 |
-| `aiConfig` | Object | `{ baseUrl: '', apiKey: '' }` | AI 生成接口配置，支持原样传递 `requestBody`、用 `buildBody` 组装弹窗输入、用 `buildRequest` 完全接管请求，以及 `headers`、`method`、`parseResponse` |
+| `aiConfig` | Object | `{ baseUrl: '', apiKey: '' }` | AI 配置，支持内容生成和 `mode: 'actions'` 操控编辑器模式；请求侧支持 `requestBody`、`buildBody`、`buildRequest`、`headers`、`method`、`parseResponse` |
 
 #### 组件事件
 
@@ -299,6 +411,6 @@ const html = getContent()
 
 ### 版本
 
-当前版本：**1.3.0**
+当前版本：**1.7.0**
 
 详细更新日志请查看 [CHANGELOG.md](./CHANGELOG.md)

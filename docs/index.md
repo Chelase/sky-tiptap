@@ -5,6 +5,9 @@ hero:
   name: "Sky Tiptap"
   text: "Vue3 富文本编辑器"
   tagline: 开箱即用、功能丰富、基于 Tiptap 2.x
+  image:
+    src: /logo.png
+    alt: Sky Tiptap
   actions:
     - theme: brand
       text: 快速开始

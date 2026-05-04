@@ -1,342 +1,229 @@
-# Sky Tiptap 清理优化文档
+# Sky Tiptap 清理优化状态
 
-> 生成日期：2026-05-01  
-> 依据材料：`TEST_REPORT.md`、`README.md`、`agent_readme.md`、`package.json`、`src/main.js`、`src/components/SkyTiptap.vue`、`src/config/default.js`
+> 当前版本：`1.7.0`  
+> 最后更新：2026-05-04  
+> 依据材料：当前代码、`package.json`、`README.md`、`agent_readme.md`、`TEST_REPORT.md`、`.agent-rules/`
+
+---
 
 ## 1. 文档目的
 
-本文件用于记录 `sky-tiptap` 当前代码库的清理与优化方向，补充 `TEST_REPORT.md` 中已有的测试结论，并将问题整理为可执行的治理清单。
+本文件记录 `sky-tiptap` 当前已经完成的结构收束、仍需关注的优化点，以及后续维护时应遵守的项目基线。
 
-这不是一次功能迭代说明，而是一份针对项目结构、发布方式、兼容性、包体积和文档一致性的整理计划。
-
----
-
-## 2. 当前项目判断
-
-`sky-tiptap` 已经具备可用的组件库能力，核心功能和测试基础都比较完整：
-
-- 组件定位清晰：Vue 3 + Tiptap 富文本编辑器组件库
-- 构建方式明确：Vite 构建，输出 UMD + ESM
-- 已有测试基础：`TEST_REPORT.md` 记录 `29/29` 单元测试通过，并包含 Playwright 浏览器回归记录
-- 功能覆盖较完整：基础富文本、代码块、表格、链接、图片上传、视频嵌入、AI 入口
-
-但从维护性角度看，当前仓库仍处于“功能可用，但结构尚未收束”的阶段。主要问题不是单点 bug，而是历史实现和新实现并存，导致入口、配置、文档和发布链路存在不一致。
+它不是待执行的历史计划；当前仓库已经完成入口分离、主配置统一、SSR 风险修复和文档同步。
 
 ---
 
-## 3. 已确认的主要问题
+## 2. 当前项目基线
 
-### 3.1 文档与版本信息不同步
+`sky-tiptap` 是一个 Vue 3 + Tiptap 2.x 富文本编辑器组件库，当前版本为 `1.7.0`。
 
-当前至少存在以下不一致：
+当前项目状态：
 
-- `README.md` 当前版本为 `1.2.0`
-- `package.json` 当前版本为 `1.2.0`
-- `agent_readme.md` 仍记录为 `1.1.1`
-- `agent_readme.md` 中的项目结构描述已经落后于当前实际目录
+- 组件库入口清晰：`src/main.js` 只负责公共 API 导出。
+- 开发示例入口独立：`src/demo.js` 负责本地 demo 挂载。
+- 主编辑器组件明确：`src/components/SkyTiptap.vue`。
+- 默认配置唯一：`src/config/default.js`。
+- 当前扩展目录明确：`src/extensions/`。
+- 当前样式目录明确：`src/styles/`。
+- 测试基础完整：13 个测试文件、106 个用例通过。
+- 构建链路可用：`npm run build` 输出 ES 与 UMD 产物。
+- 发布链路明确：`master` 分支 GitHub Actions 同步发布 GitHub Packages 与 npm 公共包。
 
-影响：
+---
 
-- 增加维护成本
-- 新接手的人会误判当前主线实现
-- 文档无法准确反映真实导出能力和目录结构
+## 3. 已完成的清理项
 
-建议：
+### 3.1 入口职责收束
 
-- 统一所有根目录文档中的版本信息
-- 重新梳理 `agent_readme.md` 的项目结构、导出方式和发布说明
-- 将“旧实现保留说明”与“当前主线实现”明确区分
+已完成：
 
-### 3.2 新旧架构并存，主线不够清晰
+- `src/main.js` 不再挂载 Vue 示例应用。
+- `src/demo.js` 作为本地开发示例入口。
+- `index.html` 使用 `/src/demo.js`。
+- 库构建入口保持 `src/main.js`。
 
-当前仓库存在两套明显重叠的实现路径：
+结果：
 
-- 新主线：
-  - `src/components/SkyTiptap.vue`
-  - `src/config/default.js`
-- 旧实现或过渡实现：
-  - `src/index.vue`
-  - `src/utils/index.js`
+- 导入库不会触发示例应用副作用。
+- SSR、测试和发布入口更清晰。
 
-其中 `src/utils/index.js` 与 `src/config/default.js` 存在重复的 `TipTapPlugin` 配置，且内容并不完全一致。`src/index.vue` 也更接近早期实现，不适合作为当前组件库的真实主入口说明。
+### 3.2 SSR 风险修复
 
-影响：
+已完成：
 
-- 配置来源不唯一
-- 新增功能时容易改错位置
-- 测试和文档难以围绕单一实现收束
+- 移除库入口中的顶层 DOM 监听。
+- 全局点击监听移动到 `SkyTiptap.vue` 生命周期。
+- `document` / `window` 访问增加运行环境判断。
+- 卸载时清理全局事件监听和兼容编辑器引用。
 
-建议：
+结果：
 
-- 明确 `src/components/SkyTiptap.vue + src/config/default.js` 为唯一主线
-- 清理或归档 `src/index.vue`
-- 删除、合并或显式标记 `src/utils/index.js` 为废弃文件
-- 避免继续在两套实现上并行加功能
+- 服务端或 Node.js 环境导入库时不会因为顶层 DOM 访问报错。
 
-### 3.3 组件库入口与示例应用耦合
+### 3.3 主配置统一
 
-`src/main.js` 当前同时承担两个角色：
+已完成：
 
-- 作为库入口导出组件与工具函数
-- 直接 `createApp(App).mount('#app')` 启动示例页面
+- Tiptap 默认配置统一维护在 `src/config/default.js`。
+- 自定义扩展统一从 `src/extensions/` 注册。
+- 代码块使用 `CodeBlockLowlight` 与 Vue NodeView。
+- 标题级别限制为 H1-H3。
+- 链接保持 `openOnClick: false`，通过 Ctrl 或 Meta + Click 打开。
 
-这会让“库代码”和“本地 demo 代码”耦合在同一个入口文件中。
+结果：
 
-影响：
+- 新增扩展和默认行为调整都有明确入口。
 
-- 库入口职责不纯
-- 不利于后续 SSR、按需导入和构建治理
-- 容易引入仅 demo 需要的副作用逻辑
+### 3.4 公共导出收束
 
-建议：
-
-- 将库入口与示例应用入口拆分
-- 例如：
-  - `src/main.js` 或 `src/index.js` 仅负责库导出
-  - `src/demo/main.js` 或独立示例入口负责挂载 `App.vue`
-
-### 3.4 顶层副作用导致 SSR 兼容性风险
-
-`src/main.js` 在模块顶层注册了全局点击监听：
-
-- `document.addEventListener('click', ...)`
-
-同时对外兼容 API 也依赖：
-
-- `window.skyTiptapEditor`
-
-`TEST_REPORT.md` 已明确记录该问题属于 SSR 风险项。
-
-影响：
-
-- 在服务端渲染环境中可能直接报错
-- 模块导入阶段产生副作用，不利于复用
-- 全局对象依赖削弱组件封装边界
-
-建议：
-
-- 将 DOM 相关逻辑移动到组件生命周期中
-- 所有 `window` / `document` 访问增加环境判断
-- 长期建议逐步弱化对 `window.skyTiptapEditor` 的依赖，只保留兼容层
-
-### 3.5 向后兼容层仍然过重
-
-当前项目保留了较多兼容式导出：
+当前 `src/main.js` 导出：
 
 - `SkyTiptap`
-- `SkyTiptapNew`
+- `Toolbar`
+- `ToolbarButton`
+- `BubbleMenu`
+- `InsertMenuNew`
+- `CodeBlock`
+- `icons`
+- `getIcon`
+- `Icon`
+- `TipTapPlugin`
+- `defaultToolbarConfig`
+- `defaultBubbleMenuConfig`
+- `emitter`
+- `CustomParagraph`
+- `VideoEmbed`
+- `Iframe`
+- `editorRef`
 - `insertImage`
+- `insertImages`
+- `insertVideo`
+- `insertVideos`
 - `getContent`
-- 全局编辑器实例
 
-兼容层本身不是问题，但现在的问题是：
+兼容说明：
 
-- 新旧命名并存
-- 同一组件存在重复导出语义
-- 兼容接口与正式接口边界不够清楚
+- `window.skyTiptapEditor` 仅用于兼容工具函数。
+- 新代码推荐通过组件 `ref` 调用 `SkyTiptap` 暴露的方法。
+- 不再维护重复组件导出名。
 
-建议：
+### 3.5 文档同步
 
-- 明确公共 API 的稳定层
-- 为兼容 API 标记“保留周期”或“未来移除计划”
-- 避免继续新增新的重复命名
+已同步：
 
-### 3.6 构建产物体积偏大
+- `README.md`
+- `agent_readme.md`
+- `TEST_REPORT.md`
+- `CLEANUP_OPTIMIZATION.md`
+- VitePress `docs/`
+- `.agent-rules/`
+- 桥接入口 `AGENTS.md`、`CLAUDE.md`、`.trae/rules/agent-readme.md`
 
-`TEST_REPORT.md` 中记录：
+同步后的共同事实：
 
-- `dist/sky-tiptap.es.js` 约 2MB
-- 主要原因是 `highlight.js` 和 `lowlight` 的全量语法实体被打包
-
-这属于可用但不够经济的问题。
-
-影响：
-
-- 首次加载成本偏高
-- 组件库在业务项目中的接入成本上升
-- 后续扩展更多编辑能力时体积会继续恶化
-
-建议：
-
-- 改为按需注册语法高亮语言
-- 评估是否只保留常用语言集
-- 评估代码块相关能力是否可拆分
-
-### 3.7 发布链路与安装说明需要再次确认
-
-当前：
-
-- `README.md` 给出的安装方式是 `npm install @Chelase/sky-tiptap`
-- `package.json` 的 `publishConfig.registry` 指向 `https://npm.pkg.github.com`
-
-这意味着“安装说明”和“实际发布目标”之间需要再次确认是否完全一致。
-
-需要核实的问题：
-
-- 当前包是否计划发布到 npm 官方仓库
-- 如果继续使用 GitHub Packages，README 是否需要补 scope registry 配置说明
-- 如果目标是公共 npm 使用体验，则应调整发布策略或安装文档
-
-这不是立即阻塞开发的问题，但会直接影响外部使用体验。
+- 当前版本为 `1.7.0`。
+- 当前测试结果为 13 个测试文件、106 个用例通过。
+- 当前构建产物为 ES 与 UMD。
+- 当前主线是 `SkyTiptap.vue`、`default.js`、`main.js`、`demo.js`、`ai.js`、`ai-actions.js`、`ai-intent.js`、`emitter.js`、`styles/`、`extensions/`。
 
 ---
 
-## 4. 与测试报告的关系
+## 4. 当前仍需关注
 
-`TEST_REPORT.md` 已经覆盖并记录了以下内容：
+### 4.1 包体积
 
-- 构建通过
-- 单元测试通过
-- Playwright 浏览器回归通过
-- SSR 风险
-- 重复导出
-- 重复配置
-- 包体积偏大
+当前构建结果：
 
-本文件的增补重点是：
+| 文件 | 大小 | gzip |
+|------|------|------|
+| `dist/sky-tiptap.es.js` | 1055.07 kB | 300.43 kB |
+| `dist/sky-tiptap.umd.js` | 699.96 kB | 233.74 kB |
+| `dist/sky-tiptap.css` | 26.70 kB | 4.36 kB |
 
-- 从“测试发现”提升为“项目治理动作”
-- 将问题按优先级和执行顺序整理
-- 增补文档一致性、入口职责、发布说明这几类结构性问题
+后续可选优化：
 
----
+- 继续减少默认高亮语言数量。
+- 评估表格、视频、AI 能力是否拆成可选入口。
+- 提供更轻量的基础编辑器构建。
 
-## 5. 优先级建议
+### 4.2 依赖安全
 
-### P0：立即处理 ✅ 已完成 (2026-05-03)
+发布前应执行：
 
-这些问题优先级最高，应先完成，避免继续放大技术债。
+```bash
+npm audit
+```
 
-1. ✅ 拆分库入口与示例应用入口  
-   目标：消除 `src/main.js` 的双重职责
-   - 创建 `src/demo.js` 作为独立开发环境入口
-   - 清理 `src/main.js`，移除 demo 挂载代码
-   - 更新 `index.html` 使用 `/src/demo.js`
+依赖安全结论应以当前命令输出为准，不沿用旧报告中的漏洞数量。
 
-2. ✅ 处理 SSR 风险  
-   目标：避免顶层直接访问 `document` / `window`
-   - 移除 `src/main.js` 中的顶层 `document.addEventListener`
-   - 将全局点击监听器移至 `SkyTiptap.vue` 组件生命周期
-   - 添加 SSR 安全检查：`if (typeof document !== 'undefined')`
-   - 验证通过：Node.js 环境导入库无错误
+### 4.3 图标渲染
 
-3. ✅ 统一主线配置来源  
-   目标：确定 `src/config/default.js` 为唯一插件配置入口，停止维护重复配置
-   - 删除 `src/utils/index.js` - 过时的配置文件
-   - 删除 `src/index.vue` - 旧版组件
-   - 移除 `SkyTiptapNew` 重复导出
+当前部分图标通过 `v-html` 渲染仓库内静态 SVG 字符串。该方式在当前输入来源下可控；如果未来允许外部图标输入，应改为组件化渲染或净化 SVG。
 
-### P1：本轮清理完成 (进行中)
+### 4.4 兼容 API 治理
 
-1. ✅ 清理旧实现文件或标记废弃状态  
-   目标：收束到单一路径，降低认知成本
-   - 已删除 `src/index.vue` 和 `src/utils/index.js`
-
-2. ⏳ 统一导出命名与兼容层边界  
-   目标：明确稳定 API 与兼容 API
-   - 已移除 `SkyTiptapNew` 重复导出
-   - 待完善：文档中明确标注兼容 API
-
-3. ⏳ 修正文档不一致  
-   目标：让 README、agent 文档、版本说明、目录结构保持一致
-   - 待处理：统一版本号
-   - 待处理：更新项目结构描述
-
-### P2：后续优化
-
-1. 优化代码高亮相关包体积
-2. 重新检查发布策略与安装文档
-3. 继续扩大测试覆盖面，补充针对兼容 API 和构建入口的验证
+当前仍保留 `window.skyTiptapEditor` 和基于它的工具函数。后续如需进一步收束 API，应先明确迁移周期，并在 README、VitePress API 文档和 CHANGELOG 中同步说明。
 
 ---
 
-## 6. 执行步骤
+## 5. 后续维护规则
 
-### 第一步：入口与结构收束 ✅ 已完成 (2026-05-03)
+新增或修改功能时，应优先落在当前主线：
 
-- ✅ 将示例应用挂载逻辑从库入口中拆出
-- ✅ 保留一个纯净的公共导出入口
-- ✅ 检查 `src/index.vue` 是否仍有保留必要 - 已删除
-- ✅ 检查 `src/utils/index.js` 是否可以删除或转发到新配置 - 已删除
+- `src/components/SkyTiptap.vue`
+- `src/config/default.js`
+- `src/extensions/`
+- `src/utils/ai.js`
+- `src/utils/ai-actions.js`
+- `src/utils/ai-intent.js`
+- `src/utils/emitter.js`
+- `src/styles/`
 
-完成后，项目结构才会变得容易维护。
+文档或发布相关变更时，应同步检查：
 
-### 第二步：兼容性与副作用治理 ✅ 已完成 (2026-05-03)
+- `package.json`
+- `CHANGELOG.md`
+- `README.md`
+- `agent_readme.md`
+- `TEST_REPORT.md`
+- `docs/`
+- `.agent-rules/`
 
-- ✅ 将全局点击监听迁移到组件生命周期
-- ✅ 为 `window` / `document` 访问加运行环境保护
-- ✅ 评估是否保留全局 `window.skyTiptapEditor` - 保留作为兼容层
-- ✅ 若保留，则将其限定为兼容层，而不是主使用方式
+验证建议：
 
-### 第三步：文档和导出对齐 ⏳ 进行中
-
-- ⏳ 更新 `README.md`
-- ⏳ 更新 `agent_readme.md`
-- ⏳ 明确当前推荐使用方式
-- ⏳ 明确兼容 API 与推荐 API 的区别
-
-### 第四步：体积和发布链路优化 (待处理)
-
-- 调整高亮语言引入策略
-- 重新构建并观察产物变化
-- 确认发布目标仓库与 README 安装说明是否一致
+- 组件、逻辑、入口、扩展变更：运行 `npm test`。
+- 构建、导出、发布相关变更：运行 `npm run build`。
+- 文档变更：至少检查版本、路径、命令和公共 API 描述是否一致。
 
 ---
 
-## 7. 验收标准
+## 6. 当前验收状态
 
-完成本轮清理后，建议至少满足以下标准：
-
-1. 代码结构层面 ✅ 已达成
-- ✅ 组件库入口不再挂载 demo
-- ✅ 编辑器默认配置只有一个主来源
-- ✅ 不再存在用途不明确的重复实现文件
-
-2. 兼容性层面 ✅ 已达成
-- ✅ 导入库时不触发 SSR 报错
-- ✅ 顶层副作用最小化
-
-3. 文档层面 ⏳ 部分达成
-- ⏳ 根目录文档版本一致 (待处理)
-- ⏳ 项目结构说明与实际目录一致 (待处理)
-- ⏳ 安装、使用、发布说明能够自洽 (待处理)
-
-4. 构建层面 ✅ 已达成
-- ✅ 构建结果保持可用
-- ⏳ 包体积相较当前版本有明确优化，或至少形成体积治理方案 (P2 待处理)
-
-5. 测试层面 ✅ 已达成
-- ✅ 现有单元测试继续通过 (31/31)
-- ✅ 关键入口调整后，至少补一轮构建和基础回归验证
+| 验收项 | 状态 |
+|--------|------|
+| 库入口不挂载 demo | 已完成 |
+| 示例入口独立 | 已完成 |
+| 默认配置单一来源 | 已完成 |
+| SSR 顶层副作用清理 | 已完成 |
+| 公共组件导出收束 | 已完成 |
+| 文档版本一致 | 已完成 |
+| 项目结构说明与实际目录一致 | 已完成 |
+| 安装、使用、发布说明自洽 | 已完成 |
+| 单元测试通过 | 已完成，106/106 |
+| 构建通过 | 已完成 |
+| 包体积进一步优化 | 后续可选 |
+| 依赖安全复核 | 发布前执行 |
 
 ---
 
-## 8. 后续产出物
+## 7. 结论
 
-本轮清理已同步维护以下记录：
+当前仓库已经完成主要历史结构收束，可以按 `1.7.0` 的项目基线继续开发。
 
-- ✅ `CLEANUP_OPTIMIZATION.md` - 记录问题与阶段目标，已更新 P0 完成状态
-- ⏳ `CHANGELOG.md` - 记录对外可见变更 (待更新)
-- ✅ `TEST_REPORT.md` - 记录清理后的回归测试结果，已添加 P0 修复总结
+后续工作重点不再是清理旧入口，而是：
 
----
-
-## 9. 结论
-
-当前项目不是”不可用”，而是”可用但需要收口”。  
-
-**P0 高优先级问题已全部解决** (2026-05-03)：
-- ✅ 入口职责分离
-- ✅ SSR 风险消除
-- ✅ 重复实现清理
-- ✅ 配置来源统一
-
-**下一步工作重点**：
-- P1：文档一致性修正（版本号、项目结构描述）
-- P2：包体积优化、发布治理
-
-在 P0 问题收束之后，后续再做体积优化、发布治理和功能扩展，成本会明显更低，风险也更可控。
-
----
-
-*最后更新：2026-05-03*
+- 持续控制包体积。
+- 发布前复核依赖安全。
+- 保持兼容 API 与推荐 API 的文档边界清晰。
+- 新能力进入当前主线目录，避免重新产生并行实现。

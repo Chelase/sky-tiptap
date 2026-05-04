@@ -1,356 +1,181 @@
 # Sky Tiptap - 测试报告
 
 > 项目: `@Chelase/sky-tiptap`  
-> 版本: `1.2.2`  
-> 主报告日期: 2026-04-30
-> 主报告环境: WSL (Node.js v22.22.2) + Playwright Chromium
-> 补充验证: 2026-05-01（Windows PowerShell，`npm test` 29/29 通过，`npm run build` 通过）
-> **P0 问题修复**: 2026-05-03（Windows，`npm test` 31/31 通过，`npm run build` 通过，SSR 兼容性验证通过）
-
-> 注：本报告中的 Playwright 浏览器自动化结果沿用 2026-04-30 的回归记录；2026-05-01 已补跑单元测试和构建验证；2026-05-03 完成 P0 高优先级问题修复。
+> 当前版本: `1.7.0`  
+> 最后验证日期: 2026-05-04  
+> 验证环境: Windows PowerShell, Node.js/npm 本地依赖环境  
 
 ---
 
 ## 1. 执行摘要
 
-| 测试类型 | 状态 | 备注 |
-|---------|------|------|
-| 构建测试 | ✅ 通过 | `npm run build` 成功 |
-| 单元测试 | ✅ 31/31 通过 | Vitest + jsdom |
-| SSR 兼容性 | ✅ 已修复 | Node.js 环境导入无错误 |
-| 依赖安全审查 | ⚠️ 8 个漏洞 | 见下文 |
-| 静态代码审查 | ✅ P0 已修复 | P1/P2 待处理 |
-| 浏览器自动化测试 | ✅ 通过 | Playwright + Chromium |
+| 检查项 | 状态 | 结果 |
+|--------|------|------|
+| 单元测试 | 通过 | `node .\node_modules\vitest\vitest.mjs run`，13 个测试文件、112 个用例通过 |
+| 构建测试 | 通过 | `npm run build` 成功生成 ES 与 UMD 产物 |
+| 文档构建 | 通过 | `npm run docs:build` 成功生成 VitePress 静态站点 |
+| 库入口 | 通过 | `src/main.js` 为纯导出入口，不挂载示例应用 |
+| 开发入口 | 通过 | `index.html` 使用 `/src/demo.js` 启动本地示例 |
+| 主配置来源 | 通过 | `src/config/default.js` 是 Tiptap 默认配置唯一主入口 |
+| SSR 风险项 | 已修复 | DOM 监听已移入组件生命周期，并带运行环境判断 |
+| 文档一致性 | 已同步 | 根目录文档、Agent 文档、VitePress 文档已按 1.7.0 当前结构更新 |
 
 ---
 
-## 2. 构建测试
+## 2. 当前验证结果
 
-### 结果
+### 单元测试
 
-```
-vite v6.4.1 building for production...
-transforming...
-✓ 343 modules transformed.
-rendering chunks...
-computing gzip size...
-dist/sky-tiptap.css       22.70 kB │ gzip:   3.70 kB
-dist/sky-tiptap.es.js  2,043.59 kB │ gzip: 553.79 kB
-dist/sky-tiptap.umd.js  1,430.42 kB │ gzip: 452.39 kB
-✓ built in 5.30s
-```
-
-### 构建产物
-
-| 文件 | 大小 | gzip |
-|------|------|------|
-| `dist/sky-tiptap.es.js` | 2.0 MB | 554 kB |
-| `dist/sky-tiptap.umd.js` | 1.4 MB | 452 kB |
-| `dist/sky-tiptap.css` | 23 KB | 3.7 KB |
-
-### 构建问题
-- **WSL 兼容性**: 初始 `node_modules` 在 Windows 下安装，缺少 `@rollup/rollup-linux-x64-gnu`，需要补免安装。
-- **包体积过大**: ESM 包 2MB（gzip 555KB），主要是因为 `highlight.js` 和 `lowlight` 的全量语法实体被打包。建议考虑按需引入语言或使用动态加载。
-
----
-
-## 3. 单元测试
-
-### 测试框架
-- **Vitest** v4.1.5
-- **@vue/test-utils**
-- **jsdom**
-
-### 测试覆盖
-
-| 测试文件 | 用例数 | 通过 | 覆盖范围 |
-|---------|--------|------|---------|
-| `icons.test.js` | 3 | 3 | 图标导出、getIcon、Icon组件 |
-| `emitter.test.js` | 3 | 3 | mitt 事件发射、多监听器、卸载 |
-| `ToolbarButton.test.js` | 5 | 5 | 按钮渲染、点击、禁用态、激活态 |
-| `extensions.test.js` | 5 | 5 | VideoEmbed、Iframe、CustomParagraph 扩展配置 |
-| `SkyTiptap.test.js` | 7 | 7 | 组件挂载、Props、事件、暴露方法 |
-| `main.test.js` | 6 | 6 | 入口导出、向后兼容函数 |
-
-### 测试结果
-
-```
-✓ src/__tests__/ToolbarButton.test.js (5 tests) 98ms
-✓ src/__tests__/icons.test.js (3 tests) 7ms
-✓ src/__tests__/extensions.test.js (5 tests) 6ms
-✓ src/__tests__/emitter.test.js (3 tests) 11ms
-✓ src/__tests__/SkyTiptap.test.js (7 tests) 85ms
-✓ src/__tests__/main.test.js (6 tests) 7ms
-
-Test Files  6 passed (6)
-     Tests  29 passed (29)
-```
-
----
-
-## 4. 依赖安全审查 (`npm audit`)
-
-### 漏洞清单
-
-| 严重级 | 数量 | 包 |
-|--------|------|-----|
-| Critical | 1 | `handlebars` - JavaScript Injection via AST Type Confusion |
-| High | 4 | `immutable` (Prototype Pollution), `picomatch` (ReDoS), `rollup` (Path Traversal), `vite` (Arbitrary File Read) |
-| Moderate | 2 | `brace-expansion` (DoS), `markdown-it` (ReDoS) |
-
-### 修复建议
-1. 执行 `npm audit fix` 自动修复部分漏洞。
-2. 关键漏洞在 `handlebars`（流程图模板）和 `vite`（开发服务器），建议更新到最新版本。
-3. `markdown-it` 可升级到 v14.1.1 或更高版本修复 ReDoS。
-
----
-
-## 5. 静态代码审查
-
-### 5.1 配置问题
-
-#### `vite.config.js` - server 配置位置错误
-```js
-// 错误：server 不应在 build 内
-build: {
-    server: { host: '0.0.0.0', port: 5174 },
-    ...
-}
-
-// 正确：server 是独立配置
-server: { host: '0.0.0.0', port: 5174 },
-build: { ... }
-```
-**状态**: ✅ 已修复
-
-### 5.2 SSR 兼容性问题 ✅ 已修复
-
-#### `src/main.js`
-~~全局 `document.addEventListener` 在服务端渲染（SSR）时会抛出错误~~
-
-**修复内容** (2026-05-03):
-- 移除 `src/main.js` 中的顶层 `document.addEventListener`
-- 将全局点击监听器移至 `SkyTiptap.vue` 组件生命周期
-- 添加 SSR 安全检查：`if (typeof document !== 'undefined')`
-- 在 `onBeforeUnmount` 中正确清理事件监听器
-- 验证通过：Node.js 环境导入库无错误
-
-### 5.3 重复导出 ✅ 已修复
-
-#### `src/main.js`
-~~`SkyTiptap` 和 `SkyTiptapNew` 实际上是同一个组件~~
-
-**修复内容** (2026-05-03):
-- 移除 `SkyTiptapNew` 重复导出
-- 统一使用 `SkyTiptap` 作为唯一导出名称
-
-### 5.4 代码一致性 ✅ 已修复
-
-#### `src/utils/index.js` 和 `src/index.vue`
-~~存在与 `src/config/default.js` 重复的 `TipTapPlugin` 配置~~
-
-**修复内容** (2026-05-03):
-- 删除 `src/utils/index.js` - 过时的配置文件
-- 删除 `src/index.vue` - 旧版组件
-- `src/config/default.js` 成为唯一配置来源
-
-### 5.5 库入口与示例应用分离 ✅ 已修复
-
-#### `src/main.js`
-~~库入口混合了示例应用挂载代码~~
-
-**修复内容** (2026-05-03):
-- 创建 `src/demo.js` - 独立的开发环境示例应用入口
-- 清理 `src/main.js` - 移除 `createApp` 和 `.mount()` 调用
-- 更新 `index.html` - 改用 `/src/demo.js` 作为开发服务器入口
-- 库构建入口保持 `src/main.js`，不包含示例应用代码
-
-### 5.6 组件问题 (待处理)
-
-#### `CustomParagraphComponent.vue`
-使用了 `v-html="icons.plus"` 渲染 SVG，如果 `icons.plus` 包含恶意内容可能导致 XSS。虽然当前是硬编码的 SVG，但建议将图标渲染改为组件形式或确保内容可信。
-
-#### `InsertMenu.vue`
-存在 `insert('table')` 事件处理的缺失：在 `handleInsert` 方法中，`table` 和 `divider` 缺少 case分支，只在模板中直接调用。
-
----
-
-## 6. 浏览器自动化测试 (Playwright)
-
-### 测试环境
-- **浏览器**: Chromium (snap) via Playwright
-- **测试页面**: http://localhost:5174/ (开发服务器)
-- **测试框架**: Playwright + Chromium headless
-
-### 测试结果
-
-| 测试项 | 状态 | 说明 |
-|-------|------|------|
-| 页面加载 | ✅ 通过 | 页面标题 "Sky Tiptap" 正确显示 |
-| 组件挂载 | ✅ 通过 | #app 正确挂载 Vue 应用 |
-| 工具栏渲染 | ✅ 通过 | 18 个按钮正确显示 |
-| 编辑器初始化 | ✅ 通过 | ProseMirror 编辑器正确加载 |
-| 文本输入 | ✅ 通过 | 可正常输入文本并同步 HTML 输出 |
-| HTML 实时预览 | ✅ 通过 | 内容变化实时同步到输出区 |
-| 主题切换 | ✅ 通过 | 可在默认/暗色主题间切换 |
-| 工具栏显示/隐藏 | ✅ 通过 | 复选框控制工具栏可见性 |
-| 控制台错误 | ⚠️ 偶发 | 有 404 资源请求（偶发，非必现）|
-
-### 深度交互测试结果 (Playwright)
-
-| 功能 | 状态 | 备注 |
-|------|------|------|
-| 加粗 | ✅ | `toggleBold()` 正常 |
-| 斜体 | ✅ | `toggleItalic()` 正常 |
-| 下划线 | ✅ | `toggleUnderline()` 正常 |
-| 删除线 | ✅ | `toggleStrike()` 正常 |
-| 一级标题 | ✅ | `setHeading(1)` 正常 |
-| 二级标题 | ✅ | `setHeading(2)` 正常 |
-| 三级标题 | ✅ | `setHeading(3)` 正常 |
-| 无序列表 | ✅ | `toggleBulletList()` 正常 |
-| 有序列表 | ✅ | `toggleOrderedList()` 正常 |
-| 代码块 | ✅ | `toggleCodeBlock()` 正常 |
-| 表格 | ✅ | `insertTable({rows:3, cols:3})` 正常 |
-| 分割线 | ✅ | `setHorizontalRule()` 正常 |
-| 悬浮框-普通文本 | ✅ | 选中文本后正确显示 |
-| 悬浮框-标题内 | ✅ | 在 h1 内选中文字可显示 |
-| 悬浮框-代码块内 | ✅ | 在 pre 内选中文字可显示 |
-| 主题切换 | ✅ | default/dark 切换正常 |
-| 工具栏显示/隐藏 | ✅ | checkbox 控制正常 |
-
-### 工具栏按钮清单 (18个)
-撤销, 重做, 加粗, 斜体, 下划线, 删除线, 一级标题, 二级标题, 三级标题, 无序列表, 有序列表, 插入图片, 插入视频, 代码块, 表格, 分割线, 链接, AI 生成
-
-### 已知问题
-1. ~~**SSR 兼容性**: `main.js` 中的全局 `document.addEventListener` 在服务端渲染时会报错~~ ✅ 已修复 (2026-05-03)
-2. **包体积**: ESM 包 2MB，建议按需加载 highlight.js 语言 (P2 优化项)
-3. **视频菜单遮罩层**: `sky-video-menu-overlay` 层级为 300，可能遮挡其他元素
-
----
-
-## 8. 功能验证
-
-### 8.1 已验证功能
-
-| 功能 | 状态 | 说明 |
-|------|------|------|
-| 组件挂载 | ✅ | SkyTiptap 可正常初始化 |
-| Props 传递 | ✅ | modelValue, theme, showToolbar, placeholder |
-| 事件发射 | ✅ | uploadPhoto, update:modelValue |
-| 图标系统 | ✅ | 21 个 SVG 图标正常导出 |
-| 工具栏按钮 | ✅ | 点击、禁用、激活态 |
-| 扩展注册 | ✅ | VideoEmbed, Iframe, CustomParagraph |
-| 事件总线 | ✅ | emitter emit/on/off 正常工作 |
-
-### 8.2 需运行时验证的功能
-
-以下功能需要在浏览器环境中手动验证：
-
-- Tiptap 编辑器核心功能（粘贴、输入规则、Markdown 转换）
-- 代码块语法高亮
-- 图片上传与插入
-- 视频嵌入（Bilibili、YouTube、抖音）
-- 浮动菜单（Bubble Menu）
-- AI 生成功能（需 Sky-AI 后端）
-- 表格插入与操作
-
----
-
-## 7. 性能关注点
-
-1. **包体积**: 2MB ESM 包过大，建议通过以下方式优化：
-   - 将 `highlight.js` 语法实体改为按需加载
-   - 分割代码块组件为独立 chunk
-
-2. **重复 CSS**: 构建产物中输出了两份相同的 CSS。
-
----
-
-## 9. 修复清单
-
-### P0 高优先级 ✅ 已完成 (2026-05-03)
-- [x] 修复 `src/main.js` 中的 SSR 兼容性问题
-- [x] 分离库入口与示例应用（创建 `src/demo.js`）
-- [x] 清理 `src/utils/index.js` 中的重复配置
-- [x] 统一 `SkyTiptap` 和 `SkyTiptapNew` 导出
-- [x] 删除遗留文件 `src/index.vue`
-
-### P1 中优先级
-- [ ] 更新 `handlebars` 包修复 Critical 漏洞
-- [ ] 更新 `vite` 到最新版本修复路径遍历漏洞
-- [ ] 统一文档版本信息（README.md, agent_readme.md）
-- [ ] 更新项目结构描述以反映当前实现
-
-### P2 低优先级
-- [ ] 优化构建产物大小（动态引入 highlight.js 语言）
-- [ ] 修复 `CustomParagraphComponent.vue` 中的 XSS 风险
-- [ ] 完善 `InsertMenu.vue` 事件处理
-- [x] 增加 E2E 测试（Playwright）覆盖核心编辑功能
-
----
-
-## 10. 测试文件清单
-
-此次测试创建了以下测试文件：
-
-```
-src/__tests__/
-├── icons.test.js                      # 图标模块测试
-├── emitter.test.js                    # 事件总线测试
-├── ToolbarButton.test.js              # 工具栏按钮组件测试
-├── extensions.test.js                 # Tiptap 扩展测试
-├── SkyTiptap.test.js                  # 主组件测试
-├── main.test.js                       # 入口导出测试
-├── CustomParagraphComponent.test.js   # 自定义段落组件测试 (新增)
-└── InsertMenu.integration.test.js     # 插入菜单集成测试 (新增)
-```
-
----
-
-## 11. 测试脚本
+命令：
 
 ```bash
-# 构建
+node .\node_modules\vitest\vitest.mjs run
+```
+
+结果：
+
+```text
+Test Files  13 passed (13)
+Tests       112 passed (112)
+```
+
+当前测试覆盖：
+
+| 测试文件 | 覆盖范围 |
+|----------|----------|
+| `ai.test.js` | AI 请求体、响应解析、Markdown 渲染、流式响应处理 |
+| `ai-actions.test.js` | AI actions 解析、校验、白名单执行和参数限制 |
+| `ai-intent.test.js` | 本地意图解析、AI 文本补充解析和明确命令识别 |
+| `BubbleMenu.test.js` | 选区悬浮菜单渲染和命令触发 |
+| `CustomParagraphComponent.test.js` | 自定义段落组件交互 |
+| `emitter.test.js` | `mitt` 事件总线 |
+| `extensions.test.js` | 自定义扩展和视频 ID 解析 |
+| `icons.test.js` | 图标导出与获取 |
+| `InsertMenu.integration.test.js` | 插入菜单、图片/视频/表格/分割线/AI 事件 |
+| `main.test.js` | 库入口导出和兼容工具函数 |
+| `SkyDialog.test.js` | 统一弹窗输入、消息、校验和关闭行为 |
+| `SkyTiptap.test.js` | 主组件挂载、Props、事件和暴露方法 |
+| `ToolbarButton.test.js` | 工具栏按钮渲染、禁用态、激活态和点击 |
+
+### 构建
+
+命令：
+
+```bash
 npm run build
+```
 
-# 单元测试
-npm test
+结果：
 
-# 安全审查
+```text
+dist/sky-tiptap.css     26.72 kB | gzip:   4.38 kB
+dist/sky-tiptap.es.js 1058.53 kB | gzip: 301.32 kB
+dist/sky-tiptap.umd.js 702.76 kB | gzip: 234.59 kB
+```
+
+构建完成后 `postbuild` 会执行 `rimraf ./dist/assets`，保持发布产物只包含库文件。
+
+---
+
+## 3. 当前架构状态
+
+### 入口职责
+
+| 文件 | 当前职责 |
+|------|----------|
+| `src/main.js` | 组件库公共导出入口，无示例挂载副作用 |
+| `src/demo.js` | 本地开发示例应用入口 |
+| `index.html` | Vite 开发页，加载 `/src/demo.js` |
+
+### 主线实现
+
+| 模块 | 当前职责 |
+|------|----------|
+| `src/components/SkyTiptap.vue` | 主编辑器组件，组合工具栏、悬浮菜单、插入菜单、统一弹窗、文件选择和 AI 生成 |
+| `src/config/default.js` | Tiptap 默认配置唯一主入口 |
+| `src/extensions/` | 当前自定义 Tiptap 扩展目录 |
+| `src/utils/ai.js` | AI 请求配置、响应解析、Markdown 渲染和流式读取 |
+| `src/utils/ai-actions.js` | AI actions JSON 解析、schema 校验和白名单执行 |
+| `src/utils/ai-intent.js` | 从用户输入和 AI 文本中解析候选编辑器动作 |
+| `src/utils/emitter.js` | 组件间事件通信 |
+| `src/styles/` | 当前样式与设计变量目录 |
+
+### 兼容层
+
+`src/main.js` 仍保留以下兼容导出：
+
+- `editorRef`
+- `insertImage`
+- `insertImages`
+- `insertVideo`
+- `insertVideos`
+- `getContent`
+
+这些工具函数通过 `window.skyTiptapEditor` 访问当前编辑器实例。该能力用于兼容历史调用方式；新代码更推荐通过组件 `ref` 调用 `defineExpose` 暴露的方法。
+
+---
+
+## 4. 已收束问题
+
+以下问题已经在当前代码中收束：
+
+- 库入口与 demo 入口已分离。
+- `src/main.js` 不再执行 `createApp(...).mount(...)`。
+- 顶层 `document.addEventListener` 已移除。
+- DOM 相关监听移动到 `SkyTiptap.vue` 生命周期内。
+- `window` / `document` 访问已有运行环境判断。
+- Tiptap 配置统一到 `src/config/default.js`。
+- 公共导出统一为 `SkyTiptap`，不再导出重复组件名。
+- 图片选择事件统一返回 `File[]`。
+- 视频上传事件统一返回 `File[]`。
+- AI 生成支持普通文本、常见 JSON 响应字段和 SSE 流式响应。
+- AI actions 模式支持基础编辑、链接、分割线、媒体嵌入、iframe 和本地文件选择入口等受控动作。
+- AI 意图解析支持本地优先执行明确命令；`auto` 模式支持无法识别动作时回退插入 Markdown 内容。
+- AI actions 执行链支持执行前预览、只预览不执行、失败回滚和可选执行结果摘要。
+- 插入菜单中的表格、分割线、代码块、图片、视频和 AI 入口已有对应处理。
+
+---
+
+## 5. 当前仍需关注
+
+### 依赖安全
+
+本次文档同步没有重新执行 `npm audit`。如果准备发布，应重新运行：
+
+```bash
 npm audit
 ```
 
----
+根据历史记录，曾需要关注的依赖包括 `vite`、`rollup`、`markdown-it`、`handlebars`、`picomatch` 等。实际风险应以当前 `npm audit` 输出为准。
 
-## 12. P0 问题修复总结 (2026-05-03)
+### 包体积
 
-### 修复内容
+当前构建体积相较早期版本已经明显下降，但 ES 产物仍约 1 MB。后续可继续评估：
 
-**1. SSR 兼容性修复**
-- 移除 `src/main.js` 中的顶层 `document.addEventListener`
-- 将全局点击监听器移至 `SkyTiptap.vue` 组件生命周期
-- 添加环境检查：`if (typeof document !== 'undefined')`
-- 验证：Node.js 环境导入库无错误
+- 代码块高亮语言是否进一步按需化。
+- AI、视频、表格等能力是否需要拆分为可选扩展入口。
+- 是否需要提供更轻量的基础编辑器构建。
 
-**2. 库入口与示例应用分离**
-- 创建 `src/demo.js` - 独立的开发环境入口
-- 清理 `src/main.js` - 移除 `createApp` 和 `.mount()` 调用
-- 更新 `index.html` - 改用 `/src/demo.js`
-- 构建入口保持 `src/main.js`，不包含示例应用代码
+### 图标渲染
 
-**3. 清理重复配置和遗留文件**
-- 删除 `src/utils/index.js` - 过时的 Tiptap 配置
-- 删除 `src/index.vue` - 旧版组件
-- 移除 `SkyTiptapNew` 重复导出
-- `src/config/default.js` 成为唯一配置来源
-
-### 验证结果
-- ✅ 单元测试：31/31 通过
-- ✅ 构建测试：成功生成 UMD 和 ES 模块
-- ✅ SSR 兼容性：Node.js 环境导入无错误
-- ✅ 包体积：与之前一致（ESM 2.04MB, UMD 1.43MB）
-- ✅ 向后兼容性：所有公共 API 保持不变
+部分组件通过 `v-html` 渲染本地图标字符串。当前图标来源是仓库内静态定义，风险可控；如果未来允许外部注入图标内容，需要改为组件化渲染或引入净化流程。
 
 ---
 
-*本报告由 Hermes Agent 自动生成，最后更新：2026-05-03*
+## 6. 验证命令
+
+```bash
+npm test
+npm run build
+npm run docs:build
+```
+
+本次实际执行的测试命令是：
+
+```bash
+node .\node_modules\vitest\vitest.mjs run
+```
+
+---
+
+*最后更新：2026-05-04*

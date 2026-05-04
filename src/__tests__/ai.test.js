@@ -175,6 +175,33 @@ describe('AI utilities', () => {
     expect(content).toBe('<h2>标题</h2>\n<p>正文</p>\n')
   })
 
+  it('does not read a streamed response body twice when stream content is empty', async () => {
+    const encoder = new TextEncoder()
+    const text = vi.fn()
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      body: new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+          controller.close()
+        },
+      }),
+      text,
+    }))
+
+    await expect(requestAiContent({
+      baseUrl: 'https://api.example.com/generate',
+      apiKey: 'secret',
+      prompt: '生成 markdown',
+      requestBody: {
+        stream: true,
+      },
+      fetchImpl,
+    })).rejects.toThrow('AI 接口未返回可插入内容')
+
+    expect(text).not.toHaveBeenCalled()
+  })
+
   it('throws when required config is missing', async () => {
     await expect(requestAiContent({
       baseUrl: '',

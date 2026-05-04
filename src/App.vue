@@ -39,6 +39,7 @@ const content = ref('<p>开始编辑内容...</p>')
 const showToolbar = ref(false)
 const theme = ref('default')
 const aiConfig = {
+  mode: 'actions',
   baseUrl: 'https://www.right.codes/codex/v1/responses',
   apiKey: 'sk-4476b366cf854e07bc6e5cf1cb285057',
   buildBody: (prompt) => ({

@@ -21,11 +21,11 @@
 
 - `.agent-rules/` 是唯一的项目规则真来源。
 - `CLAUDE.md`、`.trae/rules/agent-readme.md` 仅作为桥接入口，不应各自维护一套独立的项目规则。
-- 若规则冲突，优先级为：系统/宿主工具指令 > 用户要求 > `.agent-rules/` > 桥接文件 > 旧文档。
+- 若规则冲突，优先级为：系统/宿主工具指令 > 用户要求 > `.agent-rules/` > 桥接文件 > 其他项目文档。
 
 ## 最低工作要求
 
 - 保持手术式改动，不做无关重构。
-- 优先沿当前主线实现工作：`src/components/SkyTiptap.vue`、`src/config/default.js`、`src/utils/emitter.js`、`src/styles/`。
-- 不要继续扩展 `src/index.vue`、`src/utils/index.js`、`src/style/` 这类遗留或过渡面，除非任务明确要求兼容或清理。
+- 优先沿当前主线实现工作：`src/components/SkyTiptap.vue`、`src/config/default.js`、`src/extensions/`、`src/utils/ai.js`、`src/utils/ai-actions.js`、`src/utils/ai-intent.js`、`src/utils/emitter.js`、`src/styles/`。
+- `src/index.vue` 和 `src/utils/index.js` 已删除，不再作为开发入口；新增样式进入 `src/styles/`，不要继续扩展 `src/style/`。
 - 当改动影响已发布行为、对外 API、项目结构或安装方式时，必须同步检查版本和文档。

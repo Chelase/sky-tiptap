@@ -4,14 +4,14 @@ export default defineConfig({
   title: 'Sky Tiptap',
   description: '适用于 Vue3 的 Tiptap 富文本编辑器组件',
   base: '/sky-tiptap/',
-  
+
   head: [
-    ['link', { rel: 'icon', href: '/sky-tiptap/favicon.ico' }]
+    ['link', { rel: 'icon', href: '/sky-tiptap/logo.png' }]
   ],
 
   themeConfig: {
-    logo: '/logo.svg',
-    
+    logo: '/logo.png',
+
     nav: [
       { text: '指南', link: '/guide/' },
       { text: 'API', link: '/api/' },

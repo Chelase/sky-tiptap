@@ -6,6 +6,12 @@
 npm install @Chelase/sky-tiptap
 ```
 
+如果使用 npm 公共包版本，请改用：
+
+```bash
+npm install sky-tiptap
+```
+
 ## 基础使用
 
 ```vue
@@ -33,6 +39,7 @@ const content = ref('')
 | `theme` | String | `'default'` | 主题（default/dark） |
 | `showToolbar` | Boolean | `false` | 是否显示工具栏 |
 | `placeholder` | String | `'输入内容...'` | 占位符 |
+| `aiConfig` | Object | `{ baseUrl: '', apiKey: '' }` | AI 内容生成配置 |
 
 ## 组件事件
 
@@ -40,8 +47,9 @@ const content = ref('')
 |------|------|------|
 | `update:modelValue` | String | 内容变化时触发 |
 | `uploadPhoto` | File[] | 选择图片时触发，支持单图和多图 |
+| `uploadVideo` | File[] | 选择视频时触发，支持单视频和多视频 |
 
-## 获取编辑器实例
+## 调用组件方法
 
 ```vue
 <script setup>
@@ -51,8 +59,8 @@ import { SkyTiptap } from '@Chelase/sky-tiptap'
 const editor = ref()
 
 onMounted(() => {
-  // 访问 Tiptap 编辑器实例
-  console.log(editor.value.editor)
+  const html = editor.value?.getContent()
+  console.log(html)
 })
 </script>
 ```

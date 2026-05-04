@@ -5,7 +5,7 @@
 **Sky Tiptap** 是一款基于 Tiptap 和 Vue 3 的富文本编辑器组件库，目标是提供开箱即用的编辑体验和可扩展的多媒体能力。
 
 - **源码包名：** `@Chelase/sky-tiptap`
-- **当前版本：** `1.3.0`
+- **当前版本：** `1.7.0`
 - **技术栈：** Vue 3 + Tiptap 2.x + Vite 6.x
 - **作者：** Chelsea
 
@@ -65,6 +65,7 @@
 - AI 内容生成入口
 - 流式 Markdown 渲染与同段内容更新
 - 基于 `markdown-it` 将 AI 返回 Markdown 转换为可插入 HTML
+- AI 操控编辑器：本地意图解析优先，AI 文本补充解析，最终通过白名单执行 Tiptap command；支持 `content`、`actions`、`auto` 三种模式，并支持 actions 执行前预览、只预览不执行、失败回滚和可选执行结果摘要
 
 ---
 
@@ -84,11 +85,12 @@
 - `src/styles/`
   - 当前样式目录
 
-以下位置视为遗留或过渡面，除兼容性任务或显式清理任务外，不应继续扩展主线功能：
+已清理的旧入口不再作为可维护面：
 
-- `src/index.vue`
-- `src/utils/index.js`
-- `src/style/`
+- `src/index.vue`：已删除
+- `src/utils/index.js`：已删除
+
+`src/style/` 仍存在于仓库中，但不再作为新样式入口；新增样式应进入 `src/styles/`。
 
 ---
 
@@ -124,10 +126,11 @@ sky-tiptap/
 │   ├── icons/
 │   │   └── index.js
 │   ├── styles/                  # 当前样式目录
-│   ├── style/                   # 旧样式目录（遗留）
+│   ├── style/                   # 保留目录，不作为新样式入口
 │   └── utils/
+│       ├── ai.js                # AI 请求、响应解析与 Markdown 渲染
 │       ├── emitter.js
-│       └── extensions/          # 旧扩展工具（遗留）
+│       └── extensions/          # 保留目录，不作为新扩展入口
 ├── AGENTS.md
 ├── CLAUDE.md
 ├── CLEANUP_OPTIMIZATION.md
@@ -138,9 +141,9 @@ sky-tiptap/
 ```
 
 **注意**：
-- `src/index.vue` 和 `src/utils/index.js` 已删除（2026-05-03）
-- `src/main.js` 现在是纯净的库导出入口，不包含示例应用代码
-- `src/demo.js` 是新增的开发环境入口，用于 `npm run dev`
+- `src/index.vue` 和 `src/utils/index.js` 已删除
+- `src/main.js` 是纯净的库导出入口，不包含示例应用代码
+- `src/demo.js` 是开发环境入口，用于 `npm run dev`
 
 ---
 
@@ -189,7 +192,7 @@ const content = ref('')
 | `theme` | String | `'default'` | 主题（`default` / `dark`） |
 | `showToolbar` | Boolean | `false` | 是否显示工具栏 |
 | `placeholder` | String | `'输入内容...'` | 占位符 |
-| `aiConfig` | Object | `{ baseUrl: '', apiKey: '' }` | AI 生成接口配置，支持原样传递 `requestBody`、用 `buildBody` 组装弹窗输入、用 `buildRequest` 完全接管请求，以及 `headers`、`method`、`parseResponse` |
+| `aiConfig` | Object | `{ baseUrl: '', apiKey: '' }` | AI 配置，支持内容生成、`mode: 'actions'` 操控编辑器模式、执行前预览、只预览不执行和失败回滚；请求侧支持 `requestBody`、`buildBody`、`buildRequest`、`headers`、`method`、`parseResponse` |
 
 ### 组件事件
 
@@ -237,6 +240,7 @@ const html = getContent()
 
 - `src/config/default.js` 中的 `TipTapPlugin` 是唯一主配置入口
 - 自定义扩展统一放在 `src/extensions/`
+- AI actions 执行逻辑统一放在 `src/utils/ai-actions.js`
 - 自定义 NodeView 使用 `VueNodeViewRenderer` 注册
 - `CodeBlockLowlight` 替代 StarterKit 默认代码块
 - 链接默认不直接打开，通过 Ctrl 或 Meta + Click 新标签页打开
@@ -244,9 +248,9 @@ const html = getContent()
 ### 兼容层边界
 
 - `window.skyTiptapEditor` 仅作为兼容层，不应作为新 API 的首选入口
-- `src/main.js` 现在是纯净的库导出入口，不包含示例应用代码（2026-05-03 已修复）
+- `src/main.js` 是纯净的库导出入口，不包含示例应用代码
 - `src/demo.js` 是独立的开发环境入口，用于 `npm run dev`
-- 新功能不要继续扩展 `src/style/`（遗留目录）
+- 新功能不要继续扩展 `src/style/`，新增样式进入 `src/styles/`
 
 ### 文档同步
 
@@ -319,4 +323,12 @@ MIT License
 
 ---
 
-*最后更新：2026-05-03*
+## 当前验证基线
+
+- 单元测试：13 个测试文件、106 个用例通过
+- 构建测试：`npm run build` 通过
+- 构建产物：ES Module + UMD + CSS
+
+---
+
+*最后更新：2026-05-04*

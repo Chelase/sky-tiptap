@@ -34,9 +34,9 @@
 2. 用户当前明确提出的要求
 3. `.agent-rules/` 下的规则
 4. 桥接文件中的摘要说明
-5. 其他旧文档中的历史描述
+5. 其他项目文档中的补充描述
 
-如果旧文档与 `.agent-rules/` 或当前代码实现不一致，不要继续扩散旧规则；应优先遵守当前有效规则，并在任务允许时同步修正文档。
+如果其他项目文档与 `.agent-rules/` 或当前代码实现不一致，不要继续扩散不一致描述；应优先遵守当前有效规则，并在任务允许时同步修正文档。
 
 ## 4. 当前项目主线
 
@@ -47,14 +47,16 @@
 - 库导出入口：`src/main.js`（纯净，无副作用）
 - 开发环境入口：`src/demo.js`（示例应用）
 - 事件总线：`src/utils/emitter.js`
+- AI 请求、actions 与意图解析：`src/utils/ai.js`、`src/utils/ai-actions.js`、`src/utils/ai-intent.js`
 - 样式目录：`src/styles/`
 - 自定义扩展：`src/extensions/`
 
-以下位置视为遗留实现或过渡面，除兼容性任务或显式清理任务外，不应继续扩展主线功能：
+以下旧入口已清理，不再作为开发入口：
 
-- ~~`src/index.vue`~~ (已删除 2026-05-03)
-- ~~`src/utils/index.js`~~ (已删除 2026-05-03)
-- `src/style/`
+- `src/index.vue`（已删除）
+- `src/utils/index.js`（已删除）
+
+`src/style/` 保留在仓库中，但新增样式应进入 `src/styles/`。
 
 ## 5. 必须遵守的工作底线
 
