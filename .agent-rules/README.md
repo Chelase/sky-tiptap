@@ -23,8 +23,6 @@
 3. 根据任务再读取相关项目文档：
    - 功能与使用背景：`README.md`
    - 项目结构与模块说明：`agent_readme.md`
-   - 测试现状与已知问题：`TEST_REPORT.md`
-   - 清理/重构背景：`CLEANUP_OPTIMIZATION.md`
 
 ## 3. 规则优先级
 

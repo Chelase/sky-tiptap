@@ -133,9 +133,7 @@ sky-tiptap/
 │       └── extensions/          # 保留目录，不作为新扩展入口
 ├── AGENTS.md
 ├── CLAUDE.md
-├── CLEANUP_OPTIMIZATION.md
 ├── README.md
-├── TEST_REPORT.md
 ├── package.json
 └── vite.config.js
 ```

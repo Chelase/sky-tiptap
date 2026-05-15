@@ -14,8 +14,6 @@
 
 - `README.md`
 - `agent_readme.md`
-- `TEST_REPORT.md`
-- `CLEANUP_OPTIMIZATION.md`
 
 ## 规则来源与优先级
 

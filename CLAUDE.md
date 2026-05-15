@@ -16,8 +16,6 @@
 
 - `README.md`
 - `agent_readme.md`
-- `TEST_REPORT.md`
-- `CLEANUP_OPTIMIZATION.md`
 
 附加约束：
 
