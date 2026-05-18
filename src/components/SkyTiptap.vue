@@ -41,7 +41,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/vue-3'
+import { useEditor, EditorContent } from '@tiptap/vue-3'
 import { emitter } from '../utils/emitter'
 import { TipTapPlugin } from '../config/default'
 import Toolbar from './Toolbar/Toolbar.vue'
@@ -79,7 +79,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:modelValue', 'uploadPhoto', 'uploadVideo'])
+const emit = defineEmits(['update:modelValue', 'uploadPhoto', 'uploadVideo', 'paste', 'drop', 'ready', 'focus', 'blur', 'selectionChange'])
 
 const fileInputRef = ref(null)
 const videoInputRef = ref(null)
@@ -90,7 +90,55 @@ const editor = useEditor({
   content: props.modelValue,
   onUpdate: ({ editor }) => {
     emit('update:modelValue', editor.getHTML())
-  }
+  },
+  onCreate: () => {
+    emit('ready')
+  },
+  onFocus: () => {
+    emit('focus')
+  },
+  onBlur: () => {
+    emit('blur')
+  },
+  onSelectionUpdate: ({ editor }) => {
+    const { from, to, empty } = editor.state.selection
+    const text = empty ? '' : editor.state.doc.textBetween(from, to, ' ')
+    emit('selectionChange', { from, to, text, empty })
+  },
+  editorProps: {
+    ...TipTapPlugin.editorProps,
+    handlePaste: (view, event) => {
+      const files = Array.from(event.clipboardData?.files || [])
+      const text = event.clipboardData?.getData('text/plain') || ''
+      const html = event.clipboardData?.getData('text/html') || ''
+      const type = files.length
+        ? files.some(f => f.type.startsWith('image/')) ? 'image' : 'mixed'
+        : html ? 'html' : 'text'
+      let prevented = false
+      emit('paste', {
+        event,
+        type,
+        files,
+        text,
+        html,
+        preventDefault: () => { prevented = true },
+        handled: false,
+      })
+      return prevented
+    },
+    handleDrop: (view, event) => {
+      const files = Array.from(event.dataTransfer?.files || [])
+      if (!files.length) return false
+      let prevented = false
+      emit('drop', {
+        event,
+        files,
+        type: files.some(f => f.type.startsWith('image/')) ? 'image' : 'file',
+        preventDefault: () => { prevented = true },
+      })
+      return prevented
+    },
+  },
 })
 
 // 监听外部内容变化
