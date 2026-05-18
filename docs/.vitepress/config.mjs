@@ -32,7 +32,12 @@ export default defineConfig({
       {
         text: 'API',
         items: [
-          { text: '组件与工具函数', link: '/api/' }
+          { text: 'API 概览', link: '/api/' },
+          { text: '组件配置', link: '/api/props' },
+          { text: '事件', link: '/api/events' },
+          { text: '实例方法', link: '/api/methods' },
+          { text: '媒体 API', link: '/api/media' },
+          { text: 'AI API', link: '/api/ai' }
         ]
       }
     ],

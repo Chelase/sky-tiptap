@@ -55,6 +55,49 @@ insertImages([
 ])
 ```
 
+## 处理粘贴图片
+
+如果用户从网页、截图工具或聊天软件复制图片后直接粘贴到编辑器，默认粘贴逻辑可能会把图片以 base64 写入内容。图片一大，HTML 会迅速变得很长，后续存入数据库后可能影响查询和渲染性能。
+
+Sky Tiptap 提供 `paste` 事件。业务侧可以在这个事件中拦截剪贴板文件，上传到自己的服务器，再用图片 URL 插入编辑器。
+
+需要注意：如果没有监听 `paste`，或者监听后没有调用 `pasteEvent.preventDefault()`，编辑器会继续执行默认粘贴行为，base64 图片仍可能被插入。
+
+```vue
+<template>
+  <sky-tiptap
+    ref="editor"
+    v-model="content"
+    @paste="handlePaste"
+  />
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { SkyTiptap } from '@Chelase/sky-tiptap'
+
+const editor = ref()
+const content = ref('')
+
+const handlePaste = async (pasteEvent) => {
+  if (!pasteEvent.files.length) return
+
+  pasteEvent.preventDefault()
+
+  const urls = await Promise.all(
+    pasteEvent.files.map(async (file) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      const { data } = await uploadPhoto(formData)
+      return data.url
+    })
+  )
+
+  editor.value?.insertImages(urls)
+}
+</script>
+```
+
 ## 配合 axios 使用
 
 ```javascript
