@@ -40,12 +40,31 @@ vi.mock('../components/Toolbar/Menu/InsertMenu.vue', () => ({
   }
 }))
 
+// Mock DragHandle component
+vi.mock('@tiptap/extension-drag-handle-vue-3', () => ({
+  DragHandle: {
+    name: 'DragHandle',
+    props: ['editor'],
+    render() {
+      return h('div', { class: 'tiptap-drag-handle' }, this.$slots.default?.())
+    }
+  }
+}))
+
+const countTopLevelBlocks = (content = '') => {
+  const trimmed = String(content).trim()
+  if (!trimmed) return 0
+  const parsed = new DOMParser().parseFromString(trimmed, 'text/html')
+  return parsed.body.children.length || 1
+}
+
 // Mock Tiptap Vue3
 vi.mock('@tiptap/vue-3', async () => {
   const actual = await vi.importActual('@tiptap/vue-3')
   return {
     ...actual,
     useEditor: (options) => {
+      const childCount = countTopLevelBlocks(options.content)
       const run = vi.fn(() => true)
       const chain = {
         focus: vi.fn(() => chain),
@@ -88,7 +107,11 @@ vi.mock('@tiptap/vue-3', async () => {
         on: vi.fn(),
         off: vi.fn(),
         state: {
-          selection: { from: 0, to: 0 }
+          selection: { from: 0, to: 0 },
+          doc: {
+            childCount,
+            descendants: vi.fn()
+          }
         },
         isFocused: false,
         view: {
@@ -98,6 +121,7 @@ vi.mock('@tiptap/vue-3', async () => {
         options: {}
       }
       tiptapState.latestEditor = editor
+      options.onCreate?.({ editor })
       return { value: editor }
     },
     EditorContent: {
@@ -177,6 +201,30 @@ describe('SkyTiptap Component', () => {
     })
     await nextTick()
     expect(wrapper.find('.sky-toolbar').exists()).toBe(false)
+  })
+
+  it('does not render drag handle for a single top-level block', async () => {
+    const wrapper = mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>'
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    expect(wrapper.find('.drag-handle').exists()).toBe(false)
+  })
+
+  it('renders drag handle for multiple top-level blocks', async () => {
+    const wrapper = mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p><p>World</p>'
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    expect(wrapper.find('.drag-handle').exists()).toBe(true)
   })
 
   it('sets data-theme attribute correctly', async () => {

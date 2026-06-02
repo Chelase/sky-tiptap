@@ -15,6 +15,20 @@
     <!-- 插入菜单 -->
     <InsertMenu v-if="editor" :editor="editor" />
 
+    <!-- 拖拽手柄 -->
+    <DragHandle v-if="editor && topLevelBlockCount > 1" :editor="editor">
+      <div class="drag-handle">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="8" cy="6" r="1.5" />
+          <circle cx="8" cy="12" r="1.5" />
+          <circle cx="8" cy="18" r="1.5" />
+          <circle cx="16" cy="6" r="1.5" />
+          <circle cx="16" cy="12" r="1.5" />
+          <circle cx="16" cy="18" r="1.5" />
+        </svg>
+      </div>
+    </DragHandle>
+
     <!-- 统一弹窗 -->
     <SkyDialog />
 
@@ -42,6 +56,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
+import { DragHandle } from '@tiptap/extension-drag-handle-vue-3'
 import { emitter } from '../utils/emitter'
 import { TipTapPlugin } from '../config/default'
 import Toolbar from './Toolbar/Toolbar.vue'
@@ -83,15 +98,22 @@ const emit = defineEmits(['update:modelValue', 'uploadPhoto', 'uploadVideo', 'pa
 
 const fileInputRef = ref(null)
 const videoInputRef = ref(null)
+const topLevelBlockCount = ref(0)
+
+function refreshTopLevelBlockCount(activeEditor = editor.value) {
+  topLevelBlockCount.value = activeEditor?.state?.doc?.childCount || 0
+}
 
 // 创建编辑器实例
 const editor = useEditor({
   ...TipTapPlugin,
   content: props.modelValue,
   onUpdate: ({ editor }) => {
+    refreshTopLevelBlockCount(editor)
     emit('update:modelValue', editor.getHTML())
   },
-  onCreate: () => {
+  onCreate: ({ editor }) => {
+    refreshTopLevelBlockCount(editor)
     emit('ready')
   },
   onFocus: () => {
@@ -145,6 +167,7 @@ const editor = useEditor({
 watch(() => props.modelValue, (newValue) => {
   if (editor.value && newValue !== editor.value.getHTML()) {
     editor.value.commands.setContent(newValue)
+    refreshTopLevelBlockCount()
   }
 })
 
@@ -543,6 +566,8 @@ onMounted(() => {
   if (typeof window !== 'undefined') {
     window.skyTiptapEditor = editor.value
   }
+
+  refreshTopLevelBlockCount()
 
   // 添加全局点击事件监听（SSR 安全）
   if (typeof document !== 'undefined') {

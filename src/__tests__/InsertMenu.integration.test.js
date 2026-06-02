@@ -12,6 +12,16 @@ vi.mock('../components/BubbleMenu/BubbleMenu.vue', () => ({
   },
 }))
 
+vi.mock('@tiptap/extension-drag-handle-vue-3', () => ({
+  DragHandle: {
+    name: 'DragHandle',
+    props: ['editor'],
+    render() {
+      return h('div', { class: 'tiptap-drag-handle' }, this.$slots.default?.())
+    }
+  }
+}))
+
 import SkyTiptap from '../components/SkyTiptap.vue'
 
 const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect

@@ -344,6 +344,7 @@ const handleUploadVideo = async (files) => {
 - ✅ AI 内容生成（外部接口配置，支持流式响应）
 - ✅ AI 流式 Markdown 渲染
 - ✅ AI 操控编辑器（结构化 actions 白名单执行）
+- ✅ 元素拖拽排序（桌面端，悬停显示拖拽手柄）
 - ✅ 悬浮菜单（Bubble Menu，含标题与列表）
 - ✅ 插入菜单（Insert Menu）
 - ✅ 工具栏（Toolbar）
@@ -458,6 +459,6 @@ const html = getContent()
 
 ### 版本
 
-当前版本：**1.7.0**
+当前版本：**1.8.0**
 
 详细更新日志请查看 [CHANGELOG.md](./CHANGELOG.md)

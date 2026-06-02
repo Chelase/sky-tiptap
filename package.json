@@ -1,6 +1,6 @@
 {
   "name": "@Chelase/sky-tiptap",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "A tiptap template for Vue3 - 一个适用于 tiptap 的 Vue3 模板",
   "license": "MIT",
   "author": {
@@ -44,6 +44,9 @@
   },
   "dependencies": {
     "@tiptap/extension-code-block-lowlight": "^2.27.2",
+    "@tiptap/extension-drag-handle": "^2.27.2",
+    "@tiptap/extension-drag-handle-vue-3": "^2.27.2",
+    "@tiptap/extension-dropcursor": "^2.27.2",
     "@tiptap/extension-highlight": "^2.27.2",
     "@tiptap/extension-image": "^2.27.2",
     "@tiptap/extension-link": "^2.27.2",

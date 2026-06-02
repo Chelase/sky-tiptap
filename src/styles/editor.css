@@ -290,6 +290,49 @@
   background: var(--sky-color-text-muted);
 }
 
+/* ===== Dropcursor 样式 ===== */
+.ProseMirror-dropcursor {
+  color: var(--sky-color-primary);
+  height: 2px;
+}
+
+/* ===== 拖拽手柄样式 ===== */
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: var(--sky-color-bg);
+  border: 1px solid var(--sky-color-border);
+  border-radius: var(--sky-radius-sm);
+  cursor: grab;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  user-select: none;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.drag-handle:hover {
+  background-color: var(--sky-color-bg-secondary);
+  border-color: var(--sky-color-border-hover);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle svg {
+  width: 16px;
+  height: 16px;
+  fill: var(--sky-color-text-muted);
+  transition: fill 0.2s ease;
+}
+
+.drag-handle:hover svg {
+  fill: var(--sky-color-text);
+}
+
 /* ===== 响应式 ===== */
 @media (max-width: 640px) {
   .sky-editor {

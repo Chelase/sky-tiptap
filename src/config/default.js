@@ -16,6 +16,7 @@ import Table from '@tiptap/extension-table'
 import TableRow from '@tiptap/extension-table-row'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
+import Dropcursor from '@tiptap/extension-dropcursor'
 import { createLowlight } from 'lowlight'
 
 // 按需导入常用语言，而不是全部语言
@@ -71,6 +72,7 @@ export const TipTapPlugin = {
         levels: [1, 2, 3]
       },
       paragraph: false, // 禁用默认段落，使用自定义段落
+      dropcursor: false, // 使用下方自定义 Dropcursor 配置
       codeBlockHighlight: false,
     }),
     Highlight,
@@ -89,6 +91,10 @@ export const TipTapPlugin = {
     TableRow,
     TableCell,
     TableHeader,
+    Dropcursor.configure({
+      color: 'var(--sky-color-primary)',
+      width: 2,
+    }),
     CodeBlockLowlight
       .extend({
         addNodeView() {
