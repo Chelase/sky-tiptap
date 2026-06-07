@@ -106,7 +106,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:modelValue', 'uploadPhoto', 'uploadVideo', 'paste', 'drop', 'ready', 'focus', 'blur', 'selectionChange'])
+const emit = defineEmits(['update:modelValue', 'uploadPhoto', 'uploadVideo', 'paste', 'drop', 'ready', 'focus', 'blur', 'selectionChange', 'linkClick'])
 
 const fileInputRef = ref(null)
 const videoInputRef = ref(null)
@@ -177,6 +177,43 @@ const handleDragNodeChange = ({ node }) => {
   isActiveDragNodeDraggable.value = !node || isDraggableBlockNode(node)
 }
 
+const findClickedLink = (event) => {
+  const target = event?.target
+  if (!target) return null
+
+  if (typeof target.closest === 'function') {
+    return target.closest('a')
+  }
+
+  return target.parentElement?.closest?.('a') || null
+}
+
+const handleEditorClick = (view, pos, event) => {
+  const link = findClickedLink(event)
+
+  if (link) {
+    let prevented = false
+    emit('linkClick', {
+      event,
+      target: link,
+      href: link.getAttribute('href') || '',
+      pos,
+      ctrlKey: Boolean(event?.ctrlKey),
+      metaKey: Boolean(event?.metaKey),
+      preventDefault: () => {
+        prevented = true
+        event?.preventDefault?.()
+      },
+    })
+
+    if (prevented || event?.defaultPrevented) {
+      return true
+    }
+  }
+
+  return TipTapPlugin.editorProps?.handleClick?.(view, pos, event) || false
+}
+
 // 创建编辑器实例
 const editor = useEditor({
   ...TipTapPlugin,
@@ -202,6 +239,7 @@ const editor = useEditor({
   },
   editorProps: {
     ...TipTapPlugin.editorProps,
+    handleClick: handleEditorClick,
     handlePaste: (view, event) => {
       const files = Array.from(event.clipboardData?.files || [])
       const text = event.clipboardData?.getData('text/plain') || ''

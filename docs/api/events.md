@@ -13,6 +13,7 @@
 | `focus` | - | 编辑器获得焦点时触发 |
 | `blur` | - | 编辑器失去焦点时触发 |
 | `selectionChange` | `Object` | 编辑器选区变化时触发，包含 `from`、`to`、`text`、`empty` |
+| `linkClick` | `Object` | 点击编辑器内链接时触发，可拦截默认跳转行为 |
 
 ## paste 事件
 
@@ -99,3 +100,41 @@ const handlePaste = async (pasteEvent) => {
 | `to` | 选区结束位置 |
 | `text` | 当前选中的文本 |
 | `empty` | 是否为空选区 |
+
+## linkClick 事件
+
+`linkClick` 事件在用户点击编辑器内链接时触发。业务侧可以读取链接地址，做埋点、预览、权限判断或自定义跳转。
+
+如果业务侧没有调用 `linkClickEvent.preventDefault()`，Ctrl 或 Meta + Click 仍会按默认行为在新标签页打开链接。
+
+```vue
+<script setup>
+const handleLinkClick = (linkClickEvent) => {
+  if (!linkClickEvent.href) return
+
+  linkClickEvent.preventDefault()
+
+  // 例如：使用业务侧路由、打开链接预览弹窗或做跳转确认
+  window.open(linkClickEvent.href, '_blank', 'noopener,noreferrer')
+}
+</script>
+
+<template>
+  <sky-tiptap
+    v-model="content"
+    @link-click="handleLinkClick"
+  />
+</template>
+```
+
+### linkClick 事件对象
+
+| 字段 | 说明 |
+|------|------|
+| `event` | 原始 `MouseEvent` |
+| `target` | 被点击的链接元素 |
+| `href` | 链接地址 |
+| `pos` | 点击位置 |
+| `ctrlKey` | 点击时是否按下 Ctrl |
+| `metaKey` | 点击时是否按下 Meta / Command |
+| `preventDefault()` | 阻止编辑器默认链接点击行为 |

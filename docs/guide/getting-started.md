@@ -48,6 +48,13 @@ const content = ref('')
 | `update:modelValue` | String | 内容变化时触发 |
 | `uploadPhoto` | File[] | 选择图片时触发，支持单图和多图 |
 | `uploadVideo` | File[] | 选择视频时触发，支持单视频和多视频 |
+| `paste` | Object | 粘贴内容时触发，可拦截图片等文件粘贴 |
+| `drop` | Object | 拖放文件到编辑器时触发 |
+| `ready` | - | 编辑器初始化完成时触发 |
+| `focus` | - | 编辑器获得焦点时触发 |
+| `blur` | - | 编辑器失去焦点时触发 |
+| `selectionChange` | Object | 选区变化时触发，返回 `from`、`to`、`text`、`empty` |
+| `linkClick` | Object | 点击编辑器内链接时触发，可拦截默认跳转行为 |
 
 ## 调用组件方法
 

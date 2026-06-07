@@ -42,7 +42,7 @@
 
 ### 任务
 
-新增或补齐以下事件：
+已补齐以下事件：
 
 - `paste`：粘贴内容处理，重点解决图片 base64 问题
 - `drop`：拖放文件处理
@@ -50,6 +50,10 @@
 - `focus` / `blur`：焦点变化
 - `selectionChange`：选区变化
 - `linkClick`：链接点击
+
+待设计事件：
+
+- `beforeChange`：内容即将变化时触发，可评估是否允许业务侧阻止变化。该事件涉及 ProseMirror transaction 过滤，需要单独设计阻止规则。
 
 ### 重点场景
 
@@ -161,7 +165,8 @@
 1. 清理 `src/utils/extensions/` 历史代码
 2. 实现 `paste` / `drop` 事件，解决 base64 图片问题
 3. 补齐 `ready`、`focus`、`blur`、`selectionChange`
-4. 接入拖拽排序能力
-5. 评估 YouTube、placeholder 等官方插件替换
-6. 逐步拆分 `SkyTiptap.vue` 中的 AI 和文件处理逻辑
-7. 准备独立插件开源发布
+4. 补齐 `linkClick` 链接点击事件
+5. 接入拖拽排序能力
+6. 评估 `@tiptap/extension-file-handler`、YouTube、placeholder 等官方插件替换
+7. 逐步拆分 `SkyTiptap.vue` 中的 AI 和文件处理逻辑
+8. 准备独立插件开源发布

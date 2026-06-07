@@ -5,7 +5,7 @@
 **Sky Tiptap** 是一款基于 Tiptap 和 Vue 3 的富文本编辑器组件库，目标是提供开箱即用的编辑体验和可扩展的多媒体能力。
 
 - **源码包名：** `@Chelase/sky-tiptap`
-- **当前版本：** `1.8.1`
+- **当前版本：** `1.9.0`
 - **技术栈：** Vue 3 + Tiptap 2.x + Vite 6.x
 - **作者：** Chelsea
 
@@ -51,7 +51,7 @@
 - 抖音/TikTok 视频嵌入
 - 网页 iframe 嵌入
 - 表格插入
-- 链接添加与 Ctrl 或 Meta + Click 打开
+- 链接添加、`linkClick` 事件与 Ctrl 或 Meta + Click 打开
 
 ### 3. 交互能力
 
@@ -200,6 +200,13 @@ const content = ref('')
 | `update:modelValue` | String | 内容变化时触发 |
 | `uploadPhoto` | File[] | 选择图片时触发，支持单图和多图 |
 | `uploadVideo` | File[] | 选择视频时触发，支持单视频和多视频 |
+| `paste` | Object | 粘贴内容时触发，可拦截图片等文件粘贴 |
+| `drop` | Object | 拖放文件到编辑器时触发 |
+| `ready` | - | 编辑器初始化完成时触发 |
+| `focus` | - | 编辑器获得焦点时触发 |
+| `blur` | - | 编辑器失去焦点时触发 |
+| `selectionChange` | Object | 选区变化时触发，返回 `from`、`to`、`text`、`empty` |
+| `linkClick` | Object | 点击编辑器内链接时触发，可拦截默认跳转行为 |
 
 ### 导出工具函数
 
@@ -243,7 +250,7 @@ const html = getContent()
 - 自定义 NodeView 使用 `VueNodeViewRenderer` 注册
 - 块级拖拽能力使用 `@tiptap/extension-drag-handle-vue-3`、`@tiptap/extension-dropcursor` 和 `@tiptap/extension-node-range`
 - `CodeBlockLowlight` 替代 StarterKit 默认代码块
-- 链接默认不直接打开，通过 Ctrl 或 Meta + Click 新标签页打开
+- 链接默认不直接打开，通过 Ctrl 或 Meta + Click 新标签页打开；业务侧可用 `linkClick` 接管链接点击
 
 ### 兼容层边界
 
@@ -325,7 +332,7 @@ MIT License
 
 ## 当前验证基线
 
-- 单元测试：13 个测试文件、119 个用例通过
+- 单元测试：13 个测试文件、123 个用例通过
 - 构建测试：`npm run build` 通过
 - 文档构建：`npm run docs:build` 通过
 - 构建产物：ES Module + UMD + CSS

@@ -15,6 +15,27 @@ Sky Tiptap 支持链接的添加和管理。
 
 这个设计是为了避免在编辑过程中误触链接跳转。
 
+如果业务侧需要自定义跳转、链接预览、权限判断或点击埋点，可以监听 `linkClick` 事件。调用 `preventDefault()` 后，编辑器不会继续执行默认的 Ctrl/Cmd 点击打开行为。
+
+```vue
+<script setup>
+const handleLinkClick = (linkClickEvent) => {
+  if (!linkClickEvent.href) return
+
+  linkClickEvent.preventDefault()
+
+  window.open(linkClickEvent.href, '_blank', 'noopener,noreferrer')
+}
+</script>
+
+<template>
+  <sky-tiptap
+    v-model="content"
+    @link-click="handleLinkClick"
+  />
+</template>
+```
+
 ## 链接配置
 
 链接使用 Tiptap 的 Link 扩展，默认配置：

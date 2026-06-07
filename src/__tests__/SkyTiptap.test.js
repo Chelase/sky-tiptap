@@ -7,6 +7,7 @@ import { emitter } from '../utils/emitter'
 const tiptapState = vi.hoisted(() => ({
   latestChain: null,
   latestEditor: null,
+  latestOptions: null,
   editors: [],
   dragHandleProps: [],
 }))
@@ -118,6 +119,7 @@ vi.mock('@tiptap/vue-3', async () => {
   return {
     ...actual,
     useEditor: (options) => {
+      tiptapState.latestOptions = options
       let topLevelNodes = parseTopLevelNodes(options.content)
       const run = vi.fn(() => true)
       const chain = {
@@ -220,6 +222,7 @@ describe('SkyTiptap Component', () => {
     vi.clearAllMocks()
     tiptapState.latestChain = null
     tiptapState.latestEditor = null
+    tiptapState.latestOptions = null
     tiptapState.editors = []
     tiptapState.dragHandleProps = []
   })
@@ -423,6 +426,112 @@ describe('SkyTiptap Component', () => {
     await nextTick()
 
     expect(wrapper.find('.sky-drag-handle').exists()).toBe(false)
+  })
+
+  it('emits linkClick when editor links are clicked', async () => {
+    const wrapper = mount(SkyTiptap, {
+      props: {
+        modelValue: '<p><a href="https://example.com/docs">Docs</a></p>'
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    const link = document.createElement('a')
+    link.setAttribute('href', 'https://example.com/docs')
+    const label = document.createElement('span')
+    link.appendChild(label)
+
+    const event = {
+      target: label,
+      ctrlKey: false,
+      metaKey: false,
+      defaultPrevented: false,
+      preventDefault: vi.fn(),
+    }
+
+    const handled = tiptapState.latestOptions.editorProps.handleClick(tiptapState.latestEditor.view, 12, event)
+
+    expect(handled).toBe(false)
+    expect(wrapper.emitted('linkClick')).toHaveLength(1)
+    expect(wrapper.emitted('linkClick')[0][0]).toEqual(expect.objectContaining({
+      event,
+      target: link,
+      href: 'https://example.com/docs',
+      pos: 12,
+      ctrlKey: false,
+      metaKey: false,
+    }))
+    expect(typeof wrapper.emitted('linkClick')[0][0].preventDefault).toBe('function')
+  })
+
+  it('lets linkClick prevent the default link click behavior', async () => {
+    const handleLinkClick = vi.fn((payload) => {
+      payload.preventDefault()
+    })
+    const openMock = vi.fn()
+    vi.stubGlobal('open', openMock)
+
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p><a href="https://example.com/docs">Docs</a></p>',
+        onLinkClick: handleLinkClick,
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    const link = document.createElement('a')
+    link.setAttribute('href', 'https://example.com/docs')
+    const label = document.createElement('span')
+    link.appendChild(label)
+    const event = {
+      target: label,
+      ctrlKey: true,
+      metaKey: false,
+      defaultPrevented: false,
+      preventDefault: vi.fn(),
+    }
+
+    const handled = tiptapState.latestOptions.editorProps.handleClick(tiptapState.latestEditor.view, 8, event)
+
+    expect(handled).toBe(true)
+    expect(handleLinkClick).toHaveBeenCalledWith(expect.objectContaining({
+      href: 'https://example.com/docs',
+      ctrlKey: true,
+    }))
+    expect(event.preventDefault).toHaveBeenCalled()
+    expect(openMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps Ctrl or Meta click opening links when linkClick is not prevented', async () => {
+    const openMock = vi.fn()
+    vi.stubGlobal('open', openMock)
+    const wrapper = mount(SkyTiptap, {
+      props: {
+        modelValue: '<p><a href="https://example.com/docs">Docs</a></p>'
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    const link = document.createElement('a')
+    link.setAttribute('href', 'https://example.com/docs')
+    const label = document.createElement('span')
+    link.appendChild(label)
+    const event = {
+      target: label,
+      ctrlKey: true,
+      metaKey: false,
+      defaultPrevented: false,
+      preventDefault: vi.fn(),
+    }
+
+    const handled = tiptapState.latestOptions.editorProps.handleClick(tiptapState.latestEditor.view, 8, event)
+
+    expect(handled).toBe(true)
+    expect(wrapper.emitted('linkClick')).toHaveLength(1)
+    expect(openMock).toHaveBeenCalledWith('https://example.com/docs', '_blank', 'noopener,noreferrer')
   })
 
   it('sets data-theme attribute correctly', async () => {

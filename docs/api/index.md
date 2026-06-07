@@ -7,7 +7,7 @@ Sky Tiptap 的 API 按使用场景拆分为几个部分，方便快速查找。
 | 页面 | 内容 |
 |------|------|
 | [组件配置](./props.md) | `SkyTiptap` 组件 Props、`aiConfig` 基础配置 |
-| [事件](./events.md) | `update:modelValue`、上传、粘贴、拖放、焦点和选区事件 |
+| [事件](./events.md) | `update:modelValue`、上传、粘贴、拖放、焦点、选区和链接点击事件 |
 | [实例方法](./methods.md) | 通过组件 `ref` 调用的插入、获取、设置方法 |
 | [媒体 API](./media.md) | 图片上传、视频上传、手动插入图片/视频 |
 | [AI API](./ai.md) | AI 内容生成、AI actions、流式响应和执行控制 |

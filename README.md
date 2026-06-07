@@ -384,6 +384,7 @@ const handleUploadVideo = async (files) => {
 | `focus` | - | 编辑器获得焦点时触发 |
 | `blur` | - | 编辑器失去焦点时触发 |
 | `selectionChange` | Object | 选区变化时触发，返回 `from`、`to`、`text`、`empty` |
+| `linkClick` | Object | 点击编辑器内链接时触发，可拦截默认跳转行为 |
 
 #### 粘贴图片处理
 
@@ -422,6 +423,30 @@ const handlePaste = async (pasteEvent) => {
   )
 
   editor.value?.insertImages(urls)
+}
+</script>
+```
+
+#### 链接点击处理
+
+默认情况下，编辑器内链接不会在普通点击时直接打开；按住 Ctrl 或 Meta 点击链接时，会在新标签页打开。业务侧可以监听 `linkClick` 事件，读取链接地址并按需接管跳转行为。
+
+```vue
+<template>
+  <sky-tiptap
+    v-model="content"
+    @link-click="handleLinkClick"
+  />
+</template>
+
+<script setup>
+const handleLinkClick = (linkClickEvent) => {
+  if (!linkClickEvent.href) return
+
+  linkClickEvent.preventDefault()
+
+  // 这里可以替换为业务侧路由、链接预览弹窗或跳转确认
+  window.open(linkClickEvent.href, '_blank', 'noopener,noreferrer')
 }
 </script>
 ```
@@ -467,6 +492,6 @@ const html = getContent()
 
 ### 版本
 
-当前版本：**1.8.1**
+当前版本：**1.9.0**
 
 详细更新日志请查看 [CHANGELOG.md](./CHANGELOG.md)
