@@ -5,7 +5,7 @@
 **Sky Tiptap** 是一款基于 Tiptap 和 Vue 3 的富文本编辑器组件库，目标是提供开箱即用的编辑体验和可扩展的多媒体能力。
 
 - **源码包名：** `@Chelase/sky-tiptap`
-- **当前版本：** `1.9.0`
+- **当前版本：** `1.10.0`
 - **技术栈：** Vue 3 + Tiptap 2.x + Vite 6.x
 - **作者：** Chelsea
 
@@ -52,6 +52,7 @@
 - 网页 iframe 嵌入
 - 表格插入
 - 链接添加、`linkClick` 事件与 Ctrl 或 Meta + Click 打开
+- 内容变化前拦截：`beforeChange` 事件可在 ProseMirror transaction 应用前阻止内容变更
 
 ### 3. 交互能力
 
@@ -207,6 +208,7 @@ const content = ref('')
 | `blur` | - | 编辑器失去焦点时触发 |
 | `selectionChange` | Object | 选区变化时触发，返回 `from`、`to`、`text`、`empty` |
 | `linkClick` | Object | 点击编辑器内链接时触发，可拦截默认跳转行为 |
+| `beforeChange` | Object | 内容即将变化时触发，可阻止本次内容变更 |
 
 ### 导出工具函数
 
@@ -249,6 +251,7 @@ const html = getContent()
 - AI actions 执行逻辑统一放在 `src/utils/ai-actions.js`
 - 自定义 NodeView 使用 `VueNodeViewRenderer` 注册
 - 块级拖拽能力使用 `@tiptap/extension-drag-handle-vue-3`、`@tiptap/extension-dropcursor` 和 `@tiptap/extension-node-range`
+- 内容变化前拦截使用内部 `src/extensions/before-change.js`，基于 ProseMirror `filterTransaction`
 - `CodeBlockLowlight` 替代 StarterKit 默认代码块
 - 链接默认不直接打开，通过 Ctrl 或 Meta + Click 新标签页打开；业务侧可用 `linkClick` 接管链接点击
 
@@ -332,7 +335,7 @@ MIT License
 
 ## 当前验证基线
 
-- 单元测试：13 个测试文件、123 个用例通过
+- 单元测试：13 个测试文件、128 个用例通过
 - 构建测试：`npm run build` 通过
 - 文档构建：`npm run docs:build` 通过
 - 构建产物：ES Module + UMD + CSS

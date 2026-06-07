@@ -75,6 +75,7 @@ import Toolbar from './Toolbar/Toolbar.vue'
 import BubbleMenuWrapper from './BubbleMenu/BubbleMenu.vue'
 import InsertMenu from './Toolbar/Menu/InsertMenu.vue'
 import SkyDialog from './Dialog/SkyDialog.vue'
+import BeforeChange from '../extensions/before-change'
 import { renderMarkdown, requestAiContent } from '../utils/ai'
 import { describeAiActions, executeAiActions } from '../utils/ai-actions'
 import { resolveActionsFromAiText, resolveActionsFromText } from '../utils/ai-intent'
@@ -106,7 +107,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:modelValue', 'uploadPhoto', 'uploadVideo', 'paste', 'drop', 'ready', 'focus', 'blur', 'selectionChange', 'linkClick'])
+const emit = defineEmits(['update:modelValue', 'uploadPhoto', 'uploadVideo', 'paste', 'drop', 'ready', 'focus', 'blur', 'selectionChange', 'linkClick', 'beforeChange'])
 
 const fileInputRef = ref(null)
 const videoInputRef = ref(null)
@@ -214,9 +215,29 @@ const handleEditorClick = (view, pos, event) => {
   return TipTapPlugin.editorProps?.handleClick?.(view, pos, event) || false
 }
 
+const handleBeforeChange = (payload) => {
+  let prevented = false
+
+  emit('beforeChange', {
+    ...payload,
+    preventDefault: () => {
+      prevented = true
+      payload.preventDefault()
+    },
+  })
+
+  return prevented
+}
+
 // 创建编辑器实例
 const editor = useEditor({
   ...TipTapPlugin,
+  extensions: [
+    ...TipTapPlugin.extensions,
+    BeforeChange.configure({
+      onBeforeChange: handleBeforeChange,
+    }),
+  ],
   content: props.modelValue,
   onUpdate: ({ editor }) => {
     refreshDraggableBlockCount(editor)

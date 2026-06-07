@@ -14,6 +14,7 @@
 | `blur` | - | 编辑器失去焦点时触发 |
 | `selectionChange` | `Object` | 编辑器选区变化时触发，包含 `from`、`to`、`text`、`empty` |
 | `linkClick` | `Object` | 点击编辑器内链接时触发，可拦截默认跳转行为 |
+| `beforeChange` | `Object` | 内容即将变化时触发，可阻止本次内容变更 |
 
 ## paste 事件
 
@@ -138,3 +139,41 @@ const handleLinkClick = (linkClickEvent) => {
 | `ctrlKey` | 点击时是否按下 Ctrl |
 | `metaKey` | 点击时是否按下 Meta / Command |
 | `preventDefault()` | 阻止编辑器默认链接点击行为 |
+
+## beforeChange 事件
+
+`beforeChange` 事件在编辑器内容即将变化、但尚未应用到编辑器状态前触发。业务侧可以读取变化前后的 HTML，并在需要时调用 `preventDefault()` 阻止本次内容变更。
+
+该事件只处理会改变文档内容的 transaction。纯光标移动、选区变化不会触发 `beforeChange`。
+
+如果需要阻止变化，必须在事件处理函数中同步调用 `beforeChangeEvent.preventDefault()`。异步操作完成后再调用不会阻止已经应用的 transaction。
+
+```vue
+<script setup>
+const MAX_HTML_LENGTH = 10000
+
+const handleBeforeChange = (beforeChangeEvent) => {
+  if (beforeChangeEvent.nextHTML.length <= MAX_HTML_LENGTH) return
+
+  beforeChangeEvent.preventDefault()
+}
+</script>
+
+<template>
+  <sky-tiptap
+    v-model="content"
+    @before-change="handleBeforeChange"
+  />
+</template>
+```
+
+### beforeChange 事件对象
+
+| 字段 | 说明 |
+|------|------|
+| `transaction` | 原始 ProseMirror transaction |
+| `state` | transaction 应用前的 ProseMirror editor state |
+| `editor` | Tiptap editor 实例 |
+| `currentHTML` | 变化前 HTML |
+| `nextHTML` | 变化后 HTML |
+| `preventDefault()` | 阻止本次内容变更 |

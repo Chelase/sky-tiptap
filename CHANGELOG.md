@@ -1,3 +1,16 @@
+## 1.10.0 (2026-06-07)
+
+### 新增功能
+
+- **新增 `beforeChange` 事件**：编辑器内容即将变化时触发，业务侧可读取 `currentHTML`、`nextHTML`、原始 transaction 和编辑器状态，并可调用 `preventDefault()` 阻止本次内容变更。
+- **新增内容变更过滤扩展**：通过 ProseMirror `filterTransaction` 在内容变更应用前拦截，只处理会改变文档内容的 transaction，不拦截纯选区变化。
+
+### 测试
+
+- 补充 `beforeChange` 组件事件测试和底层扩展测试，覆盖事件抛出、阻止内容变更、放行内容变更和忽略非内容变更 transaction。
+
+---
+
 ## 1.9.0 (2026-06-07)
 
 ### 新增功能

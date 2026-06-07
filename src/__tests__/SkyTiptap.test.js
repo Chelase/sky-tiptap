@@ -113,6 +113,10 @@ const parseTopLevelNodes = (content = '') => {
   })
 }
 
+const getBeforeChangeExtension = () => {
+  return tiptapState.latestOptions.extensions.find(extension => extension.name === 'beforeChange')
+}
+
 // Mock Tiptap Vue3
 vi.mock('@tiptap/vue-3', async () => {
   const actual = await vi.importActual('@tiptap/vue-3')
@@ -532,6 +536,73 @@ describe('SkyTiptap Component', () => {
     expect(handled).toBe(true)
     expect(wrapper.emitted('linkClick')).toHaveLength(1)
     expect(openMock).toHaveBeenCalledWith('https://example.com/docs', '_blank', 'noopener,noreferrer')
+  })
+
+  it('emits beforeChange through the configured transaction filter extension', async () => {
+    const wrapper = mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>'
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    const beforeChange = getBeforeChangeExtension()
+    const preventDefault = vi.fn()
+    const payload = {
+      transaction: { docChanged: true },
+      state: { doc: {} },
+      editor: tiptapState.latestEditor,
+      currentHTML: '<p>Hello</p>',
+      nextHTML: '<p>Hello world</p>',
+      preventDefault,
+    }
+
+    const prevented = beforeChange.options.onBeforeChange(payload)
+
+    expect(prevented).toBe(false)
+    expect(wrapper.emitted('beforeChange')).toHaveLength(1)
+    expect(wrapper.emitted('beforeChange')[0][0]).toEqual(expect.objectContaining({
+      transaction: payload.transaction,
+      state: payload.state,
+      editor: tiptapState.latestEditor,
+      currentHTML: '<p>Hello</p>',
+      nextHTML: '<p>Hello world</p>',
+    }))
+  })
+
+  it('lets beforeChange prevent document changes', async () => {
+    const handleBeforeChange = vi.fn((payload) => {
+      payload.preventDefault()
+    })
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p>',
+        onBeforeChange: handleBeforeChange,
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    const beforeChange = getBeforeChangeExtension()
+    const preventDefault = vi.fn()
+    const payload = {
+      transaction: { docChanged: true },
+      state: { doc: {} },
+      editor: tiptapState.latestEditor,
+      currentHTML: '<p>Hello</p>',
+      nextHTML: '<p>Blocked</p>',
+      preventDefault,
+    }
+
+    const prevented = beforeChange.options.onBeforeChange(payload)
+
+    expect(prevented).toBe(true)
+    expect(handleBeforeChange).toHaveBeenCalledWith(expect.objectContaining({
+      currentHTML: '<p>Hello</p>',
+      nextHTML: '<p>Blocked</p>',
+    }))
+    expect(preventDefault).toHaveBeenCalled()
   })
 
   it('sets data-theme attribute correctly', async () => {

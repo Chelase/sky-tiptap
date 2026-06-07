@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { Schema } from '@tiptap/pm/model'
 import VideoEmbed, {
   createDouyinPlayerSrc,
   extractBilibiliVideoId,
@@ -7,7 +8,52 @@ import VideoEmbed, {
 } from '../extensions/web-video.js'
 import Iframe from '../extensions/iframe.js'
 import { CustomParagraph } from '../extensions/CustomParagraph.js'
+import BeforeChange from '../extensions/before-change.js'
 import { TipTapPlugin } from '../config/default.js'
+
+const beforeChangeSchema = new Schema({
+  nodes: {
+    doc: {
+      content: 'block+',
+    },
+    paragraph: {
+      group: 'block',
+      content: 'text*',
+      toDOM: () => ['p', 0],
+    },
+    text: {
+      group: 'inline',
+    },
+  },
+  marks: {},
+})
+
+const createBeforeChangePlugin = (onBeforeChange) => {
+  return BeforeChange
+    .configure({ onBeforeChange })
+    .config
+    .addProseMirrorPlugins
+    .call({
+      options: { onBeforeChange },
+      editor: {},
+    })[0]
+}
+
+const createBeforeChangeState = (text = 'current') => {
+  return {
+    schema: beforeChangeSchema,
+    doc: beforeChangeSchema.node('doc', null, [
+      beforeChangeSchema.node('paragraph', null, text ? [beforeChangeSchema.text(text)] : []),
+    ]),
+  }
+}
+
+const createBeforeChangeTransaction = (text = 'next') => {
+  return {
+    docChanged: true,
+    doc: createBeforeChangeState(text).doc,
+  }
+}
 
 describe('Tiptap Extensions', () => {
   it('VideoEmbed should have correct configuration', () => {
@@ -184,5 +230,46 @@ describe('Tiptap Extensions', () => {
 
     expect(codeBlock).toBeDefined()
     expect(codeBlock.options.exitOnTripleEnter).toBe(false)
+  })
+
+  it('BeforeChange should ignore transactions that do not change the document', () => {
+    const onBeforeChange = vi.fn()
+    const plugin = createBeforeChangePlugin(onBeforeChange)
+
+    const allowed = plugin.spec.filterTransaction({ docChanged: false }, createBeforeChangeState())
+
+    expect(allowed).toBe(true)
+    expect(onBeforeChange).not.toHaveBeenCalled()
+  })
+
+  it('BeforeChange should allow document changes when they are not prevented', () => {
+    const onBeforeChange = vi.fn()
+    const plugin = createBeforeChangePlugin(onBeforeChange)
+    const state = createBeforeChangeState('current')
+    const transaction = createBeforeChangeTransaction('next')
+
+    const allowed = plugin.spec.filterTransaction(transaction, state)
+
+    expect(allowed).toBe(true)
+    expect(onBeforeChange).toHaveBeenCalledWith(expect.objectContaining({
+      transaction,
+      state,
+      currentHTML: '<p>current</p>',
+      nextHTML: '<p>next</p>',
+    }))
+  })
+
+  it('BeforeChange should block document changes when preventDefault is called', () => {
+    const onBeforeChange = vi.fn((payload) => {
+      payload.preventDefault()
+    })
+    const plugin = createBeforeChangePlugin(onBeforeChange)
+    const state = createBeforeChangeState('current')
+    const transaction = createBeforeChangeTransaction('next')
+
+    const allowed = plugin.spec.filterTransaction(transaction, state)
+
+    expect(allowed).toBe(false)
+    expect(onBeforeChange).toHaveBeenCalled()
   })
 })

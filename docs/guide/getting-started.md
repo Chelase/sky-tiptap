@@ -55,6 +55,7 @@ const content = ref('')
 | `blur` | - | 编辑器失去焦点时触发 |
 | `selectionChange` | Object | 选区变化时触发，返回 `from`、`to`、`text`、`empty` |
 | `linkClick` | Object | 点击编辑器内链接时触发，可拦截默认跳转行为 |
+| `beforeChange` | Object | 内容即将变化时触发，可阻止本次内容变更 |
 
 ## 调用组件方法
 

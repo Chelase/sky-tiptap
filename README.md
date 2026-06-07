@@ -385,6 +385,7 @@ const handleUploadVideo = async (files) => {
 | `blur` | - | 编辑器失去焦点时触发 |
 | `selectionChange` | Object | 选区变化时触发，返回 `from`、`to`、`text`、`empty` |
 | `linkClick` | Object | 点击编辑器内链接时触发，可拦截默认跳转行为 |
+| `beforeChange` | Object | 内容即将变化时触发，可阻止本次内容变更 |
 
 #### 粘贴图片处理
 
@@ -451,6 +452,29 @@ const handleLinkClick = (linkClickEvent) => {
 </script>
 ```
 
+#### 内容变化前拦截
+
+`beforeChange` 事件会在编辑器内容即将变化、但尚未应用到编辑器状态前触发。业务侧可以读取变化前后的 HTML，并调用 `preventDefault()` 阻止本次内容变更。
+
+```vue
+<template>
+  <sky-tiptap
+    v-model="content"
+    @before-change="handleBeforeChange"
+  />
+</template>
+
+<script setup>
+const MAX_HTML_LENGTH = 10000
+
+const handleBeforeChange = (beforeChangeEvent) => {
+  if (beforeChangeEvent.nextHTML.length <= MAX_HTML_LENGTH) return
+
+  beforeChangeEvent.preventDefault()
+}
+</script>
+```
+
 #### 导出工具函数
 
 ```javascript
@@ -492,6 +516,6 @@ const html = getContent()
 
 ### 版本
 
-当前版本：**1.9.0**
+当前版本：**1.10.0**
 
 详细更新日志请查看 [CHANGELOG.md](./CHANGELOG.md)
