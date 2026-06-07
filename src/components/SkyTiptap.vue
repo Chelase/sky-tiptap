@@ -16,8 +16,20 @@
     <InsertMenu v-if="editor" :editor="editor" />
 
     <!-- 拖拽手柄 -->
-    <DragHandle v-if="editor && topLevelBlockCount > 1" :editor="editor">
-      <div class="drag-handle">
+    <DragHandle
+      v-if="editor && draggableBlockCount > 1"
+      :editor="editor"
+      :class="dragHandleClass"
+      :tippy-options="dragHandleTippyOptions"
+      :on-node-change="handleDragNodeChange"
+    >
+      <div
+        class="sky-drag-handle"
+        role="button"
+        :aria-label="activeDragNodeLabel"
+        title="拖拽调整区块位置"
+        @click.stop
+      >
         <svg viewBox="0 0 24 24" fill="currentColor">
           <circle cx="8" cy="6" r="1.5" />
           <circle cx="8" cy="12" r="1.5" />
@@ -54,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import { DragHandle } from '@tiptap/extension-drag-handle-vue-3'
 import { emitter } from '../utils/emitter'
@@ -98,10 +110,71 @@ const emit = defineEmits(['update:modelValue', 'uploadPhoto', 'uploadVideo', 'pa
 
 const fileInputRef = ref(null)
 const videoInputRef = ref(null)
-const topLevelBlockCount = ref(0)
+const draggableBlockCount = ref(0)
+const activeDragNodeName = ref('')
+const isActiveDragNodeDraggable = ref(true)
 
-function refreshTopLevelBlockCount(activeEditor = editor.value) {
-  topLevelBlockCount.value = activeEditor?.state?.doc?.childCount || 0
+const NON_DRAGGABLE_NODE_NAMES = new Set(['doc', 'text', 'aiLoading'])
+const DRAG_NODE_LABELS = {
+  paragraph: '段落',
+  heading: '标题',
+  blockquote: '引用',
+  bulletList: '无序列表',
+  orderedList: '有序列表',
+  listItem: '列表项',
+  codeBlock: '代码块',
+  table: '表格',
+  image: '图片',
+  videoEmbed: '视频',
+  iframe: '网页嵌入',
+  horizontalRule: '分割线',
+}
+const dragHandleTippyOptions = {
+  placement: 'left-start',
+  offset: [3, 36],
+  duration: 100,
+  zIndex: 110,
+}
+
+const isDraggableBlockNode = (node) => {
+  return Boolean(node?.isBlock && !NON_DRAGGABLE_NODE_NAMES.has(node.type?.name))
+}
+
+const getDraggableTopLevelBlockCount = (activeEditor = editor.value) => {
+  const doc = activeEditor?.state?.doc
+  if (!doc) return 0
+
+  if (typeof doc.forEach !== 'function') {
+    return doc.childCount || 0
+  }
+
+  let count = 0
+  doc.forEach((node) => {
+    if (isDraggableBlockNode(node)) {
+      count += 1
+    }
+  })
+
+  return count
+}
+
+function refreshDraggableBlockCount(activeEditor = editor.value) {
+  draggableBlockCount.value = getDraggableTopLevelBlockCount(activeEditor)
+}
+
+const dragHandleClass = computed(() => [
+  'sky-drag-handle-wrapper',
+  isActiveDragNodeDraggable.value ? '' : 'sky-drag-handle-wrapper--hidden',
+].filter(Boolean).join(' '))
+
+const activeDragNodeLabel = computed(() => {
+  const label = DRAG_NODE_LABELS[activeDragNodeName.value] || '区块'
+  return `拖拽调整${label}位置`
+})
+
+const handleDragNodeChange = ({ node }) => {
+  activeDragNodeName.value = node?.type?.name || ''
+  isActiveDragNodeDraggable.value = !node || isDraggableBlockNode(node)
 }
 
 // 创建编辑器实例
@@ -109,11 +182,11 @@ const editor = useEditor({
   ...TipTapPlugin,
   content: props.modelValue,
   onUpdate: ({ editor }) => {
-    refreshTopLevelBlockCount(editor)
+    refreshDraggableBlockCount(editor)
     emit('update:modelValue', editor.getHTML())
   },
   onCreate: ({ editor }) => {
-    refreshTopLevelBlockCount(editor)
+    refreshDraggableBlockCount(editor)
     emit('ready')
   },
   onFocus: () => {
@@ -167,7 +240,7 @@ const editor = useEditor({
 watch(() => props.modelValue, (newValue) => {
   if (editor.value && newValue !== editor.value.getHTML()) {
     editor.value.commands.setContent(newValue)
-    refreshTopLevelBlockCount()
+    refreshDraggableBlockCount()
   }
 })
 
@@ -567,7 +640,7 @@ onMounted(() => {
     window.skyTiptapEditor = editor.value
   }
 
-  refreshTopLevelBlockCount()
+  refreshDraggableBlockCount()
 
   // 添加全局点击事件监听（SSR 安全）
   if (typeof document !== 'undefined') {

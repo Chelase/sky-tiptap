@@ -12,6 +12,7 @@
 - ✅ iframe 嵌入
 - ✅ 表格插入
 - ✅ 链接管理
+- ✅ 元素拖拽排序
 - ✅ AI 内容生成（支持流式响应）
 - ✅ AI 操控编辑器（结构化 actions 白名单执行）
 - ✅ 统一弹窗组件（替代原生 prompt/alert）
@@ -58,6 +59,6 @@ const content = ref('')
 
 ## 版本
 
-当前版本：**1.7.0**
+当前版本：**1.8.1**
 
 详细更新日志请查看 [CHANGELOG](https://github.com/Chelase/sky-tiptap/blob/master/CHANGELOG.md)

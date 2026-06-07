@@ -5,7 +5,7 @@
 **Sky Tiptap** 是一款基于 Tiptap 和 Vue 3 的富文本编辑器组件库，目标是提供开箱即用的编辑体验和可扩展的多媒体能力。
 
 - **源码包名：** `@Chelase/sky-tiptap`
-- **当前版本：** `1.7.0`
+- **当前版本：** `1.8.1`
 - **技术栈：** Vue 3 + Tiptap 2.x + Vite 6.x
 - **作者：** Chelsea
 
@@ -59,6 +59,7 @@
 - 选区悬浮菜单（Bubble Menu，含标题与列表）
 - 插入菜单（Insert Menu）
 - 自定义段落插入按钮
+- 块级元素拖拽排序（官方 DragHandle + Dropcursor + NodeRange）
 
 ### 4. AI 能力
 
@@ -240,6 +241,7 @@ const html = getContent()
 - 自定义扩展统一放在 `src/extensions/`
 - AI actions 执行逻辑统一放在 `src/utils/ai-actions.js`
 - 自定义 NodeView 使用 `VueNodeViewRenderer` 注册
+- 块级拖拽能力使用 `@tiptap/extension-drag-handle-vue-3`、`@tiptap/extension-dropcursor` 和 `@tiptap/extension-node-range`
 - `CodeBlockLowlight` 替代 StarterKit 默认代码块
 - 链接默认不直接打开，通过 Ctrl 或 Meta + Click 新标签页打开
 
@@ -323,10 +325,11 @@ MIT License
 
 ## 当前验证基线
 
-- 单元测试：13 个测试文件、106 个用例通过
+- 单元测试：13 个测试文件、119 个用例通过
 - 构建测试：`npm run build` 通过
+- 文档构建：`npm run docs:build` 通过
 - 构建产物：ES Module + UMD + CSS
 
 ---
 
-*最后更新：2026-05-04*
+*最后更新：2026-06-07*

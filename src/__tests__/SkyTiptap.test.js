@@ -7,6 +7,8 @@ import { emitter } from '../utils/emitter'
 const tiptapState = vi.hoisted(() => ({
   latestChain: null,
   latestEditor: null,
+  editors: [],
+  dragHandleProps: [],
 }))
 
 // Mock child components to avoid Tiptap editor complexity
@@ -44,18 +46,70 @@ vi.mock('../components/Toolbar/Menu/InsertMenu.vue', () => ({
 vi.mock('@tiptap/extension-drag-handle-vue-3', () => ({
   DragHandle: {
     name: 'DragHandle',
-    props: ['editor'],
+    props: ['editor', 'class', 'tippyOptions', 'onNodeChange'],
+    mounted() {
+      tiptapState.dragHandleProps.push(this.$props)
+    },
     render() {
-      return h('div', { class: 'tiptap-drag-handle' }, this.$slots.default?.())
+      return h('div', { class: this.class || 'tiptap-drag-handle' }, this.$slots.default?.())
     }
   }
 }))
 
-const countTopLevelBlocks = (content = '') => {
+const parseTopLevelNodes = (content = '') => {
   const trimmed = String(content).trim()
-  if (!trimmed) return 0
+  if (!trimmed) return []
   const parsed = new DOMParser().parseFromString(trimmed, 'text/html')
-  return parsed.body.children.length || 1
+  return Array.from(parsed.body.children).map((element) => {
+    if (element.tagName === 'IMG') {
+      return {
+        type: { name: 'image' },
+        isBlock: true,
+        attrs: {
+          src: element.getAttribute('src'),
+          alt: element.getAttribute('alt'),
+        },
+      }
+    }
+
+    if (element.tagName === 'TABLE') {
+      return {
+        type: { name: 'table' },
+        isBlock: true,
+        attrs: {
+          rows: element.querySelectorAll('tr').length,
+          cells: element.querySelectorAll('td, th').length,
+        },
+      }
+    }
+
+    if (element.matches('[data-video-embed]')) {
+      return {
+        type: { name: 'videoEmbed' },
+        isBlock: true,
+        attrs: {
+          src: element.getAttribute('data-src'),
+          type: element.getAttribute('data-type') || 'iframe',
+        },
+      }
+    }
+
+    if (element.tagName === 'IFRAME') {
+      return {
+        type: { name: 'iframe' },
+        isBlock: true,
+        attrs: {
+          src: element.getAttribute('src'),
+        },
+      }
+    }
+
+    return {
+      type: { name: element.tagName === 'H1' ? 'heading' : 'paragraph' },
+      isBlock: true,
+      attrs: {},
+    }
+  })
 }
 
 // Mock Tiptap Vue3
@@ -64,7 +118,7 @@ vi.mock('@tiptap/vue-3', async () => {
   return {
     ...actual,
     useEditor: (options) => {
-      const childCount = countTopLevelBlocks(options.content)
+      let topLevelNodes = parseTopLevelNodes(options.content)
       const run = vi.fn(() => true)
       const chain = {
         focus: vi.fn(() => chain),
@@ -109,9 +163,19 @@ vi.mock('@tiptap/vue-3', async () => {
         state: {
           selection: { from: 0, to: 0 },
           doc: {
-            childCount,
-            descendants: vi.fn()
+            get childCount() {
+              return topLevelNodes.length
+            },
+            forEach: vi.fn((callback) => {
+              topLevelNodes.forEach((node, index) => callback(node, index, index))
+            }),
+            descendants: vi.fn((callback) => {
+              topLevelNodes.forEach((node, index) => callback(node, index))
+            }),
           }
+        },
+        __setTopLevelNodes(nodes) {
+          topLevelNodes = nodes
         },
         isFocused: false,
         view: {
@@ -121,6 +185,7 @@ vi.mock('@tiptap/vue-3', async () => {
         options: {}
       }
       tiptapState.latestEditor = editor
+      tiptapState.editors.push(editor)
       options.onCreate?.({ editor })
       return { value: editor }
     },
@@ -153,6 +218,10 @@ describe('SkyTiptap Component', () => {
     if (app) app.remove()
     vi.unstubAllGlobals()
     vi.clearAllMocks()
+    tiptapState.latestChain = null
+    tiptapState.latestEditor = null
+    tiptapState.editors = []
+    tiptapState.dragHandleProps = []
   })
 
   it('mounts with default props', async () => {
@@ -212,7 +281,7 @@ describe('SkyTiptap Component', () => {
     })
     await nextTick()
 
-    expect(wrapper.find('.drag-handle').exists()).toBe(false)
+    expect(wrapper.find('.sky-drag-handle').exists()).toBe(false)
   })
 
   it('renders drag handle for multiple top-level blocks', async () => {
@@ -224,7 +293,136 @@ describe('SkyTiptap Component', () => {
     })
     await nextTick()
 
-    expect(wrapper.find('.drag-handle').exists()).toBe(true)
+    expect(wrapper.find('.sky-drag-handle').exists()).toBe(true)
+    expect(wrapper.find('.sky-drag-handle-wrapper').exists()).toBe(true)
+  })
+
+  it('passes scoped drag handle options to the official Vue drag handle', async () => {
+    mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p><p>World</p>'
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    expect(tiptapState.dragHandleProps).toHaveLength(1)
+    expect(tiptapState.dragHandleProps[0].editor.value).toBe(tiptapState.latestEditor)
+    expect(tiptapState.dragHandleProps[0].class).toBe('sky-drag-handle-wrapper')
+    expect(tiptapState.dragHandleProps[0].tippyOptions).toEqual(expect.objectContaining({
+      placement: 'left-start',
+      offset: [3, 36],
+      zIndex: 110,
+    }))
+    expect(typeof tiptapState.dragHandleProps[0].onNodeChange).toBe('function')
+  })
+
+  it('keeps drag handle scoped per editor instance', async () => {
+    const first = mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>First</p><p>Editor</p>'
+      },
+      attachTo: document.getElementById('app')
+    })
+    const second = mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Second</p><p>Editor</p>'
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    expect(first.find('.sky-drag-handle').exists()).toBe(true)
+    expect(second.find('.sky-drag-handle').exists()).toBe(true)
+    expect(tiptapState.dragHandleProps).toHaveLength(2)
+    expect(tiptapState.dragHandleProps[0].editor.value).toBe(tiptapState.editors[0])
+    expect(tiptapState.dragHandleProps[1].editor.value).toBe(tiptapState.editors[1])
+    expect(tiptapState.dragHandleProps[0].editor.value).not.toBe(tiptapState.dragHandleProps[1].editor.value)
+  })
+
+  it('keeps drag handle available for image, video, iframe and table blocks', async () => {
+    const wrapper = mount(SkyTiptap, {
+      props: {
+        modelValue: [
+          '<p>Intro</p>',
+          '<img src="https://example.com/photo.png" alt="Photo">',
+          '<div data-video-embed data-src="https://example.com/video.mp4" data-type="video"></div>',
+          '<iframe src="https://example.com/embed"></iframe>',
+          '<table><tbody><tr><td>A</td><td>B</td></tr></tbody></table>',
+        ].join(''),
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    expect(wrapper.find('.sky-drag-handle').exists()).toBe(true)
+    expect(tiptapState.latestEditor.state.doc.childCount).toBe(5)
+    const nodes = []
+    tiptapState.latestEditor.state.doc.forEach((node) => nodes.push(node))
+    expect(nodes.map(node => node.type.name)).toEqual([
+      'paragraph',
+      'image',
+      'videoEmbed',
+      'iframe',
+      'table',
+    ])
+    expect(nodes[1].attrs).toEqual(expect.objectContaining({
+      src: 'https://example.com/photo.png',
+      alt: 'Photo',
+    }))
+    expect(nodes[2].attrs).toEqual(expect.objectContaining({
+      src: 'https://example.com/video.mp4',
+      type: 'video',
+    }))
+    expect(nodes[3].attrs).toEqual(expect.objectContaining({
+      src: 'https://example.com/embed',
+    }))
+    expect(nodes[4].attrs).toEqual(expect.objectContaining({
+      rows: 1,
+      cells: 2,
+    }))
+  })
+
+  it('hides drag handle for non-draggable active nodes', async () => {
+    const wrapper = mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p><p>World</p>'
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    tiptapState.dragHandleProps[0].onNodeChange({
+      editor: tiptapState.latestEditor,
+      node: {
+        type: { name: 'aiLoading' },
+        isBlock: true,
+      },
+      pos: 1,
+    })
+    await nextTick()
+
+    expect(wrapper.find('.sky-drag-handle-wrapper--hidden').exists()).toBe(true)
+  })
+
+  it('refreshes drag handle availability when external content changes', async () => {
+    const wrapper = mount(SkyTiptap, {
+      props: {
+        modelValue: '<p>Hello</p><p>World</p>'
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+    expect(wrapper.find('.sky-drag-handle').exists()).toBe(true)
+
+    tiptapState.latestEditor.getHTML.mockReturnValue('<p>Hello</p><p>World</p>')
+    tiptapState.latestEditor.__setTopLevelNodes(parseTopLevelNodes('<p>Hello</p>'))
+    await wrapper.setProps({
+      modelValue: '<p>Hello</p>',
+    })
+    await nextTick()
+
+    expect(wrapper.find('.sky-drag-handle').exists()).toBe(false)
   })
 
   it('sets data-theme attribute correctly', async () => {

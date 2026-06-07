@@ -29,6 +29,9 @@ features:
   - icon: 🎬
     title: 视频嵌入与上传
     details: 支持 Bilibili、YouTube、抖音视频嵌入和本地视频上传
+  - icon: ↕️
+    title: 元素拖拽排序
+    details: 支持块级内容拖拽调整顺序，显示清晰落点提示
   - icon: 🤖
     title: AI 内容生成
     details: 集成 AI 接口，支持流式响应生成内容

@@ -8,6 +8,7 @@
 /* ===== 编辑器基础样式 ===== */
 .sky-editor {
   padding: var(--sky-spacing-xl);
+  padding-left: var(--sky-spacing-7xl);
   min-height: 400px;
   max-height: 600px;
   overflow-y: auto;
@@ -297,7 +298,19 @@
 }
 
 /* ===== 拖拽手柄样式 ===== */
-.drag-handle {
+.sky-drag-handle-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  z-index: var(--sky-z-dropdown);
+}
+
+.sky-drag-handle-wrapper--hidden {
+  display: none;
+}
+
+.sky-drag-handle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -309,27 +322,25 @@
   cursor: grab;
   transition: opacity 0.2s ease, background-color 0.2s ease;
   user-select: none;
-  pointer-events: auto;
-  z-index: 10;
 }
 
-.drag-handle:hover {
+.sky-drag-handle:hover {
   background-color: var(--sky-color-bg-secondary);
   border-color: var(--sky-color-border-hover);
 }
 
-.drag-handle:active {
+.sky-drag-handle:active {
   cursor: grabbing;
 }
 
-.drag-handle svg {
+.sky-drag-handle svg {
   width: 16px;
   height: 16px;
   fill: var(--sky-color-text-muted);
   transition: fill 0.2s ease;
 }
 
-.drag-handle:hover svg {
+.sky-drag-handle:hover svg {
   fill: var(--sky-color-text);
 }
 

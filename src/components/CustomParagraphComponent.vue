@@ -3,7 +3,7 @@
   <NodeViewWrapper
       ref="wrapperRef"
       class="custom-paragraph"
-      @mouseenter="showButton = true"
+      @mouseenter="showControls"
       @mouseleave="handleMouseLeave"
   >
     <button
@@ -39,19 +39,41 @@ const props = defineProps({
 const wrapperRef = ref()
 const contentRef = ref()
 const showButton = ref(false) // 控制按钮显示状态
+let hideTimer = null
 
 const isDOMElement = (el) => {
   return el instanceof HTMLElement || el instanceof Element
 }
 
 const handleMouseLeave = () => {
-  if (!checkCursorPosition()) {
-    showButton.value = false
+  scheduleHideControls()
+}
+
+const clearHideTimer = () => {
+  if (hideTimer) {
+    clearTimeout(hideTimer)
+    hideTimer = null
   }
+}
+
+const showControls = () => {
+  clearHideTimer()
+  showButton.value = true
+}
+
+const scheduleHideControls = () => {
+  clearHideTimer()
+  hideTimer = setTimeout(() => {
+    if (!checkCursorPosition()) {
+      showButton.value = false
+    }
+    hideTimer = null
+  }, 180)
 }
 
 // 隐藏按钮的方法
 const hideButton = () => {
+  clearHideTimer()
   if (!checkCursorPosition()) {
     showButton.value = false
   }
@@ -158,6 +180,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  clearHideTimer()
   // 移除事件监听
   emitter.off('hide-all-paragraph-buttons', hideButton)
 })
@@ -169,6 +192,16 @@ onBeforeUnmount(() => {
   cursor: text;
   /* Ensure paragraph has some min-height so button has room to position */
   min-height: 24px;
+}
+
+.custom-paragraph::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -72px;
+  width: 72px;
+  z-index: 1;
 }
 
 .add-button {

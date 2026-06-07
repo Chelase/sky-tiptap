@@ -34,6 +34,7 @@ const createEditor = () => ({
 describe('CustomParagraphComponent', () => {
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.useRealTimers()
     document.body.innerHTML = ''
   })
 
@@ -98,5 +99,38 @@ describe('CustomParagraphComponent', () => {
         insert: expect.any(Function),
       }),
     )
+  })
+
+  it('keeps the add button visible briefly while moving toward the left control lane', async () => {
+    vi.useFakeTimers()
+
+    const wrapper = mount(CustomParagraphComponent, {
+      attachTo: document.body,
+      props: {
+        editor: {
+          ...createEditor(),
+          isFocused: false,
+        },
+        node: { nodeSize: 2 },
+        decorations: [],
+        selected: false,
+        extension: {},
+        getPos: () => 10,
+        updateAttributes: vi.fn(),
+        deleteNode: vi.fn(),
+      },
+    })
+
+    await wrapper.find('.custom-paragraph').trigger('mouseenter')
+    await nextTick()
+    expect(wrapper.find('.add-button').isVisible()).toBe(true)
+
+    await wrapper.find('.custom-paragraph').trigger('mouseleave')
+    await nextTick()
+    expect(wrapper.find('.add-button').isVisible()).toBe(true)
+
+    await vi.advanceTimersByTimeAsync(181)
+    await nextTick()
+    expect(wrapper.find('.add-button').isVisible()).toBe(false)
   })
 })

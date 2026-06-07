@@ -312,6 +312,14 @@ const handleUploadVideo = async (files) => {
 
 ---
 
+### 元素拖拽排序
+
+编辑器默认接入 Tiptap 官方拖拽能力。存在多个可拖拽顶层区块时，桌面端悬停在段落、标题、图片、视频、iframe、表格、代码块等块级内容左侧会显示拖拽手柄，可拖动调整内容顺序。拖拽时会显示主题色落点指示线。
+
+拖拽能力依赖 `@tiptap/extension-drag-handle`、`@tiptap/extension-drag-handle-vue-3`、`@tiptap/extension-dropcursor` 和 `@tiptap/extension-node-range`，这些依赖已随组件库安装。
+
+---
+
 ### 功能清单
 
 #### 基础编辑
@@ -459,6 +467,6 @@ const html = getContent()
 
 ### 版本
 
-当前版本：**1.8.0**
+当前版本：**1.8.1**
 
 详细更新日志请查看 [CHANGELOG.md](./CHANGELOG.md)
