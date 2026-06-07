@@ -84,6 +84,8 @@
   - 自定义 Tiptap 扩展
 - `src/utils/emitter.js`
   - 基于 `mitt` 的组件间通信
+- `src/utils/ai.js`、`src/utils/ai-actions.js`、`src/utils/ai-intent.js`
+  - AI 请求、受控 actions 执行与本地意图解析
 - `src/styles/`
   - 当前样式目录
 
@@ -117,12 +119,15 @@ sky-tiptap/
 │   │   │   └── Menu/InsertMenu.vue
 │   │   ├── NodeView/
 │   │   │   └── CodeBlock.vue
+│   │   ├── CodeBlockComponent.vue
 │   │   ├── CustomParagraphComponent.vue
 │   │   └── tooltip.vue
 │   ├── config/
 │   │   └── default.js           # 唯一配置来源
 │   ├── extensions/
 │   │   ├── CustomParagraph.js
+│   │   ├── ai-loading.js
+│   │   ├── before-change.js
 │   │   ├── iframe.js
 │   │   └── web-video.js
 │   ├── icons/
@@ -130,6 +135,8 @@ sky-tiptap/
 │   ├── styles/                  # 当前样式目录
 │   ├── style/                   # 保留目录，不作为新样式入口
 │   └── utils/
+│       ├── ai-actions.js        # AI actions 白名单、参数归一化和执行
+│       ├── ai-intent.js         # 本地 AI 意图解析
 │       ├── ai.js                # AI 请求、响应解析与 Markdown 渲染
 │       ├── emitter.js
 │       └── extensions/          # 保留目录，不作为新扩展入口
@@ -144,6 +151,7 @@ sky-tiptap/
 - `src/index.vue` 和 `src/utils/index.js` 已删除
 - `src/main.js` 是纯净的库导出入口，不包含示例应用代码
 - `src/demo.js` 是开发环境入口，用于 `npm run dev`
+- 代码块当前主线 NodeView 是 `src/components/NodeView/CodeBlock.vue`；根层的 `src/components/CodeBlockComponent.vue` 是保留文件，不作为当前配置入口
 
 ---
 

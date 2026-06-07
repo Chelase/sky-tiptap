@@ -38,5 +38,8 @@ features:
   - icon: 🎨
     title: 统一弹窗
     details: 替代原生 prompt/alert，体验更佳
+  - icon: 🔌
+    title: 事件 API
+    details: 支持粘贴、拖放、链接点击和内容变化前拦截事件
 ---
 

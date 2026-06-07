@@ -456,6 +456,10 @@ const handleLinkClick = (linkClickEvent) => {
 
 `beforeChange` 事件会在编辑器内容即将变化、但尚未应用到编辑器状态前触发。业务侧可以读取变化前后的 HTML，并调用 `preventDefault()` 阻止本次内容变更。
 
+该事件只处理会改变文档内容的 transaction。纯光标移动、选区变化不会触发 `beforeChange`。
+
+如果需要阻止变化，必须在事件处理函数中同步调用 `beforeChangeEvent.preventDefault()`。异步操作完成后再调用不会阻止已经应用的 transaction。
+
 ```vue
 <template>
   <sky-tiptap

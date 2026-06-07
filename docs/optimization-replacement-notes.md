@@ -53,6 +53,14 @@ Tiptap 官方目前没有稳定发布的 iframe 扩展包。iframe 嵌入是项�
 
 它承载了段落旁边的插入按钮交互，是当前编辑器风格的一部分。Tiptap 官方没有对应的完整 UI 插件。
 
+### `src/extensions/before-change.js`
+
+建议保留。
+
+这是 Sky Tiptap 为 `beforeChange` 组件事件提供的内部扩展，基于 ProseMirror `filterTransaction` 在内容变化应用前同步抛出事件，并允许业务侧通过 `preventDefault()` 阻止本次 transaction。
+
+它解决的是项目级事件 API 和业务拦截能力，不是具体节点、Mark 或菜单 UI。Tiptap 官方没有可直接替换该事件契约的免费插件，继续保留内部实现更合适。
+
 ## 3. 可以考虑替换或补强
 
 ### YouTube 视频
@@ -164,5 +172,6 @@ Tiptap 官方目前没有稳定发布的 iframe 扩展包。iframe 嵌入是项�
 - iframe 嵌入插件
 - AI loading 节点插件
 - 自定义段落插入按钮插件
+- beforeChange 内容变化前拦截插件
 
 这些插件可以单独开源到 GitHub，并发布到 npm，作为 Sky Tiptap 之外也可复用的 Tiptap 扩展。
