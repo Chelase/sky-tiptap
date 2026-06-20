@@ -94,19 +94,33 @@
 - 已补充 `SkyTiptap.test.js` 覆盖拖拽手柄配置、多编辑器实例、图片/视频/iframe/表格块属性和外部内容变化刷新
 - 仍建议在浏览器中做一次真实拖拽手测，确认实际鼠标拖拽顺序变更和落点视觉符合预期
 
-## 第四阶段：减少可替代的自定义实现
+## 第四阶段：减少可替代的自定义实现（已完成评估）
 
 优先级：中
 
 ### 任务
 
-- 评估是否用 `@tiptap/extension-youtube` 替换当前自定义 YouTube 逻辑
-- 已接入 `@tiptap/extension-placeholder`，`placeholder` prop 会渲染空编辑器占位文本
+- ~~评估是否用 `@tiptap/extension-youtube` 替换当前自定义 YouTube 逻辑~~ → **评估完成，不替换**
+- ~~已接入 `@tiptap/extension-placeholder`~~ → **已完成**
 - 保留 Bilibili、抖音、iframe、AI loading、自定义段落等项目特有实现
+
+### YouTube 评估结论
+
+**不替换**，理由：
+
+1. **架构耦合**：所有视频平台（Bilibili、YouTube、抖音、上传视频）共用一个 `VideoEmbed` 节点类型（`src/extensions/web-video.js`），替换 YouTube 会导致两个节点类型共存，增加维护复杂度
+2. **向后兼容性**：现有内容使用 `<div data-video-embed>` 格式，替换后可能无法正确解析
+3. **收益有限**：官方扩展的 YouTube 特定功能（IFrame API）当前不需要，现有实现已满足基本需求
+
+**保留自定义实现**：`src/extensions/web-video.js` 中的多平台视频嵌入逻辑继续维护。
+
+### Placeholder 评估结论
+
+**已替换**：`@tiptap/extension-placeholder` 已接入，`placeholder` prop 通过官方扩展渲染空编辑器占位文本。
 
 ### 注意
 
-替换官方插件不是为了追求“官方”本身，而是为了减少维护成本。只在官方插件能覆盖当前体验且不会增加复杂度时替换。
+替换官方插件不是为了追求"官方"本身，而是为了减少维护成本。只在官方插件能覆盖当前体验且不会增加复杂度时替换。
 
 ## 第五阶段：梳理内部通信机制
 
@@ -165,6 +179,6 @@
 4. 补齐 `linkClick` 链接点击事件
 5. 补齐 `beforeChange` 内容变化前拦截事件
 6. 接入拖拽排序能力
-7. 评估 `@tiptap/extension-file-handler`、YouTube 等官方插件替换
+7. ~~评估 `@tiptap/extension-file-handler`、YouTube 等官方插件替换~~ → YouTube 评估完成（不替换），Placeholder 已接入
 8. 逐步拆分 `SkyTiptap.vue` 中的 AI 和文件处理逻辑
 9. 准备独立插件开源发布
