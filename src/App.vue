@@ -40,8 +40,8 @@ const showToolbar = ref(false)
 const theme = ref('default')
 const aiConfig = {
   mode: 'actions',
-  baseUrl: 'https://www.right.codes/codex/v1/responses',
-  apiKey: 'sk-4476b366cf854e07bc6e5cf1cb285057',
+  baseUrl: 'your-base-url',
+  apiKey: 'your-api-key',
   buildBody: (prompt) => ({
     model: 'gpt-5.2',
     input: [
