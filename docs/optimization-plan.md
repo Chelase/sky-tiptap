@@ -101,7 +101,7 @@
 ### 任务
 
 - 评估是否用 `@tiptap/extension-youtube` 替换当前自定义 YouTube 逻辑
-- 评估是否接入 `@tiptap/extension-placeholder`
+- 已接入 `@tiptap/extension-placeholder`，`placeholder` prop 会渲染空编辑器占位文本
 - 保留 Bilibili、抖音、iframe、AI loading、自定义段落等项目特有实现
 
 ### 注意
@@ -165,6 +165,6 @@
 4. 补齐 `linkClick` 链接点击事件
 5. 补齐 `beforeChange` 内容变化前拦截事件
 6. 接入拖拽排序能力
-7. 评估 `@tiptap/extension-file-handler`、YouTube、placeholder 等官方插件替换
+7. 评估 `@tiptap/extension-file-handler`、YouTube 等官方插件替换
 8. 逐步拆分 `SkyTiptap.vue` 中的 AI 和文件处理逻辑
 9. 准备独立插件开源发布

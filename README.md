@@ -368,7 +368,7 @@ const handleUploadVideo = async (files) => {
 | `modelValue` | String | `''` | 双向绑定的内容 |
 | `theme` | String | `'default'` | 主题（default/dark） |
 | `showToolbar` | Boolean | `false` | 是否显示工具栏 |
-| `placeholder` | String | `'输入内容...'` | 占位符 |
+| `placeholder` | String | `'输入内容...'` | 空编辑器占位符文本，通过官方 Placeholder 扩展渲染 |
 | `aiConfig` | Object | `{ baseUrl: '', apiKey: '' }` | AI 配置，支持内容生成和 `mode: 'actions'` 操控编辑器模式；请求侧支持 `requestBody`、`buildBody`、`buildRequest`、`headers`、`method`、`parseResponse` |
 
 #### 组件事件
@@ -520,6 +520,6 @@ const html = getContent()
 
 ### 版本
 
-当前版本：**1.10.0**
+当前版本：**1.11.0**
 
 详细更新日志请查看 [CHANGELOG.md](./CHANGELOG.md)

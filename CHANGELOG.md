@@ -1,3 +1,16 @@
+## 1.11.0 (2026-06-07)
+
+### 新增功能
+
+- **接入官方 Placeholder 扩展**：`placeholder` prop 现在会通过 `@tiptap/extension-placeholder` 真正渲染为空编辑器占位提示，并随组件 prop 更新保持同步。
+- **新增运行依赖**：显式声明 `@tiptap/extension-placeholder`，确保组件库消费者安装后可直接使用占位符能力。
+
+### 测试
+
+- 补充 `placeholder` 组件配置测试，覆盖默认占位符和自定义占位符 prop 更新。
+
+---
+
 ## 1.10.0 (2026-06-07)
 
 ### 新增功能

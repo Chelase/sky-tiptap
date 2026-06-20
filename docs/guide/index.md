@@ -60,6 +60,6 @@ const content = ref('')
 
 ## 版本
 
-当前版本：**1.10.0**
+当前版本：**1.11.0**
 
 详细更新日志请查看 [CHANGELOG](https://github.com/Chelase/sky-tiptap/blob/master/CHANGELOG.md)

@@ -118,9 +118,7 @@ Tiptap 官方目前没有稳定发布的 iframe 扩展包。iframe 嵌入是项�
 
 ### Placeholder
 
-当前 `SkyTiptap.vue` 暴露了 `placeholder` prop，但需要确认是否已经真正接入 placeholder 扩展。
-
-如果尚未接入，可以使用官方免费插件：
+已接入官方免费插件：
 
 - `@tiptap/extension-placeholder`
 
@@ -128,6 +126,8 @@ Tiptap 官方目前没有稳定发布的 iframe 扩展包。iframe 嵌入是项�
 
 - 显示空编辑器占位文本
 - 支持不同节点的占位提示
+
+当前项目按组件实例的 `placeholder` prop 配置该扩展，避免多个编辑器实例共享固定占位文本。
 
 ## 4. 已经使用官方插件的能力
 

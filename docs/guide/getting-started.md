@@ -38,7 +38,7 @@ const content = ref('')
 | `modelValue` | String | `''` | 双向绑定的内容 |
 | `theme` | String | `'default'` | 主题（default/dark） |
 | `showToolbar` | Boolean | `false` | 是否显示工具栏 |
-| `placeholder` | String | `'输入内容...'` | 占位符 |
+| `placeholder` | String | `'输入内容...'` | 空编辑器占位符文本，通过官方 Placeholder 扩展渲染 |
 | `aiConfig` | Object | `{ baseUrl: '', apiKey: '' }` | AI 内容生成配置 |
 
 ## 组件事件

@@ -86,4 +86,4 @@ const handleUploadVideo = async (files) => {
 
 ## 粘贴图片处理
 
-粘贴图片处理详见：[事件 - paste 事件](./events.md#paste-事件)。
+粘贴图片处理详见：[事件 - paste 事件](/api/events#paste-事件)。

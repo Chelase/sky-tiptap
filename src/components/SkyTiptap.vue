@@ -69,6 +69,7 @@
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import { DragHandle } from '@tiptap/extension-drag-handle-vue-3'
+import Placeholder from '@tiptap/extension-placeholder'
 import { emitter } from '../utils/emitter'
 import { TipTapPlugin } from '../config/default'
 import Toolbar from './Toolbar/Toolbar.vue'
@@ -234,6 +235,9 @@ const editor = useEditor({
   ...TipTapPlugin,
   extensions: [
     ...TipTapPlugin.extensions,
+    Placeholder.configure({
+      placeholder: () => props.placeholder,
+    }),
     BeforeChange.configure({
       onBeforeChange: handleBeforeChange,
     }),
@@ -300,6 +304,15 @@ watch(() => props.modelValue, (newValue) => {
   if (editor.value && newValue !== editor.value.getHTML()) {
     editor.value.commands.setContent(newValue)
     refreshDraggableBlockCount()
+  }
+})
+
+watch(() => props.placeholder, () => {
+  const activeEditor = editor.value
+  const transaction = activeEditor?.state?.tr
+
+  if (!activeEditor?.isDestroyed && transaction && typeof activeEditor?.view?.dispatch === 'function') {
+    activeEditor.view.dispatch(transaction)
   }
 })
 

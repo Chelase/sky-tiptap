@@ -117,6 +117,10 @@ const getBeforeChangeExtension = () => {
   return tiptapState.latestOptions.extensions.find(extension => extension.name === 'beforeChange')
 }
 
+const getPlaceholderExtension = () => {
+  return tiptapState.latestOptions.extensions.find(extension => extension.name === 'placeholder')
+}
+
 // Mock Tiptap Vue3
 vi.mock('@tiptap/vue-3', async () => {
   const actual = await vi.importActual('@tiptap/vue-3')
@@ -167,6 +171,9 @@ vi.mock('@tiptap/vue-3', async () => {
         on: vi.fn(),
         off: vi.fn(),
         state: {
+          tr: {
+            docChanged: false,
+          },
           selection: { from: 0, to: 0 },
           doc: {
             get childCount() {
@@ -185,7 +192,8 @@ vi.mock('@tiptap/vue-3', async () => {
         },
         isFocused: false,
         view: {
-          dom: document.createElement('div')
+          dom: document.createElement('div'),
+          dispatch: vi.fn(),
         },
         element: document.createElement('div'),
         options: {}
@@ -277,6 +285,44 @@ describe('SkyTiptap Component', () => {
     })
     await nextTick()
     expect(wrapper.find('.sky-toolbar').exists()).toBe(false)
+  })
+
+  it('configures the official placeholder extension with the default placeholder', async () => {
+    mount(SkyTiptap, {
+      props: {
+        modelValue: ''
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    const placeholder = getPlaceholderExtension()
+
+    expect(placeholder).toBeDefined()
+    expect(placeholder.options.placeholder()).toBe('输入内容...')
+  })
+
+  it('keeps the placeholder extension synced with the placeholder prop', async () => {
+    const wrapper = mount(SkyTiptap, {
+      props: {
+        modelValue: '',
+        placeholder: '写点什么...'
+      },
+      attachTo: document.getElementById('app')
+    })
+    await nextTick()
+
+    const placeholder = getPlaceholderExtension()
+
+    expect(placeholder.options.placeholder()).toBe('写点什么...')
+
+    await wrapper.setProps({
+      placeholder: '继续输入...'
+    })
+    await nextTick()
+
+    expect(placeholder.options.placeholder()).toBe('继续输入...')
+    expect(tiptapState.latestEditor.view.dispatch).toHaveBeenCalledWith(tiptapState.latestEditor.state.tr)
   })
 
   it('does not render drag handle for a single top-level block', async () => {

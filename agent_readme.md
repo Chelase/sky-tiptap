@@ -5,7 +5,7 @@
 **Sky Tiptap** 是一款基于 Tiptap 和 Vue 3 的富文本编辑器组件库，目标是提供开箱即用的编辑体验和可扩展的多媒体能力。
 
 - **源码包名：** `@Chelase/sky-tiptap`
-- **当前版本：** `1.10.0`
+- **当前版本：** `1.11.0`
 - **技术栈：** Vue 3 + Tiptap 2.x + Vite 6.x
 - **作者：** Chelsea
 
@@ -60,6 +60,7 @@
 - 选区悬浮菜单（Bubble Menu，含标题与列表）
 - 插入菜单（Insert Menu）
 - 自定义段落插入按钮
+- 空编辑器占位符（官方 Placeholder 扩展）
 - 块级元素拖拽排序（官方 DragHandle + Dropcursor + NodeRange）
 
 ### 4. AI 能力
@@ -199,7 +200,7 @@ const content = ref('')
 | `modelValue` | String | `''` | 双向绑定的内容 |
 | `theme` | String | `'default'` | 主题（`default` / `dark`） |
 | `showToolbar` | Boolean | `false` | 是否显示工具栏 |
-| `placeholder` | String | `'输入内容...'` | 占位符 |
+| `placeholder` | String | `'输入内容...'` | 空编辑器占位符文本，通过官方 Placeholder 扩展渲染 |
 | `aiConfig` | Object | `{ baseUrl: '', apiKey: '' }` | AI 配置，支持内容生成、`mode: 'actions'` 操控编辑器模式、执行前预览、只预览不执行和失败回滚；请求侧支持 `requestBody`、`buildBody`、`buildRequest`、`headers`、`method`、`parseResponse` |
 
 ### 组件事件
@@ -259,6 +260,7 @@ const html = getContent()
 - AI actions 执行逻辑统一放在 `src/utils/ai-actions.js`
 - 自定义 NodeView 使用 `VueNodeViewRenderer` 注册
 - 块级拖拽能力使用 `@tiptap/extension-drag-handle-vue-3`、`@tiptap/extension-dropcursor` 和 `@tiptap/extension-node-range`
+- 占位符能力使用官方 `@tiptap/extension-placeholder`，按组件实例的 `placeholder` prop 配置
 - 内容变化前拦截使用内部 `src/extensions/before-change.js`，基于 ProseMirror `filterTransaction`
 - `CodeBlockLowlight` 替代 StarterKit 默认代码块
 - 链接默认不直接打开，通过 Ctrl 或 Meta + Click 新标签页打开；业务侧可用 `linkClick` 接管链接点击
@@ -343,7 +345,7 @@ MIT License
 
 ## 当前验证基线
 
-- 单元测试：13 个测试文件、128 个用例通过
+- 单元测试：13 个测试文件、130 个用例通过
 - 构建测试：`npm run build` 通过
 - 文档构建：`npm run docs:build` 通过
 - 构建产物：ES Module + UMD + CSS
