@@ -43,6 +43,10 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
+    "@sky-tiptap/extension-ai-loading": "link:../sky-tiptap-extensions/packages/ai-loading",
+    "@sky-tiptap/extension-before-change": "link:../sky-tiptap-extensions/packages/before-change",
+    "@sky-tiptap/extension-iframe": "link:../sky-tiptap-extensions/packages/iframe",
+    "@sky-tiptap/extension-video-embed": "link:../sky-tiptap-extensions/packages/video-embed",
     "@tiptap/extension-code-block-lowlight": "^2.27.2",
     "@tiptap/extension-drag-handle": "^2.27.2",
     "@tiptap/extension-drag-handle-vue-3": "^2.27.2",

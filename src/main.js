@@ -82,5 +82,7 @@ export { emitter } from './utils/emitter'
 
 // 导出扩展
 export { CustomParagraph } from './extensions/CustomParagraph'
-export { default as VideoEmbed } from './extensions/web-video'
-export { default as Iframe } from './extensions/iframe'
+export { default as VideoEmbed } from '@sky-tiptap/extension-video-embed'
+export { default as Iframe } from '@sky-tiptap/extension-iframe'
+export { default as AiLoading } from '@sky-tiptap/extension-ai-loading'
+export { default as BeforeChange } from '@sky-tiptap/extension-before-change'

@@ -38,9 +38,9 @@ import css from 'highlight.js/lib/languages/css'
 import markdown from 'highlight.js/lib/languages/markdown'
 
 import CodeBlockComponent from '../components/NodeView/CodeBlock.vue'
-import VideoEmbed from '../extensions/web-video.js'
-import Iframe from '../extensions/iframe.js'
-import AiLoading from '../extensions/ai-loading.js'
+import VideoEmbed from '@sky-tiptap/extension-video-embed'
+import Iframe from '@sky-tiptap/extension-iframe'
+import AiLoading from '@sky-tiptap/extension-ai-loading'
 import { CustomParagraph } from '../extensions/CustomParagraph.js'
 
 // 创建 lowlight 实例并注册常用语言
