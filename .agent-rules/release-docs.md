@@ -74,14 +74,16 @@
 根据 `.github/workflows/publish.yml`，当前自动发布流程如下：
 
 - 触发条件：推送到 `master` 分支
-- 运行环境：GitHub Actions + Node.js 20
+- 运行环境：GitHub Actions + Node.js 20 + pnpm 10
 - 主要步骤：
-  - `npm ci`
+  - `pnpm install --frozen-lockfile`
   - `npm run build`
   - 发布到 GitHub Packages
   - 临时把包名从 `@Chelase/sky-tiptap` 改为 `sky-tiptap`
   - 发布到 npm
   - 恢复 `package.json`
+
+**依赖管理说明**：仓库使用 pnpm，锁文件为 `pnpm-lock.yaml`。仓库通过 `link:` 协议依赖 `sky-tiptap-extensions` 中的本地包，npm 不支持该协议，因此不要使用 `npm ci` 或 `package-lock.json`。
 
 所需 secrets：
 

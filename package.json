@@ -1,6 +1,6 @@
 {
   "name": "@Chelase/sky-tiptap",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "A tiptap template for Vue3 - 一个适用于 tiptap 的 Vue3 模板",
   "license": "MIT",
   "author": {
@@ -47,6 +47,7 @@
     "@sky-tiptap/extension-before-change": "link:../sky-tiptap-extensions/packages/before-change",
     "@sky-tiptap/extension-iframe": "link:../sky-tiptap-extensions/packages/iframe",
     "@sky-tiptap/extension-video-embed": "link:../sky-tiptap-extensions/packages/video-embed",
+    "@tiptap/core": "^2.27.2",
     "@tiptap/extension-code-block-lowlight": "^2.27.2",
     "@tiptap/extension-drag-handle": "^2.27.2",
     "@tiptap/extension-drag-handle-vue-3": "^2.27.2",
@@ -54,7 +55,6 @@
     "@tiptap/extension-highlight": "^2.27.2",
     "@tiptap/extension-image": "^2.27.2",
     "@tiptap/extension-link": "^2.27.2",
-    "@tiptap/extension-node-range": "^2.27.2",
     "@tiptap/extension-paragraph": "^2.27.2",
     "@tiptap/extension-placeholder": "^2.27.2",
     "@tiptap/extension-table": "^2.27.2",
@@ -63,7 +63,6 @@
     "@tiptap/extension-table-row": "^2.27.2",
     "@tiptap/extension-typography": "^2.27.2",
     "@tiptap/extension-underline": "^2.27.2",
-    "@tiptap/extension-youtube": "^2.27.2",
     "@tiptap/pm": "^2.27.2",
     "@tiptap/starter-kit": "^2.27.2",
     "@tiptap/vue-3": "^2.27.2",
