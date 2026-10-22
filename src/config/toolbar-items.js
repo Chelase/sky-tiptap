@@ -7,6 +7,7 @@
 
 import { emitter } from '../utils/emitter'
 import { createLinkDialogPayload } from '../utils/link-dialog'
+import { insertBlock } from './block-catalog'
 
 /**
  * 条目定义
@@ -87,28 +88,29 @@ export const toolbarItemSpecs = {
   image: {
     icon: 'image',
     tooltip: '插入图片',
-    run: () => emitter.emit('trigger-add-image'),
+    run: (editor) => insertBlock(editor, 'image'),
   },
   video: {
     icon: 'video',
     tooltip: '插入视频',
-    run: () => emitter.emit('show-video-menu'),
+    run: (editor) => insertBlock(editor, 'video'),
   },
   codeBlock: {
     icon: 'code',
     tooltip: '代码块',
     isActive: (editor) => editor?.isActive('codeBlock'),
+    // 工具栏上的代码块是「格式切换」，与块目录里「插入新代码块」语义不同
     run: (editor) => editor?.chain().focus().toggleCodeBlock().run(),
   },
   table: {
     icon: 'table',
     tooltip: '表格',
-    run: (editor) => editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+    run: (editor) => insertBlock(editor, 'table'),
   },
   divider: {
     icon: 'divider',
     tooltip: '分割线',
-    run: (editor) => editor?.chain().focus().setHorizontalRule().run(),
+    run: (editor) => insertBlock(editor, 'divider'),
   },
   link: {
     icon: 'link',
@@ -119,11 +121,7 @@ export const toolbarItemSpecs = {
   ai: {
     icon: 'ai',
     tooltip: 'AI 生成',
-    // 同时触发新事件名与历史事件名，保持向后兼容
-    run: () => {
-      emitter.emit('ai-generate')
-      emitter.emit('AI-generated')
-    },
+    run: (editor) => insertBlock(editor, 'ai'),
   },
 }
 

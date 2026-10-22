@@ -19,10 +19,9 @@
 
 <script setup>
 import { computed } from 'vue'
-import { icons } from '../../icons'
 import ToolbarButton from './ToolbarButton.vue'
 import { defaultToolbarConfig } from '../../config/menu-config'
-import { getToolbarItemSpec } from '../../config/toolbar-items'
+import { resolveMenuGroups } from '../../utils/menu-items'
 
 const props = defineProps({
   editor: {
@@ -36,33 +35,7 @@ const props = defineProps({
   }
 })
 
-const groups = computed(() => {
-  const source = props.config?.groups || []
-
-  return source
-    .map((group) => ({
-      name: group.name,
-      items: (group.items || [])
-        .map((key) => {
-          const spec = getToolbarItemSpec(key)
-          if (!spec) {
-            return null
-          }
-
-          return {
-            key,
-            iconSvg: spec.icon ? icons[spec.icon] : '',
-            label: spec.label || '',
-            tooltip: spec.tooltip || '',
-            isActive: spec.isActive ? spec.isActive(props.editor) : false,
-            disabled: spec.disabled ? spec.disabled(props.editor) : false,
-            run: () => spec.run?.(props.editor),
-          }
-        })
-        .filter(Boolean),
-    }))
-    .filter((group) => group.items.length > 0)
-})
+const groups = computed(() => resolveMenuGroups(props.config, props.editor))
 </script>
 
 <style scoped>

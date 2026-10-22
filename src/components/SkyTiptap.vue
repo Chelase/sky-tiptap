@@ -85,7 +85,7 @@ import BeforeChange from '@sky-tiptap/extension-before-change'
 import { createAiFlow } from '../utils/ai-flow'
 import { insertBlock } from '../utils/block-insert'
 import { findCurrentTopLevelBlock } from '../utils/block-actions'
-import { resolveBlockElement, DEFAULT_BLOCK_CONTROL_OPTIONS } from '../utils/block-controls'
+import { locateBlockControls, getDragHandleOffset } from '../utils/block-gutter'
 import { createBlockKeyboardShortcuts } from '../utils/keyboard-shortcuts'
 import { createLinkDialogPayload } from '../utils/link-dialog'
 import { getTextBeforeCursor, parseSlashCommand } from '../utils/slash-menu'
@@ -155,7 +155,7 @@ const DRAG_NODE_LABELS = {
 }
 const dragHandleTippyOptions = {
   placement: 'left-start',
-  offset: [0, 4],
+  offset: getDragHandleOffset(),
   duration: 100,
   zIndex: 110,
 }
@@ -266,33 +266,8 @@ const openInsertMenu = (options = {}) => {
   }
 
   const info = findCurrentTopLevelBlock(activeEditor)
-  const view = activeEditor.view
-  let rect = null
-
-  if (view) {
-    const element = info ? resolveBlockElement(view, info.pos, info.index) : null
-
-    if (element && typeof element.getBoundingClientRect === 'function') {
-      rect = element.getBoundingClientRect()
-    } else if (typeof view.coordsAtPos === 'function') {
-      rect = view.coordsAtPos(info?.pos ?? 0)
-    }
-  }
-
-  const position = rect
-    ? {
-        top: Math.round(rect.top),
-        left: Math.max(
-          8,
-          Math.round(
-            rect.left
-              - DEFAULT_BLOCK_CONTROL_OPTIONS.gutterWidth
-              + DEFAULT_BLOCK_CONTROL_OPTIONS.controlSize
-              + DEFAULT_BLOCK_CONTROL_OPTIONS.gutterGap,
-          ),
-        ),
-      }
-    : { top: 100, left: 100 }
+  const controls = info ? locateBlockControls(activeEditor.view, info) : null
+  const position = controls ? controls.menu : { top: 100, left: 100 }
 
   emitter.emit('show-insert-menu', {
     position,

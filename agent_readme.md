@@ -126,7 +126,8 @@ sky-tiptap/
 │   │   └── tooltip.vue
 │   ├── config/
 │   │   ├── default.js           # 唯一配置来源
-│   │   ├── insert-menu.js       # 块目录配置（+ 按钮 / ⌘/ 菜单共用）
+│   │   ├── block-catalog.js     # 块目录：类型 / 创建方式 / 外部请求（唯一来源）
+│   │   ├── insert-menu.js       # 块目录菜单视图（+ 按钮 / ⌘/ 菜单共用）
 │   │   ├── menu-config.js       # 工具栏 / 悬浮菜单编排
 │   │   ├── toolbar-items.js     # 工具栏 / 悬浮菜单条目注册表
 │   │   └── block-capabilities.js# 块级能力（可拖拽 / 悬浮菜单 / 落点）
@@ -143,12 +144,14 @@ sky-tiptap/
 │       ├── ai.js                # AI 请求、响应解析与 Markdown 渲染
 │       ├── ai-flow.js           # AI 生成流程（内容生成 / 操控编辑器）
 │       ├── block-actions.js     # 块级移动、复制、选中
-│       ├── block-controls.js    # 块级控件定位（+ 号、拖拽手柄共用轨道）
-│       ├── block-insert.js      # 统一块插入层
+│       ├── block-controls.js    # 块命中测试：坐标 → 顶层块 / DOM 元素
+│       ├── block-gutter.js      # 块级控件几何（+ 号、菜单锚点、拖拽手柄同源）
+│       ├── block-insert.js      # 块插入兼容层（转发 block-catalog）
 │       ├── editor-registry.js   # 编辑器实例注册表（多实例不互相覆盖）
 │       ├── emitter.js
 │       ├── keyboard-shortcuts.js# 块级快捷键
 │       ├── link-dialog.js       # 链接弹窗参数
+│       ├── menu-items.js        # 菜单条目适配（spec → 渲染属性）
 │       ├── slash-menu.js        # Slash 菜单解析
 │       └── extensions/          # 保留目录，不作为新扩展入口
 ├── AGENTS.md

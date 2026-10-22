@@ -26,10 +26,9 @@
 <script setup>
 import { computed } from 'vue'
 import { BubbleMenu } from '@tiptap/vue-3'
-import { icons } from '../../icons'
 import ToolbarButton from '../Toolbar/ToolbarButton.vue'
 import { defaultBubbleMenuConfig } from '../../config/menu-config'
-import { getToolbarItemSpec } from '../../config/toolbar-items'
+import { resolveMenuGroups } from '../../utils/menu-items'
 
 const props = defineProps({
   editor: {
@@ -51,33 +50,7 @@ const tippyOptions = {
   zIndex: 100,
 }
 
-const groups = computed(() => {
-  const source = props.config?.groups
-    || (props.config?.items ? [{ items: props.config.items }] : [])
-
-  return source
-    .map((group) => ({
-      items: (group.items || [])
-        .map((key) => {
-          const spec = getToolbarItemSpec(key)
-          if (!spec) {
-            return null
-          }
-
-          return {
-            key,
-            iconSvg: spec.icon ? icons[spec.icon] : '',
-            label: spec.label || '',
-            tooltip: spec.tooltip || '',
-            isActive: spec.isActive ? spec.isActive(props.editor) : false,
-            disabled: spec.disabled ? spec.disabled(props.editor) : false,
-            run: () => spec.run?.(props.editor),
-          }
-        })
-        .filter(Boolean),
-    }))
-    .filter((group) => group.items.length > 0)
-})
+const groups = computed(() => resolveMenuGroups(props.config, props.editor))
 </script>
 
 <style scoped>

@@ -1,21 +1,9 @@
 /**
  * Sky Tiptap - 块级控件定位工具
  *
- * 负责「+」按钮、拖拽手柄这类块级悬浮控件的定位计算，
- * 逻辑保持纯函数，方便单测覆盖。
+ * 负责坐标命中、顶层块解析与元素查找，逻辑保持纯函数，方便单测覆盖。
+ * 「控件该出现在哪」由 src/utils/block-gutter.js 负责。
  */
-
-/** 默认控件参数 */
-export const DEFAULT_BLOCK_CONTROL_OPTIONS = {
-  /** 左侧轨道宽度（按钮距内容左边缘的距离） */
-  gutterWidth: 56,
-  /** 控件尺寸 */
-  controlSize: 24,
-  /** 控件与内容的间距 */
-  gutterGap: 8,
-  /** 与块顶部的偏移 */
-  offsetY: 0,
-}
 
 /**
  * 获取文档中第 index 个顶层子节点的起始位置
@@ -127,26 +115,6 @@ export const resolveBlockElement = (view, pos, index) => {
   }
 
   return null
-}
-
-/**
- * 计算块级控件的位置
- *
- * @param {Object} rect 块元素的视口矩形
- * @param {Object} [options] 控件参数
- * @returns {Object} { top, left }
- */
-export const getBlockControlPosition = (rect, options = {}) => {
-  const settings = { ...DEFAULT_BLOCK_CONTROL_OPTIONS, ...options }
-
-  if (!rect) {
-    return { top: 0, left: 0 }
-  }
-
-  return {
-    top: Math.round(rect.top + settings.offsetY),
-    left: Math.round(rect.left - settings.gutterWidth),
-  }
 }
 
 /**

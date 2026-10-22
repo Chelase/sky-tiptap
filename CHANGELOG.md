@@ -1,3 +1,14 @@
+## 1.12.1 (2026-10-22)
+
+### 重构
+
+- **块目录收成单一来源**：新增 `src/config/block-catalog.js`，把「有哪些块、每种块怎么创建、外部流程怎么触发」集中到一处；`src/config/insert-menu.js` 退化为菜单视图，`src/utils/block-insert.js` 退化为兼容层。此前 `table`/`codeBlock`/`divider`/`image`/`video`/`ai` 同时存在于两份目录，其中 `table` 有两套实现（节点 JSON 与 `insertTable` 命令），现在统一由 `insertBlock` 处理
+- **块级控件几何收成一个模块**：新增 `src/utils/block-gutter.js`，`+` 号、块菜单锚点、拖拽手柄偏移共用同一组令牌与同一次 rect 解析；`--sky-gutter-width` 仍是视觉令牌真来源，JS 只做读取与兜底，并新增测试守护两边一致
+- **菜单条目映射去重**：新增 `src/utils/menu-items.js` 的 `resolveMenuGroups(config, editor)`，Toolbar 与 BubbleMenu 不再各自复制一段 `key → {iconSvg,label,tooltip,isActive,disabled,run}` 映射
+- `src/utils/block-controls.js` 只保留命中测试与顶层块解析，移除 `DEFAULT_BLOCK_CONTROL_OPTIONS`、`getBlockControlPosition`
+
+---
+
 ## 1.12.0 (2026-10-22)
 
 ### 新增功能

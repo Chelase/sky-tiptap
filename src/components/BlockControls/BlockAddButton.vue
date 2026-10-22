@@ -19,11 +19,8 @@ import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { emitter } from '../../utils/emitter'
 import { icons } from '../../icons'
 import { insertBlock } from '../../utils/block-insert'
-import {
-  DEFAULT_BLOCK_CONTROL_OPTIONS,
-  findTopLevelBlock,
-  getBlockControlPosition,
-} from '../../utils/block-controls'
+import { findTopLevelBlock } from '../../utils/block-controls'
+import { locateBlockControls } from '../../utils/block-gutter'
 import { getBlockCapabilities } from '../../config/block-capabilities'
 
 const props = defineProps({
@@ -45,48 +42,12 @@ const props = defineProps({
 
 const visible = ref(false)
 const position = ref({ top: 0, left: 0 })
+const menuPosition = ref({ top: 0, left: 0 })
 const activeBlock = ref(null)
 
 let dom = null
 let frame = null
 let pendingCoords = null
-
-const readGutterWidth = () => {
-  if (!dom || typeof window === 'undefined' || !window.getComputedStyle) {
-    return DEFAULT_BLOCK_CONTROL_OPTIONS.gutterWidth
-  }
-
-  const value = window.getComputedStyle(dom).getPropertyValue('--sky-gutter-width')
-  const parsed = Number.parseFloat(value)
-
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_BLOCK_CONTROL_OPTIONS.gutterWidth
-}
-
-const resolveRect = (info) => {
-  if (info.element && typeof info.element.getBoundingClientRect === 'function') {
-    const rect = info.element.getBoundingClientRect()
-    if (rect && (rect.width || rect.height)) {
-      return rect
-    }
-  }
-
-  const view = props.editor?.view
-  if (view && typeof view.coordsAtPos === 'function') {
-    const coords = view.coordsAtPos(info.pos)
-    if (coords) {
-      return {
-        top: coords.top,
-        left: coords.left,
-        right: coords.left,
-        bottom: coords.bottom,
-        width: 0,
-        height: 0,
-      }
-    }
-  }
-
-  return null
-}
 
 const updateFromCoords = (coords) => {
   const view = props.editor?.view
@@ -107,16 +68,15 @@ const updateFromCoords = (coords) => {
     return
   }
 
-  const rect = resolveRect(info)
-  if (!rect) {
+  const controls = locateBlockControls(view, info)
+  if (!controls) {
     hide()
     return
   }
 
-  const next = getBlockControlPosition(rect, { gutterWidth: readGutterWidth() })
-
   activeBlock.value = info
-  position.value = next
+  position.value = controls.add
+  menuPosition.value = controls.menu
   visible.value = props.enabled
 }
 
@@ -159,8 +119,8 @@ const handleClick = (event) => {
 
   emitter.emit('show-insert-menu', {
     position: {
-      top: position.value.top,
-      left: position.value.left + DEFAULT_BLOCK_CONTROL_OPTIONS.controlSize + DEFAULT_BLOCK_CONTROL_OPTIONS.gutterGap,
+      top: menuPosition.value.top,
+      left: menuPosition.value.left,
     },
     insert: (type) => {
       insertBlock(props.editor, type, { insertAt: info.end })
