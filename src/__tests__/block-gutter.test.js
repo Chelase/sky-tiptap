@@ -4,6 +4,7 @@ import path from 'node:path'
 import {
   BLOCK_GUTTER,
   getDragHandleOffset,
+  isPointInBlockBand,
   locateBlockControls,
   readGutterTokens,
   resolveBlockRect,
@@ -120,5 +121,17 @@ describe('block gutter geometry', () => {
 
   it('derives the drag handle offset from the same module', () => {
     expect(getDragHandleOffset()).toEqual([0, BLOCK_GUTTER.handleGap])
+  })
+
+  it('treats only the block band as inside, not the margin gap', () => {
+    const rect = { top: 100, bottom: 128 }
+
+    expect(isPointInBlockBand(rect, { top: 100 })).toBe(true)
+    expect(isPointInBlockBand(rect, { top: 120 })).toBe(true)
+    expect(isPointInBlockBand(rect, { top: 128 })).toBe(true)
+    expect(isPointInBlockBand(rect, { top: 134 })).toBe(false)
+    expect(isPointInBlockBand(rect, { top: 94 })).toBe(false)
+    expect(isPointInBlockBand(null, { top: 100 })).toBe(false)
+    expect(isPointInBlockBand(rect, null)).toBe(false)
   })
 })

@@ -118,6 +118,33 @@ describe('BlockAddButton', () => {
     wrapper.unmount()
   })
 
+  it('keeps the current block while the pointer is in the gap between blocks', async () => {
+    const activeEditor = createEditor()
+    const wrapper = mount(BlockAddButton, {
+      attachTo: document.body,
+      props: { editor: activeEditor },
+    })
+
+    await nextTick()
+    const button = wrapper.find('.sky-block-add-button')
+
+    // 先停在块内（mock 的块矩形是 100~128）
+    activeEditor.view.dom.dispatchEvent(new MouseEvent('mousemove', { clientX: 320, clientY: 110 }))
+    await new Promise((resolve) => setTimeout(resolve, 40))
+    await nextTick()
+    expect(button.attributes('style')).toContain('top: 100px')
+
+    // 指针进入块间空隙，posAtCoords 仍会给出下一块，但位置必须保持不动
+    activeEditor.view.dom.dispatchEvent(new MouseEvent('mousemove', { clientX: 320, clientY: 140 }))
+    await new Promise((resolve) => setTimeout(resolve, 40))
+    await nextTick()
+
+    expect(button.isVisible()).toBe(true)
+    expect(button.attributes('style')).toContain('top: 100px')
+
+    wrapper.unmount()
+  })
+
   it('hides the add button when the pointer leaves it for outside the editor', async () => {
     const activeEditor = createEditor()
     const wrapper = mount(BlockAddButton, {

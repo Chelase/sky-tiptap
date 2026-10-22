@@ -21,7 +21,7 @@ import { emitter } from '../../utils/emitter'
 import { icons } from '../../icons'
 import { insertBlock } from '../../utils/block-insert'
 import { findTopLevelBlock } from '../../utils/block-controls'
-import { locateBlockControls } from '../../utils/block-gutter'
+import { locateBlockControls, isPointInBlockBand } from '../../utils/block-gutter'
 import { getBlockCapabilities } from '../../config/block-capabilities'
 
 /**
@@ -79,6 +79,11 @@ const updateFromCoords = (coords) => {
   const controls = locateBlockControls(view, info)
   if (!controls) {
     hide()
+    return
+  }
+
+  // 指针在块间空隙里时保持当前块，与官方 DragHandle 的行为对齐
+  if (!isPointInBlockBand(controls.rect, coords) && activeBlock.value) {
     return
   }
 

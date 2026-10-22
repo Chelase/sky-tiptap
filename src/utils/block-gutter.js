@@ -140,6 +140,24 @@ export const locateBlockControls = (view, info) => {
 }
 
 /**
+ * 指针是否落在块的纵向带内（块间的 margin 空隙不算）
+ *
+ * 块间空隙里 posAtCoords 会给出下一块，而官方 DragHandle 由于找不到
+ * DOM 元素会保持上一块；「+」号用这个判定跟随手柄，避免两者错位。
+ *
+ * @param {{ top: number, bottom: number }|null} rect 块矩形
+ * @param {{ top: number }|null} coords 视口坐标
+ * @returns {boolean}
+ */
+export const isPointInBlockBand = (rect, coords) => {
+  if (!rect || !coords) {
+    return false
+  }
+
+  return coords.top >= rect.top && coords.top <= rect.bottom
+}
+
+/**
  * 拖拽手柄的 tippy offset
  *
  * 从同一组令牌派生，避免与「+」号各自维护一个数字。

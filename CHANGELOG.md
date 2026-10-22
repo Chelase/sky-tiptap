@@ -10,6 +10,7 @@
 ### Bug 修复
 
 - 修复鼠标移入左侧轨道后「+」号与拖拽手柄消失、导致块级控件无法点击的问题：轨道内边距从 `.sky-editor` 移到 `.sky-prosemirror`（即 ProseMirror 的可编辑盒子内），指针不再触发编辑器的 `mouseleave`，官方 DragHandle 的坐标命中也能正常解析；同时移除 `base.css` 中用 `padding` 简写覆盖轨道宽度的旧规则，「+」号位置与 `--sky-gutter-width` 重新对齐
+- 修复指针停在块间空隙（段落 `margin`）时「+」号跳到下一块、与拖拽手柄指向不同块的问题：此时 `posAtCoords` 会给出下一块，而官方 DragHandle 找不到 DOM 元素会保持上一块；「+」号改为用 `isPointInBlockBand` 判断指针是否落在块的纵向带内，不在带内时保持当前块，与手柄行为一致
 
 ---
 
