@@ -39,6 +39,7 @@
 - [x] 块级快捷键：`src/utils/keyboard-shortcuts.js`（`⌘/`、`⌘⇧↑↓`、`⌘D`、`Esc`、`⌘B/I/U`、`⌘⇧H`、`⌘K`）
 - [x] 块级操作：`src/utils/block-actions.js`（`moveBlock` / `duplicateBlock` / `selectBlock`）
 - [x] 块级定位：`src/utils/block-controls.js` + `--sky-gutter-width` 令牌，左轨道统一
+- [x] 左侧轨道内悬停不再丢控件：轨道内边距移到 `.sky-prosemirror`（ProseMirror 盒子内），移入轨道不会触发 `mouseleave`，官方 DragHandle 也能命中坐标
 - [x] 段落不再挂载 Vue NodeView，`CustomParagraph` 扩展与导出保持兼容
 - [x] 修复 `before-change` 插件 key 冲突导致的编辑器创建失败
 

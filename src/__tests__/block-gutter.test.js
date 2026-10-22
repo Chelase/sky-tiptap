@@ -11,6 +11,16 @@ import {
 
 const readCss = () => fs.readFileSync(path.resolve(process.cwd(), 'src/styles/variables.css'), 'utf8')
 
+const readStyleFile = (name) => fs
+  .readFileSync(path.resolve(process.cwd(), `src/styles/${name}`), 'utf8')
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+
+const readRuleBody = (css, selector) => {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const match = new RegExp(`${escaped}\\s*\\{([^}]*)\\}`).exec(css)
+  return match ? match[1] : ''
+}
+
 const readCssToken = (css, name) => {
   const match = new RegExp(`${name}:\\s*([0-9.]+)px`).exec(css)
   return match ? Number.parseFloat(match[1]) : NaN
@@ -41,6 +51,19 @@ describe('block gutter tokens', () => {
       controlSize: BLOCK_GUTTER.controlSize,
       controlGap: BLOCK_GUTTER.controlGap,
     })
+  })
+
+  it('keeps the gutter track inside the editable area', () => {
+    const editorCss = readStyleFile('editor.css')
+    const baseCss = readStyleFile('base.css')
+
+    // 轨道必须属于 ProseMirror 的盒子：否则移入轨道会触发 mouseleave，
+    // 「+」号与拖拽手柄在点击之前就消失了。
+    expect(readRuleBody(editorCss, '.sky-editor .ProseMirror')).toContain('padding-left: var(--sky-gutter-width)')
+
+    // .sky-editor 的 padding 只能由 editor.css 定义，避免简写覆盖轨道宽度
+    expect(readRuleBody(editorCss, '.sky-editor')).toContain('padding: var(--sky-spacing-xl)')
+    expect(readRuleBody(baseCss, '.sky-editor')).not.toMatch(/(^|[;\s])padding\s*:/)
   })
 })
 

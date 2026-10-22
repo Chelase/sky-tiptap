@@ -89,7 +89,11 @@
 
 /* ===== 编辑器内容区域 ===== */
 .sky-editor {
-  padding: var(--sky-spacing-lg) var(--sky-spacing-7xl);
+  /**
+   * 内边距（含左侧块控件轨道）由 src/styles/editor.css 统一管理。
+   * 这里不要再用 padding 简写覆盖，否则轨道宽度会和 --sky-gutter-width 脱节，
+   * 「+」号与拖拽手柄会跑到编辑器盒子外面。
+   */
   min-height: 300px;
   max-height: 600px;
   overflow-y: auto;

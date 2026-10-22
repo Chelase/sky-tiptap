@@ -8,7 +8,6 @@
 /* ===== 编辑器基础样式 ===== */
 .sky-editor {
   padding: var(--sky-spacing-xl);
-  padding-left: var(--sky-gutter-width);
   min-height: 400px;
   max-height: 600px;
   overflow-y: auto;
@@ -23,6 +22,11 @@
 .sky-editor .ProseMirror {
   outline: none;
   min-height: 300px;
+  /**
+   * 块级控件轨道必须落在可编辑区域内：鼠标从正文移向轨道时不会触发
+   * ProseMirror 的 mouseleave，拖拽手柄的坐标命中也能正常工作。
+   */
+  padding-left: var(--sky-gutter-width);
 }
 
 /* 段落样式 */

@@ -9,6 +9,7 @@
     :style="{ top: `${position.top}px`, left: `${position.left}px` }"
     @mousedown.prevent.stop
     @click.stop="handleClick"
+    @mouseleave="handleControlMouseLeave"
   >
     <svg v-html="icons.plus" class="sky-block-add-button__icon"></svg>
   </button>
@@ -22,6 +23,13 @@ import { insertBlock } from '../../utils/block-insert'
 import { findTopLevelBlock } from '../../utils/block-controls'
 import { locateBlockControls } from '../../utils/block-gutter'
 import { getBlockCapabilities } from '../../config/block-capabilities'
+
+/**
+ * 块控件（+ 号、拖拽手柄、tippy 弹层）都不在 ProseMirror 的 DOM 内部。
+ * 指针移向它们时会触发编辑器的 mouseleave，此时必须保持「+」号可见，
+ * 否则用户永远点不到。
+ */
+const CONTROL_SELECTOR = '.sky-block-add-button, .sky-drag-handle-wrapper, .sky-drag-handle, .tippy-box'
 
 const props = defineProps({
   editor: {
@@ -105,6 +113,41 @@ const hide = () => {
   activeBlock.value = null
 }
 
+/** 指针是否正移向块控件（而不是真正离开编辑器） */
+const isPointerInControl = (target) => {
+  if (!target || typeof target.closest !== 'function') {
+    return false
+  }
+
+  return Boolean(target.closest(CONTROL_SELECTOR))
+}
+
+const handleMouseLeave = (event) => {
+  if (isPointerInControl(event.relatedTarget)) {
+    return
+  }
+
+  hide()
+}
+
+/**
+ * 「+」号自己也会接管指针：此时编辑区收不到 mousemove/mouseleave。
+ * 从「+」号回到正文或移到拖拽手柄时保持可见，移向别处才隐藏。
+ */
+const handleControlMouseLeave = (event) => {
+  const related = event.relatedTarget
+
+  if (related && dom?.contains(related)) {
+    return
+  }
+
+  if (isPointerInControl(related)) {
+    return
+  }
+
+  hide()
+}
+
 const handleClick = (event) => {
   const info = activeBlock.value
   if (!info) {
@@ -137,14 +180,15 @@ const attach = () => {
   detach()
   dom = nextDom
   dom.addEventListener('mousemove', handleMouseMove)
-  dom.addEventListener('mouseleave', hide)
+  dom.addEventListener('mouseleave', handleMouseLeave)
 }
 
 const detach = () => {
   if (dom) {
     dom.removeEventListener('mousemove', handleMouseMove)
-    dom.removeEventListener('mouseleave', hide)
+    dom.removeEventListener('mouseleave', handleMouseLeave)
   }
+
   dom = null
 
   if (frame && typeof cancelAnimationFrame === 'function') {

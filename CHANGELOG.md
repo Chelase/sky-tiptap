@@ -7,6 +7,10 @@
 - **菜单条目映射去重**：新增 `src/utils/menu-items.js` 的 `resolveMenuGroups(config, editor)`，Toolbar 与 BubbleMenu 不再各自复制一段 `key → {iconSvg,label,tooltip,isActive,disabled,run}` 映射
 - `src/utils/block-controls.js` 只保留命中测试与顶层块解析，移除 `DEFAULT_BLOCK_CONTROL_OPTIONS`、`getBlockControlPosition`
 
+### Bug 修复
+
+- 修复鼠标移入左侧轨道后「+」号与拖拽手柄消失、导致块级控件无法点击的问题：轨道内边距从 `.sky-editor` 移到 `.sky-prosemirror`（即 ProseMirror 的可编辑盒子内），指针不再触发编辑器的 `mouseleave`，官方 DragHandle 的坐标命中也能正常解析；同时移除 `base.css` 中用 `padding` 简写覆盖轨道宽度的旧规则，「+」号位置与 `--sky-gutter-width` 重新对齐
+
 ---
 
 ## 1.12.0 (2026-10-22)
