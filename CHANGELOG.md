@@ -1,3 +1,40 @@
+## 1.12.0 (2026-10-22)
+
+### 新增功能
+
+- **块级「+」按钮**：新增 `src/components/BlockControls/BlockAddButton.vue`，把原本只挂在段落上的插入按钮升级为块级控件，标题、列表、表格、代码块、图片、视频等顶层块 hover 时都会出现，并与拖拽手柄共用同一条左侧轨道
+- **可搜索的块插入菜单**：插入菜单改为「搜索框 + 分组 + 265px 面板」形态，块目录统一收敛到 `src/config/insert-menu.js`，支持通过 `insertMenuItems` prop 覆盖
+- **统一块插入层**：新增 `src/utils/block-insert.js`，插入菜单、工具栏与快捷键共用同一套插入逻辑，消除了菜单与段落按钮各写一份的重复实现
+- **块级快捷键**：新增 `src/utils/keyboard-shortcuts.js`，支持 `⌘/Ctrl+/` 打开块菜单、`⌘/Ctrl+⇧↑/↓` 移动块、`⌘/Ctrl+D` 复制块、`Esc` 选中当前块、`⌘/Ctrl+B/I/U` 文本格式、`⌘/Ctrl+⇧H` 高亮、`⌘/Ctrl+K` 链接
+- **块级操作工具**：新增 `src/utils/block-actions.js`，提供 `moveBlock`、`duplicateBlock`、`selectBlock`
+- **块级定位工具**：新增 `src/utils/block-controls.js`，统一计算「+」按钮、拖拽手柄等块级控件的位置
+- **新增图标**：`text`、`heading1`、`heading2`、`heading3`、`quote`
+- **Slash 菜单**：新增 `src/utils/slash-menu.js`，在空块输入 `/` 即可唤起同一块目录，继续输入会实时过滤，选中后自动清除 `/` 文本
+- **块能力模型**：新增 `src/config/block-capabilities.js`，按 Notion 的能力集合配置每种块的 `canDrag` / `canSelect` / `showHoverMenu` / `canDropOnto` / `canDropLeftRight`，并可通过 `blockCapabilities` prop 覆盖
+- **多栏结构**：新增 `src/extensions/ColumnList.js`（columnList / column 节点），块目录新增「两列 / 三列」
+- **块选中态与焦点环**：顶层块选中时显示底色，获得焦点时显示焦点环
+- **拖拽视觉态**：拖拽过程中降低被拖拽块的透明度
+- **配置驱动的工具栏与悬浮菜单**：新增 `src/config/menu-config.js` 与 `src/config/toolbar-items.js`，`defaultToolbarConfig` / `defaultBubbleMenuConfig` 现在真正生效，条目行为集中在注册表
+- **编辑器实例注册表**：新增 `src/utils/editor-registry.js`，多实例场景下 `window.skyTiptapEditor` 不再互相覆盖
+- **AI 流程拆分**：AI 内容生成与操控编辑器的流程抽离到 `src/utils/ai-flow.js`
+
+### 行为变化
+
+- 段落不再使用自定义 Vue NodeView，段落 HTML 不再包含 `div.custom-paragraph` 包裹层；`CustomParagraph` 扩展与导出保持不变，节点名仍为 `paragraph`
+- 左侧轨道宽度改为由 `--sky-gutter-width`（56px）控制，「+」按钮与拖拽手柄位置统一由块级定位工具计算
+- 拖拽手柄 tippy 偏移由 `[3, 36]` 调整为 `[0, 4]`，与「+」按钮并排显示在同一条轨道上
+- 内部事件 `hide-all-paragraph-buttons` 不再触发（块级按钮改为 hover 驱动）
+- 仓库依赖管理由 npm 切换为 pnpm（仓库通过 `link:` 依赖本地扩展包，npm 不支持该协议），新增 `pnpm-lock.yaml`，发布流水线改用 `pnpm install --frozen-lockfile`
+- 移除未使用的 `@tiptap/extension-node-range`、`@tiptap/extension-youtube` 依赖
+
+### Bug 修复
+
+- 修复 `before-change` 扩展未声明插件 key 时，可能与编辑器内其他插件 key 冲突、导致编辑器创建失败的问题
+- 修复插入菜单未做视口收敛，靠近屏幕边缘时可能溢出的问题
+- 修复多编辑器实例共用 `window.skyTiptapEditor` 时后挂载实例会顶掉先前实例的问题
+
+---
+
 ## 1.11.0 (2026-06-07)
 
 ### 新增功能

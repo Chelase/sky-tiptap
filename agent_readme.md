@@ -112,6 +112,8 @@ sky-tiptap/
 │   ├── demo.js                  # 开发环境示例应用入口
 │   ├── components/
 │   │   ├── SkyTiptap.vue
+│   │   ├── BlockControls/
+│   │   │   └── BlockAddButton.vue  # 块级「+」按钮（所有顶层块通用）
 │   │   ├── BubbleMenu/
 │   │   ├── Dialog/
 │   │   ├── Toolbar/
@@ -121,16 +123,16 @@ sky-tiptap/
 │   │   ├── NodeView/
 │   │   │   └── CodeBlock.vue
 │   │   ├── CodeBlockComponent.vue
-│   │   ├── CustomParagraphComponent.vue
 │   │   └── tooltip.vue
 │   ├── config/
-│   │   └── default.js           # 唯一配置来源
+│   │   ├── default.js           # 唯一配置来源
+│   │   ├── insert-menu.js       # 块目录配置（+ 按钮 / ⌘/ 菜单共用）
+│   │   ├── menu-config.js       # 工具栏 / 悬浮菜单编排
+│   │   ├── toolbar-items.js     # 工具栏 / 悬浮菜单条目注册表
+│   │   └── block-capabilities.js# 块级能力（可拖拽 / 悬浮菜单 / 落点）
 │   ├── extensions/
 │   │   ├── CustomParagraph.js
-│   │   ├── ai-loading.js
-│   │   ├── before-change.js
-│   │   ├── iframe.js
-│   │   └── web-video.js
+│   │   └── ColumnList.js        # 多栏节点（columnList / column）
 │   ├── icons/
 │   │   └── index.js
 │   ├── styles/                  # 当前样式目录
@@ -139,7 +141,15 @@ sky-tiptap/
 │       ├── ai-actions.js        # AI actions 白名单、参数归一化和执行
 │       ├── ai-intent.js         # 本地 AI 意图解析
 │       ├── ai.js                # AI 请求、响应解析与 Markdown 渲染
+│       ├── ai-flow.js           # AI 生成流程（内容生成 / 操控编辑器）
+│       ├── block-actions.js     # 块级移动、复制、选中
+│       ├── block-controls.js    # 块级控件定位（+ 号、拖拽手柄共用轨道）
+│       ├── block-insert.js      # 统一块插入层
+│       ├── editor-registry.js   # 编辑器实例注册表（多实例不互相覆盖）
 │       ├── emitter.js
+│       ├── keyboard-shortcuts.js# 块级快捷键
+│       ├── link-dialog.js       # 链接弹窗参数
+│       ├── slash-menu.js        # Slash 菜单解析
 │       └── extensions/          # 保留目录，不作为新扩展入口
 ├── AGENTS.md
 ├── CLAUDE.md
@@ -153,6 +163,8 @@ sky-tiptap/
 - `src/main.js` 是纯净的库导出入口，不包含示例应用代码
 - `src/demo.js` 是开发环境入口，用于 `npm run dev`
 - 代码块当前主线 NodeView 是 `src/components/NodeView/CodeBlock.vue`；根层的 `src/components/CodeBlockComponent.vue` 是保留文件，不作为当前配置入口
+- 段落不再挂载 Vue NodeView，「+」按钮由 `src/components/BlockControls/BlockAddButton.vue` 统一提供，对所有顶层块生效
+- `ai-loading` / `before-change` / `iframe` / `video-embed` 扩展已迁移到 `sky-tiptap-extensions` 仓库，通过 `link:` 依赖引用
 
 ---
 
@@ -202,6 +214,8 @@ const content = ref('')
 | `showToolbar` | Boolean | `false` | 是否显示工具栏 |
 | `placeholder` | String | `'输入内容...'` | 空编辑器占位符文本，通过官方 Placeholder 扩展渲染 |
 | `aiConfig` | Object | `{ baseUrl: '', apiKey: '' }` | AI 配置，支持内容生成、`mode: 'actions'` 操控编辑器模式、执行前预览、只预览不执行和失败回滚；请求侧支持 `requestBody`、`buildBody`、`buildRequest`、`headers`、`method`、`parseResponse` |
+| `insertMenuItems` | Array | 内置块目录 | 块插入菜单（「+」按钮 / `⌘/`）的块目录，支持 `{ type, label, icon, group, keywords }` |
+| `blockCapabilities` | Object | `{}` | 块能力覆盖配置，支持 `canDrag` / `canSelect` / `showHoverMenu` / `canDropOnto` / `canDropLeftRight` |
 
 ### 组件事件
 

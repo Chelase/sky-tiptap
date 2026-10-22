@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { h, nextTick } from 'vue'
+import { EditorView } from '@tiptap/pm/view'
 
 vi.mock('../components/BubbleMenu/BubbleMenu.vue', () => ({
   default: {
@@ -25,49 +26,37 @@ vi.mock('@tiptap/extension-drag-handle-vue-3', () => ({
 import SkyTiptap from '../components/SkyTiptap.vue'
 
 const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect
+const originalPosAtCoords = EditorView.prototype.posAtCoords
 
-describe('InsertMenu integration', () => {
+describe('block add button integration', () => {
   beforeEach(() => {
-    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function getRect() {
-      if (this.classList?.contains('content-wrapper')) {
-        return {
-          top: 120,
-          left: 120,
-          right: 320,
-          bottom: 144,
-          width: 200,
-          height: 24,
-          x: 120,
-          y: 120,
-          toJSON: () => ({}),
-        }
-      }
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(() => ({
+      top: 120,
+      left: 200,
+      right: 400,
+      bottom: 148,
+      width: 200,
+      height: 28,
+      x: 200,
+      y: 120,
+      toJSON: () => ({}),
+    }))
 
-      return {
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: 0,
-        height: 0,
-        x: 0,
-        y: 0,
-        toJSON: () => ({}),
-      }
-    })
+    EditorView.prototype.posAtCoords = vi.fn(() => ({ pos: 1, inside: 1 }))
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
     HTMLElement.prototype.getBoundingClientRect = originalGetBoundingClientRect
+    EditorView.prototype.posAtCoords = originalPosAtCoords
     document.body.innerHTML = ''
   })
 
-  it('shows the insert menu when clicking the add button on an empty paragraph', async () => {
+  it('shows the block add button on hover and opens the insert menu on click', async () => {
     const wrapper = mount(SkyTiptap, {
       attachTo: document.body,
       props: {
-        modelValue: '<p></p>',
+        modelValue: '<p>hello</p>',
         showToolbar: false,
       },
     })
@@ -76,20 +65,23 @@ describe('InsertMenu integration', () => {
     await flushPromises()
     await new Promise((resolve) => setTimeout(resolve, 50))
 
-    const paragraph = wrapper.find('.custom-paragraph')
-    expect(paragraph.exists()).toBe(true)
+    const prosemirror = wrapper.find('.ProseMirror')
+    expect(prosemirror.exists()).toBe(true)
 
-    await paragraph.trigger('mouseenter')
+    prosemirror.element.dispatchEvent(new MouseEvent('mousemove', { clientX: 220, clientY: 130 }))
+    await new Promise((resolve) => setTimeout(resolve, 60))
     await nextTick()
 
-    const addButton = wrapper.find('.add-button')
+    const addButton = wrapper.find('.sky-block-add-button')
     expect(addButton.exists()).toBe(true)
+    expect(addButton.isVisible()).toBe(true)
 
-    await addButton.trigger('mousedown')
     await addButton.trigger('click')
     await nextTick()
     await flushPromises()
 
-    expect(wrapper.find('.sky-insert-menu').exists()).toBe(true)
+    expect(document.body.querySelector('.sky-insert-menu')).toBeTruthy()
+
+    wrapper.unmount()
   })
 })

@@ -37,11 +37,12 @@ import xml from 'highlight.js/lib/languages/xml'
 import css from 'highlight.js/lib/languages/css'
 import markdown from 'highlight.js/lib/languages/markdown'
 
-import CodeBlockComponent from '../components/NodeView/CodeBlock.vue'
+import CodeBlock from '../components/NodeView/CodeBlock.vue'
 import VideoEmbed from '@sky-tiptap/extension-video-embed'
 import Iframe from '@sky-tiptap/extension-iframe'
 import AiLoading from '@sky-tiptap/extension-ai-loading'
 import { CustomParagraph } from '../extensions/CustomParagraph.js'
+import { ColumnList, Column } from '../extensions/ColumnList.js'
 
 // 创建 lowlight 实例并注册常用语言
 const lowlight = createLowlight()
@@ -71,7 +72,7 @@ export const TipTapPlugin = {
       heading: {
         levels: [1, 2, 3]
       },
-      paragraph: false, // 禁用默认段落，使用自定义段落
+      paragraph: false, // 禁用默认段落，使用 src/extensions/CustomParagraph.js
       dropcursor: false, // 使用下方自定义 Dropcursor 配置
       codeBlockHighlight: false,
     }),
@@ -98,7 +99,7 @@ export const TipTapPlugin = {
     CodeBlockLowlight
       .extend({
         addNodeView() {
-          return VueNodeViewRenderer(CodeBlockComponent)
+          return VueNodeViewRenderer(CodeBlock)
         },
       })
       .configure({
@@ -109,6 +110,8 @@ export const TipTapPlugin = {
     Iframe,
     AiLoading,
     CustomParagraph,
+    ColumnList,
+    Column,
   ],
   // 设置初始内容
   content: '<p></p>',
@@ -141,47 +144,7 @@ export const TipTapPlugin = {
 }
 
 /**
- * 默认工具栏配置
+ * 默认工具栏配置与默认悬浮菜单配置
+ * 定义在 src/config/menu-config.js，此处重新导出以保持既有导出路径不变
  */
-export const defaultToolbarConfig = {
-  groups: [
-    {
-      name: 'history',
-      items: ['undo', 'redo']
-    },
-    {
-      name: 'format',
-      items: ['bold', 'italic', 'underline', 'strike']
-    },
-    {
-      name: 'list',
-      items: ['bulletList', 'orderedList']
-    },
-    {
-      name: 'insert',
-      items: ['image', 'video', 'codeBlock', 'table', 'divider', 'link']
-    },
-    {
-      name: 'ai',
-      items: ['ai']
-    }
-  ]
-}
-
-/**
- * 默认悬浮菜单配置
- */
-export const defaultBubbleMenuConfig = {
-  items: [
-    'bold',
-    'italic',
-    'underline',
-    'strike',
-    'heading1',
-    'heading2',
-    'heading3',
-    'bulletList',
-    'orderedList',
-    'link'
-  ]
-}
+export { defaultToolbarConfig, defaultBubbleMenuConfig } from './menu-config'

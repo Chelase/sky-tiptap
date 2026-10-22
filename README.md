@@ -97,6 +97,50 @@ const getValue = () => {
 
 视频链接插入、链接地址设置、网页 iframe 嵌入和错误提示统一使用内置弹窗，不再调用浏览器原生 `prompt` / `alert`。弹窗会自动处理输入聚焦、键盘 Esc 关闭、空值校验和错误提示，视觉风格与编辑器现有设计变量保持一致。
 
+### 块级交互
+
+编辑器提供 Notion 风格的块级操作：
+
+- **块级「+」按钮**：鼠标悬停在任意顶层块（段落、标题、列表、表格、代码块、图片、视频等）左侧时，会出现「+」按钮，点击打开可搜索的块插入菜单；按住 `Alt/Option` 点击则直接在该块上方插入一个空块
+- **Slash 菜单**：在空块输入 `/` 即可唤起同一块目录，继续输入会实时过滤，选中后自动清除 `/`
+- **可搜索的块目录**：插入菜单支持关键字过滤，块目录可通过 `insertMenuItems` prop 覆盖
+- **拖拽手柄**：块左侧的六点手柄用于拖拽调整块顺序，位置与「+」按钮共用同一条左侧轨道
+- **多栏**：块目录提供「两列 / 三列」，插入后可在栏内继续编辑
+
+```vue
+<template>
+  <sky-tiptap
+    v-model="content"
+    :insert-menu-items="myBlockItems"
+  />
+</template>
+```
+
+默认快捷键（macOS 使用 `⌘`，其他平台使用 `Ctrl`）：
+
+| 快捷键 | 行为 |
+|------|------|
+| `⌘/Ctrl + /` | 打开块插入菜单 |
+| `⌘/Ctrl + Shift + ↑/↓` | 上移 / 下移当前块 |
+| `⌘/Ctrl + D` | 复制当前块 |
+| `Esc` | 选中当前块 |
+| `⌘/Ctrl + B/I/U` | 加粗 / 斜体 / 下划线 |
+| `⌘/Ctrl + Shift + H` | 高亮 |
+| `⌘/Ctrl + K` | 设置链接 |
+
+### 块能力配置
+
+每种块的拖拽、悬浮菜单、落点能力都可以按需覆盖，默认值见 `src/config/block-capabilities.js`：
+
+```vue
+<template>
+  <sky-tiptap
+    v-model="content"
+    :block-capabilities="{ image: { canDrag: false } }"
+  />
+</template>
+```
+
 ### AI 生成
 
 AI 生成功能只负责调用外部配置的接口，不内置具体模型服务。点击 AI 生成后会弹出提示词输入框，组件默认用 `POST baseUrl` 发起请求，请求头携带 `Authorization: Bearer apiKey`，默认请求体为 `{ "prompt": "用户输入的提示词" }`。接口返回内容会按 Markdown 渲染为 HTML 后插入到当前光标位置。
@@ -370,6 +414,8 @@ const handleUploadVideo = async (files) => {
 | `showToolbar` | Boolean | `false` | 是否显示工具栏 |
 | `placeholder` | String | `'输入内容...'` | 空编辑器占位符文本，通过官方 Placeholder 扩展渲染 |
 | `aiConfig` | Object | `{ baseUrl: '', apiKey: '' }` | AI 配置，支持内容生成和 `mode: 'actions'` 操控编辑器模式；请求侧支持 `requestBody`、`buildBody`、`buildRequest`、`headers`、`method`、`parseResponse` |
+| `insertMenuItems` | Array | 内置块目录 | 块插入菜单（「+」按钮 / `⌘/`）的块目录，支持 `{ type, label, icon, group, keywords }` |
+| `blockCapabilities` | Object | `{}` | 块能力覆盖配置，支持 `canDrag` / `canSelect` / `showHoverMenu` / `canDropOnto` / `canDropLeftRight` |
 
 #### 组件事件
 

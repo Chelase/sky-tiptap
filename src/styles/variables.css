@@ -84,6 +84,21 @@
   --sky-z-sticky: 200;
   --sky-z-modal: 300;
   --sky-z-tooltip: 400;
+
+  /* ===== 块级交互 ===== */
+
+  /* 左侧块控件轨道宽度（+ 号、拖拽手柄所在区域） */
+  --sky-gutter-width: 56px;
+  /* 块级控件尺寸（+ 号 / 拖拽手柄） */
+  --sky-block-control-size: 24px;
+  /* 块级控件与内容的间距 */
+  --sky-block-control-gap: 8px;
+  /* 块选中态背景 */
+  --sky-color-block-selected: rgba(37, 99, 235, 0.08);
+  /* 块焦点环颜色 */
+  --sky-color-focus-ring: #2383e2;
+  /* 拖拽中的块透明度 */
+  --sky-block-dragging-opacity: 0.4;
 }
 
 /* ===== 暗色主题 ===== */
@@ -107,6 +122,9 @@
   --sky-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --sky-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
   --sky-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+
+  --sky-color-block-selected: rgba(59, 130, 246, 0.16);
+  --sky-color-focus-ring: #3b82f6;
 }
 
 /* ===== 自定义主题支持 ===== */

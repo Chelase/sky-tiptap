@@ -1,4 +1,4 @@
-<!-- BubbleMenu.vue - 悬浮菜单组件（选中文字时显示） -->
+<!-- BubbleMenu.vue - 悬浮菜单组件（选中文字时显示，由 defaultBubbleMenuConfig 驱动） -->
 <template>
   <bubble-menu
     v-if="editor"
@@ -6,84 +6,40 @@
     :editor="editor"
     :tippy-options="tippyOptions"
   >
-    <ToolbarButton
-      :onClick="() => editor.chain().focus().toggleBold().run()"
-      :isActive="editor.isActive('bold')"
-      tooltip="加粗"
-      :iconSvg="icons.bold"
-    />
-    <ToolbarButton
-      :onClick="() => editor.chain().focus().toggleItalic().run()"
-      :isActive="editor.isActive('italic')"
-      tooltip="斜体"
-      :iconSvg="icons.italic"
-    />
-    <ToolbarButton
-      :onClick="() => editor.chain().focus().toggleUnderline().run()"
-      :isActive="editor.isActive('underline')"
-      tooltip="下划线"
-      :iconSvg="icons.underline"
-    />
-    <ToolbarButton
-      :onClick="() => editor.chain().focus().toggleStrike().run()"
-      :isActive="editor.isActive('strike')"
-      tooltip="删除线"
-      :iconSvg="icons.strike"
-    />
-    <div class="sky-bubble-menu__divider"></div>
-    <ToolbarButton
-      :onClick="() => editor.chain().focus().toggleHeading({ level: 1 }).run()"
-      :isActive="editor.isActive('heading', { level: 1 })"
-      tooltip="一级标题"
-    >
-      H1
-    </ToolbarButton>
-    <ToolbarButton
-      :onClick="() => editor.chain().focus().toggleHeading({ level: 2 }).run()"
-      :isActive="editor.isActive('heading', { level: 2 })"
-      tooltip="二级标题"
-    >
-      H2
-    </ToolbarButton>
-    <ToolbarButton
-      :onClick="() => editor.chain().focus().toggleHeading({ level: 3 }).run()"
-      :isActive="editor.isActive('heading', { level: 3 })"
-      tooltip="三级标题"
-    >
-      H3
-    </ToolbarButton>
-    <ToolbarButton
-      :onClick="() => editor.chain().focus().toggleBulletList().run()"
-      :isActive="editor.isActive('bulletList')"
-      tooltip="无序列表"
-      :iconSvg="icons.bulletList"
-    />
-    <ToolbarButton
-      :onClick="() => editor.chain().focus().toggleOrderedList().run()"
-      :isActive="editor.isActive('orderedList')"
-      tooltip="有序列表"
-      :iconSvg="icons.orderedList"
-    />
-    <div class="sky-bubble-menu__divider"></div>
-    <ToolbarButton
-      :onClick="setLink"
-      :isActive="editor.isActive('link')"
-      tooltip="链接"
-      :iconSvg="icons.link"
-    />
+    <template v-for="(group, groupIndex) in groups" :key="groupIndex">
+      <div v-if="groupIndex > 0" class="sky-bubble-menu__divider"></div>
+      <ToolbarButton
+        v-for="item in group.items"
+        :key="item.key"
+        :onClick="item.run"
+        :isActive="item.isActive"
+        :disabled="item.disabled"
+        :tooltip="item.tooltip"
+        :iconSvg="item.iconSvg"
+      >
+        {{ item.label }}
+      </ToolbarButton>
+    </template>
   </bubble-menu>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { BubbleMenu } from '@tiptap/vue-3'
 import { icons } from '../../icons'
-import { emitter } from '../../utils/emitter'
 import ToolbarButton from '../Toolbar/ToolbarButton.vue'
+import { defaultBubbleMenuConfig } from '../../config/menu-config'
+import { getToolbarItemSpec } from '../../config/toolbar-items'
 
 const props = defineProps({
   editor: {
     type: Object,
     required: true
+  },
+  /** 悬浮菜单配置，默认使用 defaultBubbleMenuConfig */
+  config: {
+    type: Object,
+    default: () => defaultBubbleMenuConfig
   }
 })
 
@@ -95,28 +51,33 @@ const tippyOptions = {
   zIndex: 100,
 }
 
-// 设置链接
-const setLink = () => {
-  const previousUrl = props.editor.getAttributes('link').href
+const groups = computed(() => {
+  const source = props.config?.groups
+    || (props.config?.items ? [{ items: props.config.items }] : [])
 
-  emitter.emit('open-dialog', {
-    mode: 'input',
-    title: '设置链接',
-    description: '输入要绑定到当前选中文本的链接地址。清空内容可移除链接。',
-    inputLabel: '链接地址',
-    placeholder: 'https://example.com',
-    defaultValue: previousUrl || '',
-    confirmText: '应用',
-    onConfirm: (url) => {
-      if (url === '') {
-        props.editor.chain().focus().extendMarkRange('link').unsetLink().run()
-        return
-      }
+  return source
+    .map((group) => ({
+      items: (group.items || [])
+        .map((key) => {
+          const spec = getToolbarItemSpec(key)
+          if (!spec) {
+            return null
+          }
 
-      props.editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-    },
-  })
-}
+          return {
+            key,
+            iconSvg: spec.icon ? icons[spec.icon] : '',
+            label: spec.label || '',
+            tooltip: spec.tooltip || '',
+            isActive: spec.isActive ? spec.isActive(props.editor) : false,
+            disabled: spec.disabled ? spec.disabled(props.editor) : false,
+            run: () => spec.run?.(props.editor),
+          }
+        })
+        .filter(Boolean),
+    }))
+    .filter((group) => group.items.length > 0)
+})
 </script>
 
 <style scoped>

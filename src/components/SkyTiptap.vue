@@ -5,7 +5,7 @@
     <Toolbar v-if="showToolbar && editor" :editor="editor" />
 
     <!-- 编辑器内容区域 -->
-    <div class="sky-editor" @click="handleContainerClick">
+    <div class="sky-editor">
       <editor-content :editor="editor" />
     </div>
 
@@ -13,13 +13,17 @@
     <BubbleMenuWrapper v-if="editor" :editor="editor" />
 
     <!-- 插入菜单 -->
-    <InsertMenu v-if="editor" :editor="editor" />
+    <InsertMenu v-if="editor" :editor="editor" :items="insertMenuItems" />
+
+    <!-- 块级「+」按钮 -->
+    <BlockAddButton v-if="editor" :editor="editor" :capabilities="blockCapabilities" />
 
     <!-- 拖拽手柄 -->
     <DragHandle
       v-if="editor && draggableBlockCount > 1"
       :editor="editor"
       :class="dragHandleClass"
+      :plugin-key="dragHandlePluginKey"
       :tippy-options="dragHandleTippyOptions"
       :on-node-change="handleDragNodeChange"
     >
@@ -75,11 +79,19 @@ import { TipTapPlugin } from '../config/default'
 import Toolbar from './Toolbar/Toolbar.vue'
 import BubbleMenuWrapper from './BubbleMenu/BubbleMenu.vue'
 import InsertMenu from './Toolbar/Menu/InsertMenu.vue'
+import BlockAddButton from './BlockControls/BlockAddButton.vue'
 import SkyDialog from './Dialog/SkyDialog.vue'
 import BeforeChange from '@sky-tiptap/extension-before-change'
-import { renderMarkdown, requestAiContent } from '../utils/ai'
-import { describeAiActions, executeAiActions } from '../utils/ai-actions'
-import { resolveActionsFromAiText, resolveActionsFromText } from '../utils/ai-intent'
+import { createAiFlow } from '../utils/ai-flow'
+import { insertBlock } from '../utils/block-insert'
+import { findCurrentTopLevelBlock } from '../utils/block-actions'
+import { resolveBlockElement, DEFAULT_BLOCK_CONTROL_OPTIONS } from '../utils/block-controls'
+import { createBlockKeyboardShortcuts } from '../utils/keyboard-shortcuts'
+import { createLinkDialogPayload } from '../utils/link-dialog'
+import { getTextBeforeCursor, parseSlashCommand } from '../utils/slash-menu'
+import { defaultInsertMenuItems } from '../config/insert-menu'
+import { canDragNode } from '../config/block-capabilities'
+import { registerEditor, unregisterEditor, setActiveEditor } from '../utils/editor-registry'
 
 const props = defineProps({
   modelValue: {
@@ -105,6 +117,16 @@ const props = defineProps({
       baseUrl: '',
       apiKey: '',
     })
+  },
+  /** 块目录（「+」按钮与「/」菜单共用的可搜索块列表） */
+  insertMenuItems: {
+    type: Array,
+    default: () => [...defaultInsertMenuItems],
+  },
+  /** 块能力覆盖配置，形如 { paragraph: { canDrag: false } } */
+  blockCapabilities: {
+    type: Object,
+    default: () => ({}),
   }
 })
 
@@ -116,7 +138,6 @@ const draggableBlockCount = ref(0)
 const activeDragNodeName = ref('')
 const isActiveDragNodeDraggable = ref(true)
 
-const NON_DRAGGABLE_NODE_NAMES = new Set(['doc', 'text', 'aiLoading'])
 const DRAG_NODE_LABELS = {
   paragraph: '段落',
   heading: '标题',
@@ -130,16 +151,23 @@ const DRAG_NODE_LABELS = {
   videoEmbed: '视频',
   iframe: '网页嵌入',
   horizontalRule: '分割线',
+  columnList: '多栏',
 }
 const dragHandleTippyOptions = {
   placement: 'left-start',
-  offset: [3, 36],
+  offset: [0, 4],
   duration: 100,
   zIndex: 110,
 }
+// 每个编辑器实例使用独立的插件 key，避免多实例互相覆盖
+const dragHandlePluginKey = `dragHandle-${Math.random().toString(36).slice(2, 10)}`
 
 const isDraggableBlockNode = (node) => {
-  return Boolean(node?.isBlock && !NON_DRAGGABLE_NODE_NAMES.has(node.type?.name))
+  if (!node?.isBlock) {
+    return false
+  }
+
+  return canDragNode(node, props.blockCapabilities)
 }
 
 const getDraggableTopLevelBlockCount = (activeEditor = editor.value) => {
@@ -230,6 +258,145 @@ const handleBeforeChange = (payload) => {
   return prevented
 }
 
+// 打开块插入菜单（⌘/ 或 Ctrl+/）
+const openInsertMenu = (options = {}) => {
+  const activeEditor = editor.value
+  if (!activeEditor) {
+    return
+  }
+
+  const info = findCurrentTopLevelBlock(activeEditor)
+  const view = activeEditor.view
+  let rect = null
+
+  if (view) {
+    const element = info ? resolveBlockElement(view, info.pos, info.index) : null
+
+    if (element && typeof element.getBoundingClientRect === 'function') {
+      rect = element.getBoundingClientRect()
+    } else if (typeof view.coordsAtPos === 'function') {
+      rect = view.coordsAtPos(info?.pos ?? 0)
+    }
+  }
+
+  const position = rect
+    ? {
+        top: Math.round(rect.top),
+        left: Math.max(
+          8,
+          Math.round(
+            rect.left
+              - DEFAULT_BLOCK_CONTROL_OPTIONS.gutterWidth
+              + DEFAULT_BLOCK_CONTROL_OPTIONS.controlSize
+              + DEFAULT_BLOCK_CONTROL_OPTIONS.gutterGap,
+          ),
+        ),
+      }
+    : { top: 100, left: 100 }
+
+  emitter.emit('show-insert-menu', {
+    position,
+    query: options.query || '',
+    keepFocus: options.keepFocus === true,
+    insert:
+      options.insert ||
+      ((type) => {
+        insertBlock(activeEditor, type, { insertAt: info ? info.end : undefined })
+      }),
+  })
+}
+
+// 关闭块插入菜单
+const closeInsertMenu = () => {
+  emitter.emit('hide-insert-menu')
+}
+
+// Slash 菜单状态
+const slashState = ref({ active: false, query: '', from: 0, to: 0 })
+
+const closeSlashMenu = () => {
+  if (!slashState.value.active) {
+    return
+  }
+
+  slashState.value = { active: false, query: '', from: 0, to: 0 }
+  closeInsertMenu()
+}
+
+/** 同步 slash 菜单：当前块在光标处输入 `/` 时唤起块目录 */
+const syncSlashMenu = () => {
+  const activeEditor = editor.value
+  if (!activeEditor) {
+    return
+  }
+
+  const text = getTextBeforeCursor(activeEditor)
+  const parsed = parseSlashCommand(text)
+
+  if (!parsed) {
+    closeSlashMenu()
+    return
+  }
+
+  const { from } = activeEditor.state.selection
+  const blockStart = Math.max(0, from - text.length)
+
+  if (!slashState.value.active) {
+    slashState.value = { active: true, query: parsed.query, from: blockStart, to: from }
+
+    openInsertMenu({
+      query: parsed.query,
+      keepFocus: true,
+      insert: (type) => {
+        const range = slashState.value
+
+        if (range.active && range.from < range.to) {
+          activeEditor.chain().focus().deleteRange({ from: range.from, to: range.to }).run()
+          insertBlock(activeEditor, type, { insertAt: range.from })
+        } else {
+          insertBlock(activeEditor, type)
+        }
+
+        closeSlashMenu()
+      },
+    })
+
+    return
+  }
+
+  if (slashState.value.query !== parsed.query) {
+    slashState.value = { ...slashState.value, query: parsed.query, to: from }
+    emitter.emit('update-insert-menu-query', parsed.query)
+  }
+}
+
+// 打开链接设置（⌘K 或 Ctrl+K）
+const openLinkDialog = () => {
+  const activeEditor = editor.value
+  if (!activeEditor) {
+    return
+  }
+
+  emitter.emit('open-dialog', createLinkDialogPayload(activeEditor))
+}
+
+const handleKeyDown = (view, event) => {
+  const handler = createBlockKeyboardShortcuts(editor.value, {
+    openInsertMenu: () => openInsertMenu(),
+    openLink: openLinkDialog,
+    onEscape: () => {
+      if (!slashState.value.active) {
+        return false
+      }
+
+      closeSlashMenu()
+      return true
+    },
+  })
+
+  return handler(view, event)
+}
+
 // 创建编辑器实例
 const editor = useEditor({
   ...TipTapPlugin,
@@ -246,12 +413,14 @@ const editor = useEditor({
   onUpdate: ({ editor }) => {
     refreshDraggableBlockCount(editor)
     emit('update:modelValue', editor.getHTML())
+    syncSlashMenu()
   },
   onCreate: ({ editor }) => {
     refreshDraggableBlockCount(editor)
     emit('ready')
   },
   onFocus: () => {
+    setActiveEditor(editor.value)
     emit('focus')
   },
   onBlur: () => {
@@ -261,10 +430,12 @@ const editor = useEditor({
     const { from, to, empty } = editor.state.selection
     const text = empty ? '' : editor.state.doc.textBetween(from, to, ' ')
     emit('selectionChange', { from, to, text, empty })
+    syncSlashMenu()
   },
   editorProps: {
     ...TipTapPlugin.editorProps,
     handleClick: handleEditorClick,
+    handleKeyDown,
     handlePaste: (view, event) => {
       const files = Array.from(event.clipboardData?.files || [])
       const text = event.clipboardData?.getData('text/plain') || ''
@@ -316,11 +487,6 @@ watch(() => props.placeholder, () => {
   }
 })
 
-// 处理容器点击
-const handleContainerClick = () => {
-  emitter.emit('hide-all-paragraph-buttons')
-}
-
 // 处理文件选择
 const handleFileChange = (event) => {
   const files = Array.from(event.target.files || [])
@@ -337,11 +503,6 @@ const handleVideoFileChange = (event) => {
     emit('uploadVideo', files)
   }
   event.target.value = ''
-}
-
-// 全局点击处理函数
-const handleGlobalClick = () => {
-  emitter.emit('hide-all-paragraph-buttons')
 }
 
 const showMessageDialog = (title, message) => {
@@ -436,33 +597,6 @@ const handleTriggerAddWebsite = () => {
   })
 }
 
-const confirmActionPreview = (actions) => {
-  return new Promise((resolve) => {
-    emitter.emit('open-dialog', {
-      mode: 'message',
-      title: '确认执行操作',
-      description: '项目已把输入解析为以下受控编辑器操作。',
-      message: describeAiActions(actions).map((item, index) => `${index + 1}. ${item}`).join('\n'),
-      confirmText: props.aiConfig?.executeActions === false ? '知道了' : '执行',
-      cancelText: props.aiConfig?.executeActions === false ? '关闭' : '取消',
-      onConfirm: () => resolve(true),
-      onCancel: () => resolve(false),
-    })
-  })
-}
-
-const showActionResultDialog = (result) => {
-  const summary = Array.isArray(result?.summary) ? result.summary : []
-  showMessageDialog(
-    result?.ok ? 'AI 操作完成' : 'AI 操作失败',
-    summary.length ? summary.map((item, index) => `${index + 1}. ${item}`).join('\n') : (result?.message || '没有可显示的操作结果')
-  )
-}
-
-const hasFollowUpAction = (actions) => {
-  return actions.some((action) => typeof action?.type === 'string' && action.type.startsWith('request'))
-}
-
 const handleTriggerAddImageUrl = () => {
   emitter.emit('open-dialog', {
     mode: 'input',
@@ -508,216 +642,37 @@ const handleTriggerAddLink = () => {
   })
 }
 
-const insertGeneratedContent = (content) => {
-  editor.value?.chain().focus().insertContent(content).run()
-}
+// AI 流程（内容生成 + 操控编辑器）
+const aiFlow = createAiFlow({
+  getEditor: () => editor.value,
+  getAiConfig: () => props.aiConfig,
+  showMessageDialog,
+  requestHandlers: {
+    requestImageUpload: handleTriggerAddImage,
+    requestVideoUpload: handleTriggerUploadVideo,
+    requestImageUrl: handleTriggerAddImageUrl,
+    requestUploadedVideoUrl: handleTriggerAddUploadedVideoUrl,
+    requestBilibiliVideo: handleTriggerAddBilibili,
+    requestYoutubeVideo: handleTriggerAddYoutube,
+    requestDouyinVideo: handleTriggerAddTikTok,
+    requestIframeUrl: handleTriggerAddWebsite,
+    requestLink: handleTriggerAddLink,
+  },
+})
 
-const createAiLoadingId = () => `sky-ai-${Date.now()}-${Math.random().toString(36).slice(2)}`
-
-const findAiLoadingRange = (loadingId) => {
-  const activeEditor = editor.value
-  if (!activeEditor?.state?.doc || !loadingId) {
-    return null
-  }
-
-  let foundRange = null
-  activeEditor.state.doc.descendants((node, pos) => {
-    if (node.type?.name === 'aiLoading' && node.attrs?.id === loadingId) {
-      foundRange = {
-        from: pos,
-        to: pos + node.nodeSize,
-      }
-      return false
-    }
-
-    return true
-  })
-
-  return foundRange
-}
-
-const insertAiLoading = (range) => {
-  const activeEditor = editor.value
-  if (!activeEditor) {
-    return null
-  }
-
-  const loadingId = createAiLoadingId()
-  activeEditor.chain().focus().insertContentAt({
-    from: range.from,
-    to: range.to,
-  }, {
-    type: 'aiLoading',
-    attrs: {
-      id: loadingId,
-    },
-  }).run()
-
-  const selection = activeEditor.state?.selection
-  if (selection?.from) {
-    range.to = selection.from
-  }
-
-  return loadingId
-}
-
-const replaceGeneratedContent = (content, range, loadingId) => {
-  const activeEditor = editor.value
-  if (!activeEditor) {
-    return
-  }
-
-  const targetRange = findAiLoadingRange(loadingId) || range
-  activeEditor.chain().focus().insertContentAt({
-    from: targetRange.from,
-    to: targetRange.to,
-  }, content).run()
-
-  const selection = activeEditor.state?.selection
-  if (selection?.from) {
-    range.from = targetRange.from
-    range.to = selection.from
-  }
-}
-
-const requestAndExecuteAiActions = async (prompt, generatedRange, loadingId, { fallbackToContent = false } = {}) => {
-  const executeActions = async (actions) => {
-    const shouldPreviewActions = props.aiConfig?.previewActions === true || props.aiConfig?.executeActions === false
-    const shouldExecuteActions = props.aiConfig?.executeActions !== false
-    const shouldRollbackActions = props.aiConfig?.rollbackOnActionFailure !== false
-    const shouldShowActionResult = props.aiConfig?.showActionResult === true
-
-    replaceGeneratedContent('', generatedRange, loadingId)
-
-    if (shouldPreviewActions) {
-      const confirmed = await confirmActionPreview(actions)
-      if (!confirmed || !shouldExecuteActions) {
-        return
-      }
-    }
-
-    const snapshot = shouldRollbackActions ? editor.value?.getHTML?.() : null
-    const result = executeAiActions(editor.value, actions, {
-      requestImageUpload: handleTriggerAddImage,
-      requestVideoUpload: handleTriggerUploadVideo,
-      requestImageUrl: handleTriggerAddImageUrl,
-      requestUploadedVideoUrl: handleTriggerAddUploadedVideoUrl,
-      requestBilibiliVideo: handleTriggerAddBilibili,
-      requestYoutubeVideo: handleTriggerAddYoutube,
-      requestDouyinVideo: handleTriggerAddTikTok,
-      requestIframeUrl: handleTriggerAddWebsite,
-      requestLink: handleTriggerAddLink,
-    })
-    if (!result.ok) {
-      if (shouldRollbackActions && snapshot !== null && snapshot !== undefined) {
-        editor.value?.commands?.setContent?.(snapshot)
-      }
-      throw new Error(result.message || 'AI 操作执行失败')
-    }
-
-    if (shouldShowActionResult && !hasFollowUpAction(actions)) {
-      showActionResultDialog(result)
-    }
-  }
-
-  const promptActions = resolveActionsFromText(prompt)
-  if (promptActions.length) {
-    await executeActions(promptActions)
-    return
-  }
-
-  const responseText = await requestAiContent({
-    ...props.aiConfig,
-    prompt,
-    forceTextResponse: true,
-    parseResponse: props.aiConfig.parseResponse || ((text) => text),
-  })
-  const actions = resolveActionsFromAiText(responseText)
-
-  if (!actions.length) {
-    if (fallbackToContent) {
-      replaceGeneratedContent(renderMarkdown(responseText), generatedRange, loadingId)
-      return
-    }
-
-    throw new Error('未识别到可执行的编辑器操作')
-  }
-
-  await executeActions(actions)
-}
-
-const handleAIGenerated = () => {
-  const aiMode = props.aiConfig?.mode || 'content'
-  const isActionsMode = aiMode === 'actions'
-  const isAutoMode = aiMode === 'auto'
-  const isEditorIntentMode = isActionsMode || isAutoMode
-
-  emitter.emit('open-dialog', {
-    mode: 'input',
-    title: isEditorIntentMode ? 'AI 操控编辑器' : 'AI 生成内容',
-    description: isEditorIntentMode ? '输入编辑需求，项目会优先识别并执行受控编辑器操作。' : '输入生成要求，AI 返回的内容会插入到当前光标位置。',
-    inputLabel: isEditorIntentMode ? '编辑需求' : '生成提示词',
-    placeholder: isEditorIntentMode ? '例如：插入抖音视频：https://www.douyin.com/video/...' : '例如：写一段产品介绍，语气专业简洁',
-    confirmText: isEditorIntentMode ? '执行' : '生成',
-    loadingText: isEditorIntentMode ? '执行中...' : '生成中...',
-    closeOnConfirm: true,
-    validate: (value) => value ? '' : (isEditorIntentMode ? '请输入编辑需求' : '请输入生成提示词'),
-    onConfirm: async (prompt) => {
-      const selection = editor.value?.state?.selection
-      const generatedRange = {
-        from: selection?.from || 0,
-        to: selection?.to || selection?.from || 0,
-      }
-      let hasStreamingContent = false
-      const loadingId = insertAiLoading(generatedRange)
-
-      try {
-        if (isEditorIntentMode) {
-          await requestAndExecuteAiActions(prompt, generatedRange, loadingId, {
-            fallbackToContent: isAutoMode,
-          })
-          return
-        }
-
-        const content = await requestAiContent({
-          ...props.aiConfig,
-          prompt,
-          onContent: ({ html }) => {
-            if (!html) {
-              return
-            }
-
-            hasStreamingContent = true
-            replaceGeneratedContent(html, generatedRange, loadingId)
-          },
-        })
-
-        if (hasStreamingContent) {
-          replaceGeneratedContent(content, generatedRange, loadingId)
-        } else {
-          replaceGeneratedContent(content, generatedRange, loadingId)
-        }
-      } catch (error) {
-        replaceGeneratedContent('', generatedRange, loadingId)
-        showMessageDialog(isEditorIntentMode ? 'AI 操作失败' : 'AI 生成失败', error?.message || '请求失败，请稍后重试')
-      }
-    },
-  })
-}
+const handleAIGenerated = aiFlow.handleAIGenerated
+const insertGeneratedContent = aiFlow.insertGeneratedContent
 
 // 暴露方法给外部
 onMounted(() => {
-  // 注册全局编辑器引用（向后兼容）
+  // 注册全局编辑器引用（向后兼容）+ 登记到实例注册表
   if (typeof window !== 'undefined') {
     window.skyTiptapEditor = editor.value
   }
 
-  refreshDraggableBlockCount()
+  registerEditor(editor.value)
 
-  // 添加全局点击事件监听（SSR 安全）
-  if (typeof document !== 'undefined') {
-    document.addEventListener('click', handleGlobalClick)
-  }
+  refreshDraggableBlockCount()
 
   // 监听插入事件
   emitter.on('trigger-add-image', handleTriggerAddImage)
@@ -727,14 +682,10 @@ onMounted(() => {
   emitter.on('trigger-add-tiktok', handleTriggerAddTikTok)
   emitter.on('trigger-add-website', handleTriggerAddWebsite)
   emitter.on('AI-generated', handleAIGenerated)
+  emitter.on('ai-generate', handleAIGenerated)
 })
 
 onBeforeUnmount(() => {
-  // 移除全局点击事件监听
-  if (typeof document !== 'undefined') {
-    document.removeEventListener('click', handleGlobalClick)
-  }
-
   emitter.off('trigger-add-image', handleTriggerAddImage)
   emitter.off('trigger-upload-video', handleTriggerUploadVideo)
   emitter.off('trigger-add-bilibili', handleTriggerAddBilibili)
@@ -742,7 +693,9 @@ onBeforeUnmount(() => {
   emitter.off('trigger-add-tiktok', handleTriggerAddTikTok)
   emitter.off('trigger-add-website', handleTriggerAddWebsite)
   emitter.off('AI-generated', handleAIGenerated)
-  if (typeof window !== 'undefined') {
+  emitter.off('ai-generate', handleAIGenerated)
+  unregisterEditor(editor.value)
+  if (typeof window !== 'undefined' && window.skyTiptapEditor === editor.value) {
     window.skyTiptapEditor = null
   }
 })

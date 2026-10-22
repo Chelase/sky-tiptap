@@ -1,205 +1,68 @@
-<!-- Toolbar.vue - 工具栏组件 -->
+<!-- Toolbar.vue - 工具栏组件（由 defaultToolbarConfig 驱动） -->
 <template>
   <div class="sky-toolbar">
-    <!-- 历史操作组 -->
-    <div class="sky-toolbar-group">
+    <div v-for="(group, groupIndex) in groups" :key="group.name || groupIndex" class="sky-toolbar-group">
       <ToolbarButton
-        :onClick="undo"
-        :disabled="!editor?.can().undo()"
-        tooltip="撤销"
-        :iconSvg="icons.undo"
-      />
-      <ToolbarButton
-        :onClick="redo"
-        :disabled="!editor?.can().redo()"
-        tooltip="重做"
-        :iconSvg="icons.redo"
-      />
-    </div>
-    
-    <!-- 格式化组 -->
-    <div class="sky-toolbar-group">
-      <ToolbarButton
-        :onClick="() => editor.chain().focus().toggleBold().run()"
-        :isActive="editor?.isActive('bold')"
-        tooltip="加粗"
-        :iconSvg="icons.bold"
-      />
-      <ToolbarButton
-        :onClick="() => editor.chain().focus().toggleItalic().run()"
-        :isActive="editor?.isActive('italic')"
-        tooltip="斜体"
-        :iconSvg="icons.italic"
-      />
-      <ToolbarButton
-        :onClick="() => editor.chain().focus().toggleUnderline().run()"
-        :isActive="editor?.isActive('underline')"
-        tooltip="下划线"
-        :iconSvg="icons.underline"
-      />
-      <ToolbarButton
-        :onClick="() => editor.chain().focus().toggleStrike().run()"
-        :isActive="editor?.isActive('strike')"
-        tooltip="删除线"
-        :iconSvg="icons.strike"
-      />
-    </div>
-    
-    <!-- 标题组 -->
-    <div class="sky-toolbar-group">
-      <ToolbarButton
-        :onClick="() => editor.chain().focus().toggleHeading({ level: 1 }).run()"
-        :isActive="editor?.isActive('heading', { level: 1 })"
-        tooltip="一级标题"
+        v-for="item in group.items"
+        :key="item.key"
+        :onClick="item.run"
+        :isActive="item.isActive"
+        :disabled="item.disabled"
+        :tooltip="item.tooltip"
+        :iconSvg="item.iconSvg"
       >
-        H1
+        {{ item.label }}
       </ToolbarButton>
-      <ToolbarButton
-        :onClick="() => editor.chain().focus().toggleHeading({ level: 2 }).run()"
-        :isActive="editor?.isActive('heading', { level: 2 })"
-        tooltip="二级标题"
-      >
-        H2
-      </ToolbarButton>
-      <ToolbarButton
-        :onClick="() => editor.chain().focus().toggleHeading({ level: 3 }).run()"
-        :isActive="editor?.isActive('heading', { level: 3 })"
-        tooltip="三级标题"
-      >
-        H3
-      </ToolbarButton>
-    </div>
-    
-    <!-- 列表组 -->
-    <div class="sky-toolbar-group">
-      <ToolbarButton
-        :onClick="() => editor.chain().focus().toggleBulletList().run()"
-        :isActive="editor?.isActive('bulletList')"
-        tooltip="无序列表"
-        :iconSvg="icons.bulletList"
-      />
-      <ToolbarButton
-        :onClick="() => editor.chain().focus().toggleOrderedList().run()"
-        :isActive="editor?.isActive('orderedList')"
-        tooltip="有序列表"
-        :iconSvg="icons.orderedList"
-      />
-    </div>
-    
-    <!-- 插入组 -->
-    <div class="sky-toolbar-group">
-      <ToolbarButton
-        :onClick="insertImage"
-        tooltip="插入图片"
-        :iconSvg="icons.image"
-      />
-      <ToolbarButton
-        :onClick="insertVideo"
-        tooltip="插入视频"
-        :iconSvg="icons.video"
-      />
-      <ToolbarButton
-        :onClick="insertCodeBlock"
-        :isActive="editor?.isActive('codeBlock')"
-        tooltip="代码块"
-        :iconSvg="icons.code"
-      />
-      <ToolbarButton
-        :onClick="insertTable"
-        tooltip="表格"
-        :iconSvg="icons.table"
-      />
-      <ToolbarButton
-        :onClick="insertDivider"
-        tooltip="分割线"
-        :iconSvg="icons.divider"
-      />
-      <ToolbarButton
-        :onClick="setLink"
-        :isActive="editor?.isActive('link')"
-        tooltip="链接"
-        :iconSvg="icons.link"
-      />
-    </div>
-    
-    <!-- AI 组 -->
-    <div class="sky-toolbar-group">
-      <ToolbarButton
-        :onClick="askAI"
-        tooltip="AI 生成"
-        :iconSvg="icons.ai"
-      />
     </div>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { icons } from '../../icons'
 import ToolbarButton from './ToolbarButton.vue'
-import { emitter } from '../../utils/emitter'
+import { defaultToolbarConfig } from '../../config/menu-config'
+import { getToolbarItemSpec } from '../../config/toolbar-items'
 
 const props = defineProps({
   editor: {
     type: Object,
     required: true
+  },
+  /** 工具栏配置，默认使用 defaultToolbarConfig */
+  config: {
+    type: Object,
+    default: () => defaultToolbarConfig
   }
 })
 
-// 历史操作
-const undo = () => {
-  props.editor?.chain().focus().undo().run()
-}
+const groups = computed(() => {
+  const source = props.config?.groups || []
 
-const redo = () => {
-  props.editor?.chain().focus().redo().run()
-}
+  return source
+    .map((group) => ({
+      name: group.name,
+      items: (group.items || [])
+        .map((key) => {
+          const spec = getToolbarItemSpec(key)
+          if (!spec) {
+            return null
+          }
 
-// 插入操作
-const insertImage = () => {
-  emitter.emit('trigger-add-image')
-}
-
-const insertVideo = () => {
-  emitter.emit('show-video-menu')
-}
-
-const insertCodeBlock = () => {
-  props.editor?.chain().focus().toggleCodeBlock().run()
-}
-
-const insertTable = () => {
-  props.editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
-}
-
-const insertDivider = () => {
-  props.editor?.chain().focus().setHorizontalRule().run()
-}
-
-const setLink = () => {
-  const previousUrl = props.editor?.getAttributes('link').href
-
-  emitter.emit('open-dialog', {
-    mode: 'input',
-    title: '设置链接',
-    description: '输入要绑定到当前选中文本的链接地址。清空内容可移除链接。',
-    inputLabel: '链接地址',
-    placeholder: 'https://example.com',
-    defaultValue: previousUrl || '',
-    confirmText: '应用',
-    onConfirm: (url) => {
-      if (url === '') {
-        props.editor?.chain().focus().extendMarkRange('link').unsetLink().run()
-        return
-      }
-
-      props.editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-    },
-  })
-}
-
-const askAI = () => {
-  emitter.emit('AI-generated')
-}
+          return {
+            key,
+            iconSvg: spec.icon ? icons[spec.icon] : '',
+            label: spec.label || '',
+            tooltip: spec.tooltip || '',
+            isActive: spec.isActive ? spec.isActive(props.editor) : false,
+            disabled: spec.disabled ? spec.disabled(props.editor) : false,
+            run: () => spec.run?.(props.editor),
+          }
+        })
+        .filter(Boolean),
+    }))
+    .filter((group) => group.items.length > 0)
+})
 </script>
 
 <style scoped>

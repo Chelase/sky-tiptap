@@ -5,10 +5,10 @@ import VideoEmbed, {
   extractBilibiliVideoId,
   extractDouyinVideoId,
   extractYoutubeVideoId,
-} from '../extensions/web-video.js'
-import Iframe from '../extensions/iframe.js'
+} from '@sky-tiptap/extension-video-embed'
+import Iframe from '@sky-tiptap/extension-iframe'
 import { CustomParagraph } from '../extensions/CustomParagraph.js'
-import BeforeChange from '../extensions/before-change.js'
+import BeforeChange from '@sky-tiptap/extension-before-change'
 import { TipTapPlugin } from '../config/default.js'
 
 const beforeChangeSchema = new Schema({
@@ -220,9 +220,9 @@ describe('Tiptap Extensions', () => {
     expect(parseRules[0].tag).toBe('iframe')
   })
 
-  it('CustomParagraph should extend Paragraph', () => {
+  it('CustomParagraph should extend Paragraph without a custom node view', () => {
     expect(CustomParagraph.name).toBe('paragraph')
-    expect(CustomParagraph.config.addNodeView).toBeDefined()
+    expect(CustomParagraph.config.addNodeView).toBeUndefined()
   })
 
   it('CodeBlock should stay active after repeated Enter presses', () => {

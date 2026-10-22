@@ -216,26 +216,7 @@
   height: 16px;
 }
 
-/* ===== 插入菜单 ===== */
-.sky-insert-menu {
-  position: fixed;
-  background: var(--sky-color-bg);
-  border-radius: var(--sky-radius-md);
-  box-shadow: var(--sky-shadow-xl);
-  border: 1px solid var(--sky-color-border);
-  padding: var(--sky-spacing-sm);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sky-spacing-xs);
-  z-index: var(--sky-z-tooltip);
-  min-width: 150px;
-}
-
-.sky-insert-menu button {
-  padding: var(--sky-spacing-sm) var(--sky-spacing-md);
-  text-align: left;
-  width: 100%;
-}
+/* 插入菜单样式由 InsertMenu.vue 的 scoped 样式提供 */
 
 /* ===== 滚动条样式 ===== */
 .sky-editor .ProseMirror::-webkit-scrollbar {

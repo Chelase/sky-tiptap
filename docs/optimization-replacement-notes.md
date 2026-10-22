@@ -102,7 +102,6 @@ Tiptap 官方目前没有稳定发布的 iframe 扩展包。iframe 嵌入是项�
 - `@tiptap/extension-drag-handle`
 - `@tiptap/extension-drag-handle-vue-3`
 - `@tiptap/extension-dropcursor`
-- `@tiptap/extension-node-range`
 
 当前用途：
 
@@ -113,7 +112,7 @@ Tiptap 官方目前没有稳定发布的 iframe 扩展包。iframe 嵌入是项�
 说明：
 
 - 这些插件当前是免费开源的 MIT 协议
-- `@tiptap/extension-node-range` 已显式列入运行依赖，用于 drag-handle 的节点范围选择
+- `@tiptap/extension-node-range` 已移除：块级拖拽由官方 drag-handle 扩展承担，该扩展此前并未实际接入
 - 后续如需继续接近 Notion / 少数派编辑器体验，可继续优化手柄显示策略和真实拖拽手测细节
 
 ### Placeholder

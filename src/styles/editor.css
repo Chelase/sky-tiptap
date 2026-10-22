@@ -8,7 +8,7 @@
 /* ===== 编辑器基础样式 ===== */
 .sky-editor {
   padding: var(--sky-spacing-xl);
-  padding-left: var(--sky-spacing-7xl);
+  padding-left: var(--sky-gutter-width);
   min-height: 400px;
   max-height: 600px;
   overflow-y: auto;
@@ -205,7 +205,7 @@
 .sky-editor .sky-video-container video {
   display: block;
   object-fit: contain;
-  background-color: #000;
+  background-color: var(--sky-color-bg-tertiary);
 }
 
 /* 代码块容器 */
@@ -295,6 +295,54 @@
 .ProseMirror-dropcursor {
   color: var(--sky-color-primary);
   height: 2px;
+}
+
+/* ===== 块级交互样式 ===== */
+
+/* 选中的顶层块（NodeSelection） */
+.sky-editor .ProseMirror > .ProseMirror-selectednode {
+  background-color: var(--sky-color-block-selected);
+  border-radius: var(--sky-radius-sm);
+}
+
+/* 顶层块获得焦点时的焦点环 */
+.sky-editor .ProseMirror > *:focus-within {
+  box-shadow: inset 0 0 0 1px var(--sky-color-focus-ring);
+  border-radius: var(--sky-radius-sm);
+}
+
+/* 拖拽中的块：降低透明度 */
+.sky-editor .ProseMirror .sky-block-dragging,
+.sky-editor .ProseMirror.dragging > .ProseMirror-selectednode {
+  opacity: var(--sky-block-dragging-opacity);
+  transition: opacity var(--sky-transition-fast);
+}
+
+/* 拖拽落点提示线 */
+.sky-editor .ProseMirror .sky-drop-indicator {
+  position: absolute;
+  height: 2px;
+  background-color: var(--sky-color-primary);
+  border-radius: var(--sky-radius-full);
+  pointer-events: none;
+  z-index: var(--sky-z-sticky);
+}
+
+/* ===== 多栏布局 ===== */
+.sky-editor .ProseMirror div[data-type='columnList'] {
+  display: flex;
+  gap: var(--sky-spacing-lg);
+  align-items: flex-start;
+  margin-bottom: var(--sky-spacing-md);
+}
+
+.sky-editor .ProseMirror div[data-type='column'] {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.sky-editor .ProseMirror div[data-type='column'] > *:last-child {
+  margin-bottom: 0;
 }
 
 /* ===== 拖拽手柄样式 ===== */

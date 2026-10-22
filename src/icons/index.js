@@ -4,6 +4,19 @@
  */
 
 export const icons = {
+  // 块类型
+  text: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V5h16v2"></path><path d="M12 5v14"></path><path d="M9 19h6"></path></svg>`,
+
+  heading1: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5v14"></path><path d="M13 5v14"></path><path d="M5 12h8"></path><path d="M17 19v-6l-2 1.5"></path></svg>`,
+
+  heading2: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5v14"></path><path d="M13 5v14"></path><path d="M5 12h8"></path><path d="M17 12a3 3 0 1 1 0 6h-2v1"></path></svg>`,
+
+  heading3: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5v14"></path><path d="M13 5v14"></path><path d="M5 12h8"></path><path d="M17 11a2.5 2.5 0 0 1 0 5h-2"></path><path d="M17 16a2.5 2.5 0 0 1 0 5h-2"></path></svg>`,
+
+  quote: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h4v4a4 4 0 0 1-4 4"></path><path d="M15 7h4v4a4 4 0 0 1-4 4"></path></svg>`,
+
+  columns: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="7" height="16" rx="1"></rect><rect x="14" y="4" width="7" height="16" rx="1"></rect></svg>`,
+
   // 文本格式化
   bold: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path></svg>`,
   
