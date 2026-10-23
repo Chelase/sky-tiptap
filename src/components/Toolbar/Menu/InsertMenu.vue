@@ -8,6 +8,7 @@
       :style="{ top: `${position.top}px`, left: `${position.left}px` }"
       @click.stop
       @keydown.stop
+      @keydown.esc.prevent="closeWithFocus()"
     >
       <div class="sky-insert-menu__search">
         <input
@@ -17,7 +18,7 @@
           type="text"
           placeholder="搜索操作…"
           @keydown.enter.prevent="handleEnter"
-          @keydown.esc.prevent="hide"
+          @keydown.esc.prevent="closeWithFocus()"
         />
       </div>
 
@@ -300,18 +301,36 @@ const show = (options) => {
   visible.value = false
 }
 
-const hide = (event) => {
-  if (event && menuRef.value && menuRef.value.contains(event.target)) {
-    return
-  }
-  if (event && videoMenuRef.value && videoMenuRef.value.contains(event.target)) {
-    return
-  }
-
+/**
+ * 关闭菜单
+ *
+ * 注意：这里不能接收事件对象做「点在菜单内就跳过」的判断——搜索框的
+ * 冒泡事件（Enter / Esc）就是从菜单内部发出的，一旦跳过，Esc 就再也关不掉。
+ * 菜单内部的点击过滤放在 handleDocumentMouseDown 里做。
+ */
+const hide = () => {
   visible.value = false
   showVideoMenu.value = false
   query.value = ''
   insertCallback = null
+}
+
+/** 点击菜单外部时关闭；点在菜单 / 视频平台弹层内部不关闭 */
+const handleDocumentMouseDown = (event) => {
+  if (menuRef.value && menuRef.value.contains(event.target)) {
+    return
+  }
+  if (videoMenuRef.value && videoMenuRef.value.contains(event.target)) {
+    return
+  }
+
+  hide()
+}
+
+/** Esc 关闭后把焦点还给编辑器，否则用户要继续输入还得再点一下正文 */
+const closeWithFocus = () => {
+  hide()
+  props.editor?.commands?.focus?.()
 }
 
 const handleSelect = (item) => {
@@ -350,7 +369,7 @@ const uploadVideo = () => {
 const handleKeydown = (event) => {
   if (event.key === 'Escape' && visible.value) {
     event.stopPropagation()
-    hide()
+    closeWithFocus()
   }
 }
 
@@ -407,7 +426,7 @@ onMounted(() => {
   emitter.on('update-insert-menu-query', handleUpdateQuery)
   emitter.on('hide-insert-menu', handleHideMenu)
   emitter.on('show-video-menu', handleShowVideoMenu)
-  document.addEventListener('mousedown', hide)
+  document.addEventListener('mousedown', handleDocumentMouseDown)
   window.addEventListener('keydown', handleKeydown)
   window.addEventListener('resize', updateScrollbar)
 })
@@ -417,7 +436,7 @@ onBeforeUnmount(() => {
   emitter.off('update-insert-menu-query', handleUpdateQuery)
   emitter.off('hide-insert-menu', handleHideMenu)
   emitter.off('show-video-menu', handleShowVideoMenu)
-  document.removeEventListener('mousedown', hide)
+  document.removeEventListener('mousedown', handleDocumentMouseDown)
   window.removeEventListener('keydown', handleKeydown)
   window.removeEventListener('resize', updateScrollbar)
   window.removeEventListener('pointermove', handleScrollbarDrag)

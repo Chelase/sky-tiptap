@@ -6,6 +6,9 @@ import { emitter } from '../utils/emitter'
 
 const createEditor = () => ({
   isActive: vi.fn(() => false),
+  commands: {
+    focus: vi.fn(),
+  },
   chain: vi.fn(() => ({
     focus: vi.fn().mockReturnThis(),
     insertContent: vi.fn().mockReturnThis(),
@@ -108,5 +111,38 @@ describe('InsertMenu', () => {
     await nextTick()
 
     expect(document.body.querySelector('.sky-insert-menu')).toBeFalsy()
+  })
+
+  it('closes when escape is pressed inside the search box', async () => {
+    await openMenu()
+
+    const input = document.body.querySelector('.sky-insert-menu__search-input')
+    // 关键路径：Esc 从菜单内部（焦点在搜索框）冒泡上来，不能因为「事件在菜单里」被忽略
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+    await nextTick()
+
+    expect(document.body.querySelector('.sky-insert-menu')).toBeFalsy()
+    // 关闭后焦点回到编辑器，用户可以直接继续输入
+    expect(wrapper.props('editor').commands.focus).toHaveBeenCalled()
+  })
+
+  it('closes when escape is pressed on a menu row', async () => {
+    await openMenu()
+
+    const item = document.body.querySelector('.sky-insert-menu__item')
+    item.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+    await nextTick()
+
+    expect(document.body.querySelector('.sky-insert-menu')).toBeFalsy()
+  })
+
+  it('stays open when clicking inside the menu', async () => {
+    await openMenu()
+
+    const input = document.body.querySelector('.sky-insert-menu__search-input')
+    input.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+    await nextTick()
+
+    expect(document.body.querySelector('.sky-insert-menu')).toBeTruthy()
   })
 })
