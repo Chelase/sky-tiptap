@@ -51,6 +51,7 @@ describe('block gutter tokens', () => {
       track: BLOCK_GUTTER.track,
       controlSize: BLOCK_GUTTER.controlSize,
       controlGap: BLOCK_GUTTER.controlGap,
+      contentGap: BLOCK_GUTTER.contentGap,
     })
   })
 
@@ -75,10 +76,14 @@ describe('block gutter geometry', () => {
 
     const controls = locateBlockControls(view, { pos: 0, index: 0, element })
 
-    expect(controls.add).toEqual({ top: 100, left: 244 })
+    // 拖拽手柄占外侧槽位（轨道最左），+ 号贴正文左边缘
+    expect(controls.add).toEqual({
+      top: 100,
+      left: 300 - BLOCK_GUTTER.controlSize - BLOCK_GUTTER.contentGap,
+    })
     expect(controls.menu).toEqual({
       top: 100,
-      left: 244 + BLOCK_GUTTER.controlSize + BLOCK_GUTTER.controlGap,
+      left: 300 - BLOCK_GUTTER.contentGap + BLOCK_GUTTER.controlGap,
     })
     expect(controls.track).toEqual({ top: 100, left: 244, width: BLOCK_GUTTER.track, height: 28 })
     expect(view.coordsAtPos).not.toHaveBeenCalled()
@@ -104,7 +109,7 @@ describe('block gutter geometry', () => {
     const controls = locateBlockControls(view, { pos: 6, index: 2 })
 
     expect(view.nodeDOM).toHaveBeenCalledWith(6)
-    expect(controls.add.left).toBe(244)
+    expect(controls.add.left).toBe(300 - BLOCK_GUTTER.controlSize - BLOCK_GUTTER.contentGap)
   })
 
   it('returns null when no geometry can be resolved', () => {
@@ -112,15 +117,16 @@ describe('block gutter geometry', () => {
   })
 
   it('never places the menu closer than the viewport margin', () => {
-    const element = { getBoundingClientRect: () => createRect({ left: 10 }) }
+    const element = { getBoundingClientRect: () => createRect({ left: 0 }) }
     const controls = locateBlockControls({ dom: null }, { pos: 0, index: 0, element })
 
-    expect(controls.add.left).toBe(-46)
+    expect(controls.add.left).toBe(-BLOCK_GUTTER.controlSize - BLOCK_GUTTER.contentGap)
     expect(controls.menu.left).toBe(BLOCK_GUTTER.minLeft)
   })
 
   it('derives the drag handle offset from the same module', () => {
-    expect(getDragHandleOffset()).toEqual([0, BLOCK_GUTTER.handleGap])
+    // 手柄在外侧槽位：右边缘距正文 = 轨道宽 - 控件宽
+    expect(getDragHandleOffset()).toEqual([0, BLOCK_GUTTER.track - BLOCK_GUTTER.controlSize])
   })
 
   it('treats only the block band as inside, not the margin gap', () => {

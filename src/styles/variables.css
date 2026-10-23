@@ -99,6 +99,40 @@
   --sky-color-focus-ring: #2383e2;
   /* 拖拽中的块透明度 */
   --sky-block-dragging-opacity: 0.4;
+
+  /* ===== 块插入菜单（数值对齐 Notion 实测） ===== */
+
+  /* 面板：宽 324、圆角 10、最高 40vh */
+  --sky-insert-menu-width: 324px;
+  --sky-insert-menu-max-height: 40vh;
+  --sky-insert-menu-radius: 10px;
+  /* Notion 三级阴影：外扩 1px 描边 + 5px/20px 两层投影 */
+  --sky-insert-menu-shadow:
+    0 20px 24px rgba(25, 25, 25, 0.05),
+    0 5px 8px rgba(25, 25, 25, 0.027),
+    0 0 0 1px rgba(42, 28, 0, 0.07);
+  /* 菜单行：高 32、圆角 6、左右内边距 8、图标 20 */
+  --sky-insert-menu-item-height: 32px;
+  --sky-insert-menu-item-radius: 6px;
+  --sky-insert-menu-item-padding: 8px;
+  --sky-insert-menu-icon-size: 20px;
+  --sky-insert-menu-icon-gap: 8px;
+  /* 分组间距：首组 4，后续组 6/4/4 + 组间 6 */
+  --sky-insert-menu-section-padding: 4px;
+  --sky-insert-menu-section-gap: 6px;
+  /* 菜单文本与辅助色 */
+  --sky-insert-menu-text: #2c2c2b;
+  --sky-insert-menu-icon-color: #383836;
+  --sky-insert-menu-label-color: #7d7a75;
+  --sky-insert-menu-shortcut-color: #a19e99;
+  --sky-insert-menu-hover-bg: rgba(33, 27, 23, 0.05);
+  --sky-insert-menu-hover-bg-strong: rgba(33, 27, 23, 0.08);
+  --sky-insert-menu-divider: rgba(42, 28, 0, 0.07);
+  /* 内部浮层滚动条：4px 滑块、距面板右侧 3px，不占布局宽度 */
+  --sky-insert-menu-scrollbar-width: 4px;
+  --sky-insert-menu-scrollbar-inset: 3px;
+  --sky-insert-menu-scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --sky-insert-menu-scrollbar-thumb-hover: rgba(0, 0, 0, 0.32);
 }
 
 /* ===== 暗色主题 ===== */
@@ -125,6 +159,21 @@
 
   --sky-color-block-selected: rgba(59, 130, 246, 0.16);
   --sky-color-focus-ring: #3b82f6;
+
+  /* 块插入菜单（暗色） */
+  --sky-insert-menu-shadow:
+    0 20px 24px rgba(0, 0, 0, 0.4),
+    0 5px 8px rgba(0, 0, 0, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+  --sky-insert-menu-text: #d4d4d3;
+  --sky-insert-menu-icon-color: #d4d4d3;
+  --sky-insert-menu-label-color: #9b9a97;
+  --sky-insert-menu-shortcut-color: #7c7b78;
+  --sky-insert-menu-hover-bg: rgba(255, 255, 255, 0.055);
+  --sky-insert-menu-hover-bg-strong: rgba(255, 255, 255, 0.09);
+  --sky-insert-menu-divider: rgba(255, 255, 255, 0.1);
+  --sky-insert-menu-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --sky-insert-menu-scrollbar-thumb-hover: rgba(255, 255, 255, 0.32);
 }
 
 /* ===== 自定义主题支持 ===== */

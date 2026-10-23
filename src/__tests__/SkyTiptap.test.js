@@ -364,7 +364,8 @@ describe('SkyTiptap Component', () => {
     expect(tiptapState.dragHandleProps[0].class).toBe('sky-drag-handle-wrapper')
     expect(tiptapState.dragHandleProps[0].tippyOptions).toEqual(expect.objectContaining({
       placement: 'left-start',
-      offset: [0, 4],
+      // 手柄占轨道外侧槽位：右边缘距正文 = 轨道宽 56 - 控件宽 24
+      offset: [0, 32],
       zIndex: 110,
     }))
     expect(typeof tiptapState.dragHandleProps[0].onNodeChange).toBe('function')

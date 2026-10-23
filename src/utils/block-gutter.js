@@ -13,12 +13,12 @@ import { resolveBlockElement } from './block-controls'
 export const BLOCK_GUTTER = Object.freeze({
   /** 左侧轨道宽度 */
   track: 56,
-  /** 控件尺寸（+ 号） */
+  /** 控件尺寸（+ 号 / 拖拽手柄） */
   controlSize: 24,
-  /** 控件与内容的间距 */
+  /** 控件之间的间距（+ 号与其右侧菜单） */
   controlGap: 8,
-  /** 拖拽手柄与内容左边缘的距离（tippy distance） */
-  handleGap: 4,
+  /** 控件与正文左边缘的间距 */
+  contentGap: 4,
   /** 菜单锚点的最小左边距，避免贴住视口 */
   minLeft: 8,
 })
@@ -43,7 +43,7 @@ const readToken = (styles, name, fallback) => {
 /**
  * 读取块级几何令牌
  * @param {Element} [element] 解析 CSS 变量的元素（通常是编辑器根节点）
- * @returns {{ track: number, controlSize: number, controlGap: number, handleGap: number, minLeft: number }}
+ * @returns {{ track: number, controlSize: number, controlGap: number, contentGap: number, minLeft: number }}
  */
 export const readGutterTokens = (element) => {
   const styles = element && typeof window !== 'undefined' && typeof window.getComputedStyle === 'function'
@@ -54,7 +54,7 @@ export const readGutterTokens = (element) => {
     track: readToken(styles, GUTTER_TOKENS.track, BLOCK_GUTTER.track),
     controlSize: readToken(styles, GUTTER_TOKENS.controlSize, BLOCK_GUTTER.controlSize),
     controlGap: readToken(styles, GUTTER_TOKENS.controlGap, BLOCK_GUTTER.controlGap),
-    handleGap: BLOCK_GUTTER.handleGap,
+    contentGap: BLOCK_GUTTER.contentGap,
     minLeft: BLOCK_GUTTER.minLeft,
   }
 }
@@ -101,7 +101,8 @@ export const resolveBlockRect = (view, info) => {
 /**
  * 计算块级控件的全部锚点
  *
- * add：+ 号左上角
+ * 轨道从外到内是「拖拽手柄 → + 号 → 正文」：
+ * add：+ 号左上角（贴正文左边缘的内侧槽位）
  * menu：块菜单左上角（贴在 + 号右侧）
  * track：整条左侧轨道的矩形
  *
@@ -118,16 +119,21 @@ export const locateBlockControls = (view, info) => {
   const tokens = readGutterTokens(view?.dom)
   const top = Math.round(rect.top)
   const trackLeft = Math.round(rect.left - tokens.track)
+  // 内侧槽位：拖拽手柄在外侧，+ 号紧贴正文左边缘
+  const addLeft = Math.round(rect.left - tokens.controlSize - tokens.contentGap)
 
   return {
     tokens,
     rect,
-    add: { top, left: trackLeft },
+    add: {
+      top,
+      left: addLeft,
+    },
     menu: {
       top,
       left: Math.max(
         tokens.minLeft,
-        trackLeft + Math.round(tokens.controlSize + tokens.controlGap),
+        addLeft + Math.round(tokens.controlSize + tokens.controlGap),
       ),
     },
     track: {
@@ -160,6 +166,7 @@ export const isPointInBlockBand = (rect, coords) => {
 /**
  * 拖拽手柄的 tippy offset
  *
+ * 手柄排在外侧槽位，右边缘距正文左边缘 = 轨道宽 - 控件宽。
  * 从同一组令牌派生，避免与「+」号各自维护一个数字。
  * @param {Element} [element]
  * @returns {[number, number]}
@@ -167,5 +174,5 @@ export const isPointInBlockBand = (rect, coords) => {
 export const getDragHandleOffset = (element) => {
   const tokens = readGutterTokens(element)
 
-  return [0, tokens.handleGap]
+  return [0, Math.max(0, tokens.track - tokens.controlSize)]
 }

@@ -7,10 +7,18 @@
 - **菜单条目映射去重**：新增 `src/utils/menu-items.js` 的 `resolveMenuGroups(config, editor)`，Toolbar 与 BubbleMenu 不再各自复制一段 `key → {iconSvg,label,tooltip,isActive,disabled,run}` 映射
 - `src/utils/block-controls.js` 只保留命中测试与顶层块解析，移除 `DEFAULT_BLOCK_CONTROL_OPTIONS`、`getBlockControlPosition`
 
+### 行为变化
+
+- **块插入菜单按 Notion 实测重做**：面板 324px 宽、10px 圆角、40vh 上限，阴影改为 Notion 的三层（1px 描边 + 5px/20px 投影）；首组内边距 4px、后续组 `6px 4px 4px` 并带 1px 缩进分隔线；行高 32px、行圆角 6px、图标 20px、文字 14px、右侧补 Markdown 快捷提示（`#`、`##`、`###`、`"`、`---`、`-`、`1.`、```` ``` ````），底部新增「关闭菜单 / esc」行。搜索框保留（Notion 的「+」是先插入空块再在块内筛选，我们的「+」仍靠搜索框），但改为 Notion 输入样式（灰底、无边框、无蓝色焦点环）；列表改为仅纵向滚动，消除横向滚动条
+- 快捷提示由 `src/config/block-catalog.js` 的 `shortcut` 字段提供，通过新增的 `getBlockShortcut(type)` 读取，`insertMenuItems` prop 的条目形状保持不变
+- 左侧轨道槽位改为「⠿ 拖拽手柄在外侧、`+` 号贴正文」：手柄右边缘距正文 `轨道宽 - 控件宽`（56 - 24 = 32px），`+` 号距正文 4px，块插入菜单锚点随之移到 `+` 号右侧 8px（即正文左边缘 + 4px）；两处偏移都由 `src/utils/block-gutter.js` 从同一组令牌派生
+
 ### Bug 修复
 
 - 修复鼠标移入左侧轨道后「+」号与拖拽手柄消失、导致块级控件无法点击的问题：轨道内边距从 `.sky-editor` 移到 `.sky-prosemirror`（即 ProseMirror 的可编辑盒子内），指针不再触发编辑器的 `mouseleave`，官方 DragHandle 的坐标命中也能正常解析；同时移除 `base.css` 中用 `padding` 简写覆盖轨道宽度的旧规则，「+」号位置与 `--sky-gutter-width` 重新对齐
 - 修复指针停在块间空隙（段落 `margin`）时「+」号跳到下一块、与拖拽手柄指向不同块的问题：此时 `posAtCoords` 会给出下一块，而官方 DragHandle 找不到 DOM 元素会保持上一块；「+」号改为用 `isPointInBlockBand` 判断指针是否落在块的纵向带内，不在带内时保持当前块，与手柄行为一致
+- 修复块插入菜单右侧留白不一致的问题：项目全局样式默认 `content-box`，搜索框 `width: 100%` 叠加左右内边距后比面板内容区宽 16px、直接顶到面板右边缘；菜单内统一改为 `border-box`，搜索框、行高亮、底部「关闭菜单」行共用同一条内容列（左右各 4px），行内图标 / 文字 / 快捷提示与底部 `esc` 左右对齐
+- 块插入菜单的滚动条改为内部浮层滑块：隐藏原生滚动条（不再占 15px 布局宽度、右侧不再出现独立占位槽），列表内用 4px 圆角滑块贴面板右侧内边距浮动，悬停菜单或滚动时淡入、支持拖拽
 
 ---
 

@@ -81,6 +81,26 @@ describe('InsertMenu', () => {
     expect(document.body.querySelector('.sky-insert-menu')).toBeFalsy()
   })
 
+  it('renders Notion-style shortcut hints and a footer', async () => {
+    await openMenu()
+
+    const menu = document.body.querySelector('.sky-insert-menu')
+    const items = [...menu.querySelectorAll('.sky-insert-menu__item')]
+    const heading = items.find((node) => node.querySelector('.sky-insert-menu__label')?.textContent.trim() === '一级标题')
+
+    expect(heading.querySelector('.sky-insert-menu__shortcut')?.textContent.trim()).toBe('#')
+
+    const footer = menu.querySelector('.sky-insert-menu__footer')
+    expect(footer).toBeTruthy()
+    expect(footer.textContent).toContain('关闭菜单')
+    expect(footer.textContent).toContain('esc')
+
+    footer.querySelector('button').click()
+    await nextTick()
+
+    expect(document.body.querySelector('.sky-insert-menu')).toBeFalsy()
+  })
+
   it('closes when escape is pressed', async () => {
     await openMenu()
 

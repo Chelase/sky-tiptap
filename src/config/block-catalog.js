@@ -103,6 +103,7 @@ export const blockCatalog = {
     icon: 'heading1',
     group: 'basic',
     keywords: ['h1', 'heading1', '标题', 'title'],
+    shortcut: '#',
     create: () => createHeading(1),
   },
   heading2: {
@@ -111,6 +112,7 @@ export const blockCatalog = {
     icon: 'heading2',
     group: 'basic',
     keywords: ['h2', 'heading2', '标题', 'subtitle'],
+    shortcut: '##',
     create: () => createHeading(2),
   },
   heading3: {
@@ -119,6 +121,7 @@ export const blockCatalog = {
     icon: 'heading3',
     group: 'basic',
     keywords: ['h3', 'heading3', '标题'],
+    shortcut: '###',
     create: () => createHeading(3),
   },
   quote: {
@@ -127,6 +130,7 @@ export const blockCatalog = {
     icon: 'quote',
     group: 'basic',
     keywords: ['quote', '引用', 'blockquote'],
+    shortcut: '"',
     create: createQuote,
   },
   divider: {
@@ -135,6 +139,7 @@ export const blockCatalog = {
     icon: 'divider',
     group: 'basic',
     keywords: ['divider', 'hr', '分割线', 'line'],
+    shortcut: '---',
     create: createDivider,
   },
   bulletList: {
@@ -143,6 +148,7 @@ export const blockCatalog = {
     icon: 'bulletList',
     group: 'list',
     keywords: ['bullet', '无序', '列表', 'list'],
+    shortcut: '-',
     create: () => createList('bulletList'),
   },
   orderedList: {
@@ -151,6 +157,7 @@ export const blockCatalog = {
     icon: 'orderedList',
     group: 'list',
     keywords: ['ordered', '有序', '列表', 'number'],
+    shortcut: '1.',
     create: () => createList('orderedList'),
   },
   image: {
@@ -183,6 +190,7 @@ export const blockCatalog = {
     icon: 'code',
     group: 'advanced',
     keywords: ['code', '代码', 'snippet'],
+    shortcut: '```',
     create: createCodeBlock,
   },
   table: {
@@ -230,6 +238,17 @@ export const EXTERNAL_BLOCK_TYPES = Object.keys(blockCatalog).filter(
  * @returns {Object|null}
  */
 export const getBlockEntry = (type) => (type && blockCatalog[type]) || null
+
+/**
+ * 取块的 Markdown 快捷输入提示
+ *
+ * 只用于菜单右侧的提示文本（Notion 的 `#`、`##`、`---` 等），
+ * 不参与菜单条目的公开形状，`insertMenuItems` prop 不受影响。
+ *
+ * @param {string} type 块类型
+ * @returns {string}
+ */
+export const getBlockShortcut = (type) => getBlockEntry(type)?.shortcut || ''
 
 /**
  * 列出目录条目（带上 type）

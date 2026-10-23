@@ -29,18 +29,21 @@
 
 **核心结论**：Notion 的「+」号、⠿ 手柄、右栏评论、菜单项不是独立组件，而是同一套块级 margin 定位系统下的 4 个 `marginItemType`，全部 `position: absolute` 并共享坐标计算。
 
+插入菜单的尺寸另经 1.12.1 对本机 Notion v7.40 的 CDP 实测校准：面板 324×、圆角 10、40vh 上限、行高 32、行圆角 6、图标 20、组内边距 4 / `6px 4px 4px`、分隔线 1px `rgba(42,28,0,.07)`、footer 42px。
+
 ## 3. 已完成
 
 ### P0（1.12.0）
 
 - [x] 块级「+」按钮：`src/components/BlockControls/BlockAddButton.vue`，覆盖所有顶层块
-- [x] 可搜索块目录：`src/config/insert-menu.js` + `InsertMenu.vue` 重写（搜索框 + 分组 + 265px + 视口收敛）
+- [x] 可搜索块目录：`src/config/insert-menu.js` + `InsertMenu.vue` 重写（搜索框 + 分组 + 视口收敛；1.12.1 起面板按 Notion 实测 324px 重做）
 - [x] 统一插入层：`src/utils/block-insert.js`（消除菜单与段落按钮的重复实现）
 - [x] 块级快捷键：`src/utils/keyboard-shortcuts.js`（`⌘/`、`⌘⇧↑↓`、`⌘D`、`Esc`、`⌘B/I/U`、`⌘⇧H`、`⌘K`）
 - [x] 块级操作：`src/utils/block-actions.js`（`moveBlock` / `duplicateBlock` / `selectBlock`）
 - [x] 块级定位：`src/utils/block-controls.js` + `--sky-gutter-width` 令牌，左轨道统一
 - [x] 左侧轨道内悬停不再丢控件：轨道内边距移到 `.sky-prosemirror`（ProseMirror 盒子内），移入轨道不会触发 `mouseleave`，官方 DragHandle 也能命中坐标
 - [x] 块间空隙处「+」与 ⠿ 对齐：指针落在段落 `margin` 空隙时保持当前块（`isPointInBlockBand`），与官方 DragHandle「找不到元素就保持上一块」的行为一致，不再出现「+」跳到下一块
+- [x] 轨道槽位定序：⠿ 手柄占外侧（轨道最左）、`+` 号贴正文左边缘，菜单锚点随 `+` 号右移（1.12.1）
 - [x] 段落不再挂载 Vue NodeView，`CustomParagraph` 扩展与导出保持兼容
 - [x] 修复 `before-change` 插件 key 冲突导致的编辑器创建失败
 
@@ -76,7 +79,7 @@
 ## 5. 验收标准
 
 - 标题、列表、表格、代码块、图片、视频 hover 均出现「+」按钮
-- 「+」按钮与 ⠿ 手柄在同一条左轨道上并排、互不遮挡
+- 「+」按钮与 ⠿ 手柄在同一条左轨道上并排、互不遮挡（⠿ 在外侧、+ 号贴正文，菜单锚点在 + 号右侧）
 - 插入菜单可搜索，选项按分组展示，靠近屏幕边缘时自动收敛
 - `⌘/Ctrl+/` 打开的菜单与「+」按钮打开的是同一份块目录
 - `⌘⇧↑/↓` 移动块、`⌘D` 复制块、`Esc` 选中块行为正确

@@ -4,6 +4,7 @@ import {
   blockCatalog,
   createBlockContent,
   getBlockEntry,
+  getBlockShortcut,
   insertBlock,
   listBlockEntries,
   triggerExternalBlock,
@@ -51,6 +52,17 @@ describe('block catalog', () => {
     defaultInsertMenuItems.forEach((item) => {
       expect(Object.keys(item).sort()).toEqual(['group', 'icon', 'keywords', 'label', 'type'])
     })
+  })
+
+  it('exposes markdown shortcuts for the menu hints', () => {
+    expect(getBlockShortcut('heading1')).toBe('#')
+    expect(getBlockShortcut('heading2')).toBe('##')
+    expect(getBlockShortcut('heading3')).toBe('###')
+    expect(getBlockShortcut('divider')).toBe('---')
+    expect(getBlockShortcut('bulletList')).toBe('-')
+    expect(getBlockShortcut('orderedList')).toBe('1.')
+    expect(getBlockShortcut('table')).toBe('')
+    expect(getBlockShortcut('not-exist')).toBe('')
   })
 
   it('derives external block types from the request entries', () => {
